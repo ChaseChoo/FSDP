@@ -1,0 +1,313 @@
+/* ===== OCBC-STYLE EASYATM THEME ===== */
+:root {
+  --red: #c41230;
+  --red-light: #f94c57;
+  --orange: #ff8c00;
+  --bg: #fafafa;
+  --panel: #ffffff;
+  --border: #e5e7eb;
+  --text: #222222;
+  --muted: #666666;
+  --radius: 14px;
+  --shadow: 0 4px 18px rgba(0,0,0,0.08);
+  --focus: 0 0 0 3px rgba(196,18,48,0.35);
+  --transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+html,body {
+  margin:0;
+  padding:0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+  line-height:1.5;
+}
+
+/* === Layout === */
+.container {
+  max-width: 900px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+header.header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:24px;
+}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.logo {
+  background:var(--red);
+  color:#fff;
+  font-weight:900;
+  font-size:22px;
+  border-radius:50%;
+  width:48px; height:48px;
+  display:grid;
+  place-items:center;
+}
+.title h1 {
+  font-size:1.8rem;
+  margin:0;
+  font-weight:700;
+}
+.subtitle {
+  font-size:1rem;
+  color:var(--muted);
+}
+
+/* === Safe Mode Toggle === */
+.safe {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:6px 14px;
+  box-shadow: var(--shadow);
+}
+.safe input {
+  appearance:none;
+  width:48px; height:28px;
+  background:#ddd;
+  border-radius:999px;
+  position:relative;
+  cursor:pointer;
+  outline:none;
+  transition: var(--transition);
+}
+.safe input::after {
+  content:"";
+  position:absolute;
+  width:22px; height:22px;
+  border-radius:50%;
+  background:white;
+  left:3px; top:3px;
+  transition: var(--transition);
+}
+.safe input:checked {
+  background: var(--red);
+}
+.safe input:checked::after {
+  transform: translateX(20px);
+}
+.safe label {
+  font-weight:600;
+  color: var(--text);
+}
+
+/* === Banner === */
+.banner {
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  background: #fff3f3;
+  border:1px solid #ffc9c9;
+  border-left:6px solid var(--red);
+  padding:14px 18px;
+  border-radius: var(--radius);
+  color:#b00020;
+  margin-bottom:24px;
+}
+.banner strong {color:var(--red);}
+.banner .tip {color:#aa0000; font-size:0.95rem;}
+
+/* === Cards === */
+.card {
+  background: var(--panel);
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding:22px 20px;
+  margin-bottom:24px;
+}
+
+/* === Tabs (PayNow / Bills) === */
+.tabs {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:18px;
+}
+.tabs input {display:none;}
+.tab {
+  cursor:pointer;
+  border:2px solid var(--border);
+  border-radius:999px;
+  padding:10px 22px;
+  font-weight:700;
+  background:#fff;
+  color:var(--muted);
+  transition: var(--transition);
+}
+.tabs input:checked + .tab {
+  background: var(--red);
+  color:#fff;
+  border-color: var(--red);
+}
+.panels > section {display:none; animation:fade .2s ease;}
+#tab-paynow:checked ~ .panels #panel-paynow,
+#tab-bills:checked ~ .panels #panel-bills {display:block;}
+@keyframes fade {from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+/* === Forms === */
+form {
+  display:grid;
+  gap:20px;
+}
+.row {display:grid; gap:8px;}
+.row.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+@media(max-width:700px){.row.grid{grid-template-columns:1fr;}}
+
+label {
+  font-weight:700;
+  font-size:1rem;
+}
+input[type=text],
+input[type=number],
+select,
+textarea {
+  padding:12px 14px;
+  font-size:1.05rem;
+  border:2px solid var(--border);
+  border-radius:10px;
+  background:white;
+  color:var(--text);
+  transition:var(--transition);
+}
+input:focus, select:focus, textarea:focus {
+  border-color:var(--red);
+  box-shadow: var(--focus);
+  outline:none;
+}
+.hint {
+  color:var(--muted);
+  font-size:0.9rem;
+}
+
+.chips {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:6px;
+}
+.chip {
+  padding:8px 14px;
+  background:#fff5f5;
+  border:1px solid #ffbdbd;
+  border-radius:999px;
+  color:var(--red);
+  cursor:pointer;
+  font-weight:600;
+  transition: var(--transition);
+}
+.chip:hover {
+  background:var(--red);
+  color:#fff;
+  border-color:var(--red);
+}
+
+/* === Buttons === */
+.btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  padding:12px 20px;
+  border-radius:10px;
+  border:2px solid transparent;
+  cursor:pointer;
+  font-size:1.05rem;
+  transition:var(--transition);
+  text-decoration:none;
+}
+.btn-primary {
+  background: var(--red);
+  color:white;
+}
+.btn-primary:hover {
+  background: var(--red-light);
+}
+.btn-secondary {
+  background:white;
+  color: var(--red);
+  border-color: var(--red);
+}
+.btn-secondary:hover {
+  background:#fff0f0;
+}
+.btn-ghost {
+  background:transparent;
+  border:2px solid var(--border);
+  color: var(--muted);
+}
+.btn-ghost:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+.btn-lg {font-size:1.15rem;}
+
+/* === Summary Boxes === */
+.summary {
+  background:#fff5f5;
+  border:1px dashed #ffbdbd;
+  border-radius:10px;
+  padding:12px 14px;
+  color:#700;
+  font-size:0.95rem;
+}
+.summary strong {
+  color:var(--red);
+}
+
+/* === Dialogs === */
+.dialog {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.dialog.show {display:flex;}
+.dialog .modal {
+  background:var(--panel);
+  border-radius:var(--radius);
+  box-shadow: var(--shadow);
+  padding:22px 24px;
+  max-width:480px;
+  width:100%;
+  animation:fade .25s ease;
+}
+.dialog h3 {
+  margin-top:0;
+  color: var(--red);
+}
+.actions {
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:14px;
+}
+
+/* === Footer Notes === */
+.footnotes {
+  color:var(--muted);
+  font-size:0.9rem;
+  margin-top:10px;
+  text-align:center;
+}
+
+/* === Animations === */
+@keyframes fade {from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}

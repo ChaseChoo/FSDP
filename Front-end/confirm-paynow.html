@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EasyATM — Confirm PayNow</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <div class="brand"><div class="logo" aria-hidden="true"><span>EA</span></div><div class="title"><h1>Confirm PayNow</h1></div></div>
+    <div class="safe"><input id="safemode" type="checkbox" aria-label="Enable Safe Mode" /><label for="safemode">Safe Mode</label></div>
+  </header>
+
+  <main class="card">
+    <p class="summary"><strong>Final check:</strong> Are you paying someone you personally know or an official biller?</p>
+
+    <!-- Placeholder values; replace server-side with GET params or JS -->
+    <div class="card">
+  <p><strong>Method:</strong> <span id="confirm-method">(Mobile / NRIC / UEN / VPA)</span></p>
+  <p><strong>Recipient:</strong> <span id="confirm-recipient">(Value entered)</span></p>
+  <p><strong>Amount (SGD):</strong> <span id="confirm-amount">(Value entered)</span></p>
+  <p><strong>Purpose:</strong> <span id="confirm-purpose">(Optional note)</span></p>
+</div>
+
+
+    <div class="actions">
+      <a href="paynow.html" class="btn btn-ghost">Back</a>
+      <a href="success.html" class="btn btn-primary btn-lg">Confirm & Send</a>
+    </div>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

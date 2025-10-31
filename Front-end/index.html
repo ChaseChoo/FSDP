@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EasyATM — Start</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><span>EA</span></div>
+      <div class="title">
+        <h1>EasyATM</h1>
+        <div class="subtitle">Accessible Transactions for Everyone</div>
+      </div>
+    </div>
+    <div class="safe" role="group" aria-label="Safe Mode">
+      <input id="safemode" type="checkbox" aria-label="Enable Safe Mode" />
+      <label for="safemode">Safe Mode</label>
+    </div>
+  </header>
+
+  <div class="banner card" role="alert">
+    <div>⚠️</div>
+    <div>
+      <strong>Scam Warning:</strong> Never transfer money on instruction from a caller or stranger.
+      <div class="tip">If unsure, stop and call your bank’s hotline.</div>
+    </div>
+  </div>
+
+  <main class="card">
+    <h2 style="margin-top:0">Choose a transaction</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>PayNow</h3>
+        <p>Send money using Mobile, NRIC/FIN, UEN, VPA or Scan QR.</p>
+        <a class="btn btn-primary btn-lg" href="paynow.html">Continue to PayNow</a>
+      </div>
+      <div class="card">
+        <h3>Bill / Utilities</h3>
+        <p>Pay SP Group, telco, Town Council, CPF and more.</p>
+        <a class="btn btn-secondary btn-lg" href="bills.html">Continue to Bills</a>
+      </div>
+    </div>
+  </main>
+
+  <p class="footnotes">Large fonts • High contrast • Keyboard friendly (<span class="kbd">Tab</span> to move, <span class="kbd">Enter</span> to select)</p>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

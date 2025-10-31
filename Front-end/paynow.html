@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EasyATM — PayNow</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><span>EA</span></div>
+      <div class="title"><h1>PayNow</h1><div class="subtitle">Large text • Voice-friendly</div></div>
+    </div>
+    <div class="safe" role="group" aria-label="Safe Mode">
+      <input id="safemode" type="checkbox" aria-label="Enable Safe Mode" />
+      <label for="safemode">Safe Mode</label>
+    </div>
+  </header>
+
+  <div class="banner card" role="alert">
+    <div>⚠️</div>
+    <div>
+      <strong>Important:</strong> Only pay people you know or official billers. If someone told you to “secure your funds”, it is likely a scam.
+    </div>
+  </div>
+
+  <main class="card">
+    <!-- In production, post to your backend to render confirm page with real values -->
+    <form action="confirm-paynow.html" method="get" aria-describedby="before-send">
+      <div class="grid-2">
+        <div class="row">
+          <label for="method">PayNow Method</label>
+          <select id="method" name="method" aria-label="Select method">
+            <option>Mobile Number</option>
+            <option>NRIC/FIN</option>
+            <option>UEN</option>
+            <option>VPA (Virtual Payment Address)</option>
+            <option>Scan QR</option>
+          </select>
+          <div class="hint">Choose how to identify the recipient.</div>
+        </div>
+
+        <div class="row">
+          <label for="recipient">Recipient</label>
+          <input id="recipient" name="recipient" type="text" placeholder="e.g., 9123 4567 / S1234567A / 20191888A" required />
+          <div class="hint">In Safe Mode, limit to your approved list (backend feature).</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="row">
+          <label for="amount">Amount (SGD)</label>
+          <input id="amount" name="amount" type="number" min="1" step="1" placeholder="Enter amount" required />
+          <div class="chips" aria-label="Quick amounts">
+            <span class="chip" aria-hidden="true">$10</span>
+            <span class="chip" aria-hidden="true">$20</span>
+            <span class="chip" aria-hidden="true">$50</span>
+            <span class="chip" aria-hidden="true">$100</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="purpose">Purpose (Optional)</label>
+          <input id="purpose" name="purpose" type="text" placeholder="E.g., Groceries, Allowance, Utilities" />
+          <div class="hint">Appears in your transaction history/receipt.</div>
+        </div>
+      </div>
+
+      <div id="before-send" class="summary">
+        <strong>Before you send:</strong> You’ll see the recipient name on the next screen. Double-check it is correct.
+      </div>
+
+      <div class="actions">
+        <a href="index.html" class="btn btn-ghost">Back</a>
+        <button type="reset" class="btn btn-ghost">Clear</button>
+        <button type="submit" class="btn btn-primary btn-lg">Continue</button>
+      </div>
+    </form>
+  </main>
+
+  <p class="footnotes">Tip: You can add Text-to-Speech to read labels and warnings aloud.</p>
+</div>
+  <script src="app.js"></script>
+</body>
+</html>
