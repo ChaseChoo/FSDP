@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyATM - Login</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .login-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .qr-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        #qr-canvas {
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .status-waiting {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-success {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f1b0b7;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .refresh-btn {
+            background: #6c757d;
+            font-size: 14px;
+            padding: 8px 16px;
+            width: auto;
+            margin: 10px 5px;
+        }
+        
+        .refresh-btn:hover {
+            background: #545b62;
+        }
+        
+        .mobile-instructions {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        
+        .mobile-instructions h4 {
+            margin: 0 0 10px 0;
+            color: #0056b3;
+        }
+        
+        .mobile-instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .mobile-instructions li {
+            margin: 5px 0;
+        }
+        
+        .timer {
+            font-size: 14px;
+            color: #666;
+            margin: 10px 0;
+        }
+        
+        .logo-section {
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            background: #007bff;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <div class="logo">EA</div>
+            <h1>EasyATM Login</h1>
+            <p>Secure Banking Access</p>
+        </div>
+        
+        <div class="login-tabs">
+            <button class="tab-button active" onclick="switchTab('qr')">QR Login</button>
+            <button class="tab-button" onclick="switchTab('form')">Manual Login</button>
+            <button class="tab-button" onclick="switchTab('signup')">Sign Up</button>
+        </div>
+        
+        <!-- QR Code Login Tab -->
+        <div id="qr-tab" class="tab-content active">
+            <h3>Scan to Login</h3>
+            <div class="mobile-instructions">
+                <h4>📱 Mobile Login Instructions:</h4>
+                <ol>
+                    <li>Open your mobile banking app or camera</li>
+                    <li>Scan the QR code below</li>
+                    <li>Approve the login on your mobile device</li>
+                    <li>You'll be automatically logged in</li>
+                </ol>
+            </div>
+            
+            <div class="qr-section">
+                <canvas id="qr-canvas" width="200" height="200"></canvas>
+                <div id="qr-status" class="status-message status-waiting">
+                    🕐 Waiting for mobile authentication...
+                </div>
+                <div class="timer" id="qr-timer">Expires in: 5:00</div>
+                <button class="btn refresh-btn" onclick="refreshQR()">🔄 Refresh QR Code</button>
+            </div>
+        </div>
+        
+        <!-- Manual Login Tab -->
+        <div id="form-tab" class="tab-content">
+            <h3>Manual Login</h3>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email or Phone:</label>
+                    <input type="text" id="email" name="email" required placeholder="Enter email or phone number">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter password">
+                </div>
+                <button type="submit" class="btn">🔐 Login</button>
+            </form>
+        </div>
+        
+        <!-- Signup Tab -->
+        <div id="signup-tab" class="tab-content">
+            <h3>Create Account</h3>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="signup-name">Full Name:</label>
+                    <input type="text" id="signup-name" name="name" required placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email:</label>
+                    <input type="email" id="signup-email" name="email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="signup-phone">Phone Number:</label>
+                    <input type="tel" id="signup-phone" name="phone" required placeholder="Enter phone number">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password:</label>
+                    <input type="password" id="signup-password" name="password" required placeholder="Create password">
+                </div>
+                <div class="form-group">
+                    <label for="signup-confirm">Confirm Password:</label>
+                    <input type="password" id="signup-confirm" name="confirmPassword" required placeholder="Confirm password">
+                </div>
+                <button type="submit" class="btn">✨ Create Account</button>
+            </form>
+        </div>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p><small>🔒 Your data is encrypted and secure</small></p>
+            <p><small>Need help? Contact support: 1800-EASYATM</small></p>
+        </div>
+    </div>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="login.js"></script>
+</body>
+</html>

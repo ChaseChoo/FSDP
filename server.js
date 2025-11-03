@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import path from "path";
 import authRoutes from "./routes/authRoutes.js";
 import accountRoutes from "./routes/accountRoutes.js";
+import qrAuthRoutes from "./routes/qrAuthRoutes.js";
 import { sessionCount } from "./services/sessionStore.js";
 import fakeLogin from "./middleware/fakeLogin.js";
 dotenv.config();
@@ -11,6 +12,7 @@ dotenv.config();
 // TianRui's Section
 const app = express();
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/account", fakeLogin, accountRoutes);
 
@@ -20,8 +22,21 @@ app.use(express.static("public"));
 // API routes
 app.use("/auth", authRoutes);
 app.use("/account", accountRoutes); // deposit, withdraw, balance, transactions
+app.use("/api", qrAuthRoutes); // QR authentication and login/signup
 
 // Serve pages
+app.get("/", (req, res) => {
+  res.sendFile(path.resolve("public/login.html"));
+});
+
+app.get("/login", (req, res) => {
+  res.sendFile(path.resolve("public/login.html"));
+});
+
+app.get("/mobile-auth", (req, res) => {
+  res.sendFile(path.resolve("public/mobile-auth.html"));
+});
+
 app.get("/account", (req, res) => {
   res.sendFile(path.resolve("public/account.html"));
 });

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyATM - Mobile Authentication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .mobile-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo {
+            background: #007bff;
+            color: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .auth-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .device-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        
+        .device-info h4 {
+            color: #0056b3;
+            margin-bottom: 8px;
+        }
+        
+        .device-info p {
+            color: #333;
+            font-size: 14px;
+            margin: 3px 0;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .status-waiting {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-success {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f1b0b7;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .security-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .security-notice h4 {
+            color: #856404;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .security-notice p {
+            color: #856404;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        
+        .fingerprint-icon {
+            font-size: 48px;
+            color: #007bff;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="logo">EA</div>
+        <h1>EasyATM</h1>
+        <p class="subtitle">Mobile Authentication</p>
+        
+        <div class="auth-section">
+            <div class="fingerprint-icon">🔐</div>
+            <h3>Login Request</h3>
+            
+            <div class="device-info">
+                <h4>🖥️ Login Request From:</h4>
+                <p><strong>Device:</strong> <span id="device-info">Loading...</span></p>
+                <p><strong>Location:</strong> <span id="location-info">Detecting...</span></p>
+                <p><strong>Time:</strong> <span id="time-info"></span></p>
+                <p><strong>Session:</strong> <span id="session-info"></span></p>
+            </div>
+            
+            <div id="status-message" class="status-message status-waiting">
+                <div class="loading-spinner"></div>
+                <p>Verifying authentication request...</p>
+            </div>
+            
+            <div id="auth-buttons" class="hidden">
+                <button class="btn btn-success" onclick="approveAuth()">
+                    ✅ Approve Login
+                </button>
+                <button class="btn btn-danger" onclick="denyAuth()">
+                    ❌ Deny Login
+                </button>
+            </div>
+            
+            <div id="completed-section" class="hidden">
+                <div id="completion-message"></div>
+                <button class="btn" onclick="window.close()">
+                    📱 Close
+                </button>
+            </div>
+        </div>
+        
+        <div class="security-notice">
+            <h4>🛡️ Security Notice</h4>
+            <p>• Only approve if you initiated this login</p>
+            <p>• Check the device and location information above</p>
+            <p>• Never share this link with others</p>
+            <p>• Contact support if this seems suspicious</p>
+        </div>
+    </div>
+    
+    <script>
+        class MobileAuth {
+            constructor() {
+                this.sessionId = new URLSearchParams(window.location.search).get('session');
+                this.init();
+            }
+            
+            async init() {
+                if (!this.sessionId) {
+                    this.showError('Invalid authentication link');
+                    return;
+                }
+                
+                this.updateTimeInfo();
+                this.updateSessionInfo();
+                await this.updateDeviceInfo();
+                await this.verifySession();
+            }
+            
+            updateTimeInfo() {
+                const now = new Date();
+                document.getElementById('time-info').textContent = now.toLocaleString();
+            }
+            
+            updateSessionInfo() {
+                document.getElementById('session-info').textContent = this.sessionId.slice(-8);
+            }
+            
+            async updateDeviceInfo() {
+                try {
+                    // Get basic device info
+                    const deviceInfo = {
+                        browser: this.getBrowserInfo(),
+                        os: this.getOSInfo(),
+                        screen: `${screen.width}x${screen.height}`
+                    };
+                    
+                    document.getElementById('device-info').textContent = 
+                        `${deviceInfo.browser} on ${deviceInfo.os}`;
+                    
+                    // Try to get location (with user permission)
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                document.getElementById('location-info').textContent = 
+                                    `Lat: ${position.coords.latitude.toFixed(2)}, Lng: ${position.coords.longitude.toFixed(2)}`;
+                            },
+                            () => {
+                                document.getElementById('location-info').textContent = 'Location not available';
+                            }
+                        );
+                    } else {
+                        document.getElementById('location-info').textContent = 'Location not supported';
+                    }
+                } catch (error) {
+                    document.getElementById('device-info').textContent = 'Unknown device';
+                    document.getElementById('location-info').textContent = 'Location unavailable';
+                }
+            }
+            
+            getBrowserInfo() {
+                const userAgent = navigator.userAgent;
+                if (userAgent.includes('Chrome')) return 'Chrome';
+                if (userAgent.includes('Firefox')) return 'Firefox';
+                if (userAgent.includes('Safari')) return 'Safari';
+                if (userAgent.includes('Edge')) return 'Edge';
+                return 'Unknown Browser';
+            }
+            
+            getOSInfo() {
+                const userAgent = navigator.userAgent;
+                if (userAgent.includes('Windows')) return 'Windows';
+                if (userAgent.includes('Mac')) return 'macOS';
+                if (userAgent.includes('Linux')) return 'Linux';
+                if (userAgent.includes('Android')) return 'Android';
+                if (userAgent.includes('iOS')) return 'iOS';
+                return 'Unknown OS';
+            }
+            
+            async verifySession() {
+                try {
+                    const response = await fetch('/api/verify-qr-session', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.sessionId
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.valid) {
+                        this.showAuthButtons();
+                    } else {
+                        this.showError(result.error || 'Invalid or expired session');
+                    }
+                } catch (error) {
+                    console.error('Session verification error:', error);
+                    this.showError('Failed to verify session');
+                }
+            }
+            
+            showAuthButtons() {
+                document.getElementById('status-message').classList.add('hidden');
+                document.getElementById('auth-buttons').classList.remove('hidden');
+            }
+            
+            showError(message) {
+                const statusDiv = document.getElementById('status-message');
+                statusDiv.className = 'status-message status-error';
+                statusDiv.innerHTML = `❌ ${message}`;
+            }
+            
+            showSuccess(message) {
+                const statusDiv = document.getElementById('status-message');
+                statusDiv.className = 'status-message status-success';
+                statusDiv.innerHTML = `✅ ${message}`;
+            }
+            
+            async approveAuth() {
+                try {
+                    // Disable buttons
+                    document.getElementById('auth-buttons').classList.add('hidden');
+                    this.showSuccess('Processing approval...');
+                    
+                    const response = await fetch('/api/approve-qr-auth', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.sessionId,
+                            approved: true
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        this.showCompletion('✅ Login approved successfully!', 'success');
+                    } else {
+                        this.showError(result.error || 'Failed to approve login');
+                        document.getElementById('auth-buttons').classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Approval error:', error);
+                    this.showError('Failed to approve login');
+                    document.getElementById('auth-buttons').classList.remove('hidden');
+                }
+            }
+            
+            async denyAuth() {
+                try {
+                    // Disable buttons
+                    document.getElementById('auth-buttons').classList.add('hidden');
+                    this.showSuccess('Processing denial...');
+                    
+                    const response = await fetch('/api/approve-qr-auth', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.sessionId,
+                            approved: false
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        this.showCompletion('❌ Login denied', 'error');
+                    } else {
+                        this.showError(result.error || 'Failed to deny login');
+                        document.getElementById('auth-buttons').classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Denial error:', error);
+                    this.showError('Failed to deny login');
+                    document.getElementById('auth-buttons').classList.remove('hidden');
+                }
+            }
+            
+            showCompletion(message, type) {
+                document.getElementById('status-message').classList.add('hidden');
+                const completionDiv = document.getElementById('completed-section');
+                const messageDiv = document.getElementById('completion-message');
+                
+                messageDiv.className = `status-message status-${type}`;
+                messageDiv.innerHTML = message;
+                
+                completionDiv.classList.remove('hidden');
+            }
+        }
+        
+        // Global functions for onclick handlers
+        let mobileAuth;
+        
+        function approveAuth() {
+            if (mobileAuth) mobileAuth.approveAuth();
+        }
+        
+        function denyAuth() {
+            if (mobileAuth) mobileAuth.denyAuth();
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            mobileAuth = new MobileAuth();
+        });
+    </script>
+</body>
+</html>
