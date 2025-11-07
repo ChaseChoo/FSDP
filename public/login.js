@@ -134,7 +134,7 @@ class LoginManager {
         
         // Redirect to main application
         setTimeout(() => {
-            window.location.href = '/account';
+            window.location.href = '/index.html';
         }, 2000);
     }
     
@@ -164,7 +164,7 @@ class LoginManager {
                 localStorage.setItem('user', JSON.stringify(result.user));
                 
                 // Redirect to main application
-                window.location.href = '/account';
+                window.location.href = '/index.html';
             } else {
                 alert(result.error || 'Login failed. Please check your credentials.');
             }
@@ -274,7 +274,7 @@ function checkExistingAuth() {
     
     if (token && user) {
         // User is already logged in, redirect to main app
-        window.location.href = '/account';
+        window.location.href = '/index.html';
     }
 }
 

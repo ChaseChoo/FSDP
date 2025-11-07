@@ -4,22 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasyATM - Login</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
     <style>
         .login-container {
             max-width: 500px;
-            margin: 50px auto;
+            margin: 32px auto;
             padding: 30px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            background: var(--panel);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             text-align: center;
         }
         
         .login-tabs {
             display: flex;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+            background: var(--panel);
+            border-radius: var(--radius) var(--radius) 0 0;
+            overflow: hidden;
         }
         
         .tab-button {
@@ -28,19 +31,27 @@
             border: none;
             background: transparent;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--muted);
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
         }
         
         .tab-button.active {
-            color: #007bff;
-            border-bottom: 3px solid #007bff;
+            color: var(--red);
+            border-bottom: 3px solid var(--red);
+            background: rgba(196, 18, 48, 0.05);
+        }
+        
+        .tab-button:hover {
+            background: rgba(196, 18, 48, 0.1);
+            color: var(--red);
         }
         
         .tab-content {
             display: none;
+            animation: fade 0.3s ease;
         }
         
         .tab-content.active {
@@ -48,41 +59,44 @@
         }
         
         .qr-section {
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
+            padding: 22px 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             margin: 20px 0;
         }
         
         #qr-canvas {
             margin: 20px 0;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
         }
         
         .status-message {
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px 14px;
+            border-radius: var(--radius);
             margin: 15px 0;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.95rem;
         }
         
         .status-waiting {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
+            background: #fff5f5;
+            color: var(--red);
+            border: 1px dashed #ffbdbd;
         }
         
         .status-success {
-            background: #d1ecf1;
+            background: #f0f9ff;
             color: #0c5460;
             border: 1px solid #bee5eb;
         }
         
         .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f1b0b7;
+            background: #fef2f2;
+            color: var(--red);
+            border: 1px solid var(--red);
         }
         
         .form-group {
@@ -92,51 +106,59 @@
         
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--text);
+            font-size: 1rem;
         }
         
         .form-group input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
+            padding: 12px 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1.05rem;
+            background: white;
+            color: var(--text);
+            transition: var(--transition);
+            box-sizing: border-box;
         }
         
         .form-group input:focus {
             outline: none;
-            border-color: #007bff;
+            border-color: var(--red);
+            box-shadow: var(--focus);
         }
         
         .btn {
-            background: #007bff;
+            background: var(--red);
             color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border: 2px solid transparent;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: var(--transition);
             width: 100%;
             margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .btn:hover {
-            background: #0056b3;
+            background: var(--red-light);
         }
         
         .btn:disabled {
-            background: #ccc;
+            background: var(--muted);
             cursor: not-allowed;
         }
         
         .refresh-btn {
-            background: #6c757d;
-            font-size: 14px;
+            background: var(--muted);
+            font-size: 0.9rem;
             padding: 8px 16px;
             width: auto;
             margin: 10px 5px;
@@ -147,16 +169,18 @@
         }
         
         .mobile-instructions {
-            background: #e7f3ff;
+            background: #fff5f5;
+            border: 1px dashed #ffbdbd;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: var(--radius);
             margin: 15px 0;
             text-align: left;
         }
         
         .mobile-instructions h4 {
             margin: 0 0 10px 0;
-            color: #0056b3;
+            color: var(--red);
+            font-weight: 700;
         }
         
         .mobile-instructions ol {
@@ -166,20 +190,24 @@
         
         .mobile-instructions li {
             margin: 5px 0;
+            color: var(--text);
         }
         
         .timer {
-            font-size: 14px;
-            color: #666;
+            font-size: 0.9rem;
+            color: var(--muted);
             margin: 10px 0;
         }
         
-        .logo-section {
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             margin-bottom: 30px;
         }
         
         .logo {
-            background: #007bff;
+            background: var(--red);
             color: white;
             width: 60px;
             height: 60px;
@@ -188,15 +216,39 @@
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            font-weight: bold;
+            font-weight: 900;
             margin-bottom: 15px;
+        }
+        
+        .login-container h1 {
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .login-container p {
+            color: var(--muted);
+            margin: 0 0 20px 0;
+        }
+        
+        .footer-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        
+        .footer-section p {
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="logo-section">
-            <div class="logo">EA</div>
+        <div class="brand">
+            <div class="logo"><span>EA</span></div>
             <h1>EasyATM Login</h1>
             <p>Secure Banking Access</p>
         </div>
@@ -274,9 +326,9 @@
             </form>
         </div>
         
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p><small>🔒 Your data is encrypted and secure</small></p>
-            <p><small>Need help? Contact support: 1800-EASYATM</small></p>
+        <div class="footer-section">
+            <p>🔒 Your data is encrypted and secure</p>
+            <p>Need help? Contact support: 1800-EASYATM</p>
         </div>
     </div>
     

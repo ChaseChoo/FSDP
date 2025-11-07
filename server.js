@@ -5,6 +5,7 @@ import path from "path";
 import authRoutes from "./routes/authRoutes.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import qrAuthRoutes from "./routes/qrAuthRoutes.js";
+import loginRoutes from "./routes/loginRoutes.js";
 import { sessionCount } from "./services/sessionStore.js";
 import fakeLogin from "./middleware/fakeLogin.js";
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(express.static("public"));
 app.use("/auth", authRoutes);
 app.use("/account", accountRoutes); // deposit, withdraw, balance, transactions
 app.use("/api", qrAuthRoutes); // QR authentication and login/signup
+app.use("/api", loginRoutes); // Login and signup functionality
 
 // Serve pages
 app.get("/", (req, res) => {
