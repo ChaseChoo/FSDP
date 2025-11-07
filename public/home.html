@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ATM Assistant — Home</title>
+  <link rel="stylesheet" href="home.css"/>
+</head>
+<body>
+  <div id="atm" class="shell">
+    <header class="atm-header">
+      <h1 class="atm-title" data-i18n="hello">Hello!</h1>
+      <p class="atm-subtitle" data-i18n="what_do">What would you like to do today?</p>
+    </header>
+
+    <!-- STATUS / LANGUAGE / MIC BAR -->
+    <div class="atm-bar">
+      <div class="lang-wrap">
+        <label for="langSelectTop">🌐</label>
+        <select id="langSelectTop">
+          <option value="en">English</option>
+          <option value="zh">中文</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="ta">தமிழ்</option>
+        </select>
+      </div>
+
+      <!-- Friendly mic switch -->
+      <div class="mic-switch">
+        <input type="checkbox" id="micToggle" />
+        <label for="micToggle" id="micToggleLabel">
+          <span class="knob"></span>
+          <span class="label-on" data-i18n="listening_on">Listening</span>
+          <span class="label-off" data-i18n="listening_off">Mic Off</span>
+        </label>
+      </div>
+
+      <button id="exitBtn" class="link-btn danger" data-i18n="exit">Exit</button>
+    </div>
+
+    <!-- PAGES -->
+    <main class="atm-screen">
+      <!-- MAIN MENU -->
+      <section id="mainMenu" class="page active">
+        <div class="menu-grid">
+          <button id="btnCash" class="tile primary" data-i18n="get_cash">Get Cash</button>
+          <button id="btnNonCash" class="tile secondary" data-i18n="non_cash">Non Cash Services</button>
+        </div>
+      </section>
+
+      <!-- GET CASH -->
+      <section id="cashPage" class="page">
+        <h2 class="page-title" data-i18n="get_cash">Get Cash</h2>
+        <div class="denoms">
+          <button class="denom" data-amount="50">S$50</button>
+          <button class="denom" data-amount="80">S$80</button>
+          <button class="denom" data-amount="100">S$100</button>
+          <button class="denom" data-amount="500">S$500</button>
+          <div class="other-row">
+            <input id="cashOther" type="number" min="10" step="10" placeholder="Other amount"
+                   data-i18n-placeholder="other_amount"/>
+            <button id="cashOtherSet" class="ghost" data-i18n="set">Set</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="cashConfirm" class="cta" data-i18n="confirm">Confirm</button>
+          <button class="backBtn ghost" data-i18n="back">Back</button>
+        </div>
+      </section>
+
+      <!-- NON CASH MENU -->
+      <section id="nonCashPage" class="page">
+        <h2 class="page-title" data-i18n="non_cash">Non Cash Services</h2>
+        <div class="menu-grid six">
+          <button id="btnActivateCard" class="tile" data-i18n="activate_card">Activate card</button>
+          <button id="btnBalance"      class="tile" data-i18n="balance_enquiry">Balance enquiry</button>
+          <button id="btnBill"         class="tile" data-i18n="bill_payment">Bill Payment</button>
+          <button id="btnTransfer"     class="tile" data-i18n="transfer_funds">Transfer Funds</button>
+          <button id="btnCPF"          class="tile" data-i18n="cpf_services">CPF Services</button>
+          <button id="btnInvest"       class="tile" data-i18n="investment_services">Investment Services</button>
+        </div>
+        <div class="actions">
+          <button class="backBtn ghost" data-i18n="back">Back</button>
+        </div>
+      </section>
+
+      <!-- BALANCE PAGE -->
+      <section id="balancePage" class="page">
+        <h2 class="page-title" data-i18n="balance_enquiry">Balance enquiry</h2>
+        <div class="info-card">
+          <p><span data-i18n="current_balance">Current balance</span>:</p>
+          <h3 id="balanceValue">S$1,240.00</h3>
+        </div>
+        <div class="actions">
+          <button class="backBtn ghost" data-i18n="back">Back</button>
+        </div>
+      </section>
+
+      <!-- ACTIVATE CARD -->
+      <section id="activatePage" class="page">
+        <h2 class="page-title" data-i18n="activate_card">Activate card</h2>
+        <div class="form">
+          <label>
+            <span data-i18n="card_last4">Card last 4 digits</span>
+            <input id="cardLast4" type="text" maxlength="4" inputmode="numeric" />
+          </label>
+          <label>
+            <span data-i18n="otp">OTP</span>
+            <input id="cardOtp" type="text" maxlength="6" inputmode="numeric" />
+          </label>
+        </div>
+        <div class="actions">
+          <button id="activateConfirm" class="cta" data-i18n="confirm">Confirm</button>
+          <button class="backBtn ghost" data-i18n="back">Back</button>
+        </div>
+      </section>
+
+      <!-- TRANSFER FORM -->
+      <section id="transferPage" class="page">
+        <h2 class="page-title" data-i18n="transfer_funds">Transfer Funds</h2>
+        <div class="form">
+          <label>
+            <span data-i18n="amount">Amount</span>
+            <input id="tfAmount" type="number" min="1" step="0.01" placeholder="24510.10" />
+          </label>
+          <label>
+            <span data-i18n="to_account">To Account</span>
+            <input id="tfAccount" type="text" placeholder="123-000000-00" />
+          </label>
+          <label>
+            <span data-i18n="bank">Bank</span>
+            <input id="tfBank" type="text" placeholder="CITI-SG" />
+          </label>
+          <label>
+            <span data-i18n="payee">Payee Name</span>
+            <input id="tfPayee" type="text" placeholder="JOHN DOE" />
+          </label>
+          <label>
+            <span data-i18n="payment_mode">Payment mode</span>
+            <select id="tfMode">
+              <option value="nonimmediate" data-i18n="non_immediate">Non-immediate transfer</option>
+              <option value="immediate" data-i18n="immediate">Immediate transfer</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="tfNext" class="cta" data-i18n="confirm">Confirm</button>
+          <button class="backBtn ghost" data-i18n="back">Back</button>
+        </div>
+      </section>
+
+      <!-- TRANSFER CONFIRM -->
+      <section id="transferConfirmPage" class="page">
+        <h2 class="page-title" data-i18n="transfer_confirm">Transfer Confirmation</h2>
+        <div class="confirm-panel">
+          <div class="confirm-amount">
+            <p id="confAmount">S$ 24,510.10</p>
+            <p id="confAmount2">S$ 24,510.10</p>
+            <p id="confAmount3">S$ 24,510.10</p>
+          </div>
+          <div class="confirm-meta">
+            <p id="confAccount">123-000000-00</p>
+            <p id="confBank">CITI-SG</p>
+            <p id="confPayee">JOHN DOE</p>
+            <p>
+              <span data-i18n="payment_mode">Payment mode</span>:
+              <span id="confMode" data-i18n="non_immediate">Non-immediate transfer</span>
+            </p>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="tfConfirm" class="cta" data-i18n="confirm">Confirm</button>
+          <button class="backBtn ghost" data-i18n="back">Back</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- ASSISTANT PANEL -->
+    <aside id="chatbox" class="assistant">
+      <div class="assistant-top">
+        <div class="assistant-lang">
+          <label for="langSelect">🌐</label>
+          <select id="langSelect">
+            <option value="en">English</option>
+            <option value="zh">中文 (Chinese)</option>
+            <option value="ms">Bahasa Melayu</option>
+            <option value="ta">தமிழ்</option>
+          </select>
+        </div>
+      </div>
+      <div id="chatlog" class="chatlog"></div>
+      <div class="assistant-input">
+        <input id="userInput" placeholder="Type your command..." />
+        <button id="sendBtn" class="cta small" data-i18n="send">Send</button>
+      </div>
+    </aside>
+  </div>
+
+  <script src="home.js" defer></script>
+</body>
+</html>
