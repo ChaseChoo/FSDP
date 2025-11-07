@@ -5,7 +5,7 @@ const fakeToken = "FAKE_JWT_TOKEN";
 localStorage.setItem("token", fakeToken);
 
 async function getBalance() {
-  const res = await fetch(`${API_URL}/account/balance`, {
+  const res = await fetch(`${API_URL}/balance`, {
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
   });
   const data = await res.json();
@@ -14,7 +14,8 @@ async function getBalance() {
 
 async function deposit() {
   const amount = document.getElementById("amount").value;
-  await fetch(`${API_URL}/deposit`, {  // remove extra /account
+  console.log("Depositing", amount);
+  const res = await fetch(`${API_URL}/deposit`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -22,6 +23,8 @@ async function deposit() {
     },
     body: JSON.stringify({ amount })
   });
+  const data = await res.json();
+  console.log("Deposit response:", data);
   getBalance();
 }
 
@@ -39,7 +42,7 @@ async function withdraw() {
 }
 
 async function getTransactions() {
-  const res = await fetch(`${API_URL}/account/transactions`, {
+  const res = await fetch(`${API_URL}/transactions`, {
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
   });
   const data = await res.json();
