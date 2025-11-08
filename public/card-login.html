@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyATM - Card Login</title>
+    <link rel="stylesheet" href="styles-elderly.css">
+    <style>
+        .card-login-container {
+            max-width: 600px;
+            margin: 32px auto;
+            padding: 40px;
+            background: var(--panel);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 3px solid var(--red);
+        }
+        
+        .card-input {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-align: center;
+            background: #f8f9fa;
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .pin-input {
+            font-family: 'Courier New', monospace;
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-align: center;
+            background: #f8f9fa;
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .pin-input:focus, .card-input:focus {
+            border-color: var(--red);
+            box-shadow: 0 0 0 4px rgba(196,18,48,0.3);
+            outline: none;
+        }
+        
+        .virtual-keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 300px;
+            margin: 24px auto;
+        }
+        
+        .keypad-btn {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            font-size: 28px;
+            font-weight: bold;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 70px;
+            color: #333;
+        }
+        
+        .keypad-btn:hover {
+            background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
+            border-color: var(--red);
+            transform: translateY(-2px);
+        }
+        
+        .keypad-btn:active {
+            transform: translateY(0);
+            background: linear-gradient(145deg, #e0e0e0, #d0d0d0);
+        }
+        
+        .keypad-btn.wide {
+            grid-column: span 2;
+        }
+        
+        .security-info {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+            text-align: left;
+        }
+        
+        .security-info h4 {
+            color: #856404;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .security-info ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #856404;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .login-progress {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1976d2;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            border: 3px solid #f44336;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            color: #c62828;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .success-message {
+            background: #e8f5e8;
+            border: 3px solid #4caf50;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            color: #2e7d32;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .card-visual {
+            background: linear-gradient(135deg, #c41230, #f94c57);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            margin: 24px auto;
+            max-width: 350px;
+            box-shadow: 0 8px 24px rgba(196,18,48,0.3);
+        }
+        
+        .card-visual h3 {
+            margin: 0 0 16px 0;
+            font-size: 18px;
+        }
+        
+        .card-number-display {
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 16px 0;
+        }
+        
+        .attempts-remaining {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            color: #f57c00;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .card-login-container {
+                margin: 16px;
+                padding: 24px;
+            }
+            
+            .virtual-keypad {
+                max-width: 250px;
+            }
+            
+            .keypad-btn {
+                font-size: 24px;
+                padding: 16px;
+                min-height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card-login-container">
+        <div class="brand">
+            <div class="logo"><span>EA</span></div>
+            <h1>EasyATM Card Login</h1>
+            <p>Insert your card and enter your PIN</p>
+        </div>
+        
+        <!-- Security Information -->
+        <div class="security-info">
+            <h4>🛡️ Your Security is Our Priority</h4>
+            <ul>
+                <li>Never share your PIN with anyone</li>
+                <li>Cover the keypad when entering your PIN</li>
+                <li>If you feel unsafe, cancel and leave immediately</li>
+                <li>Contact us at 1800-EASYATM if you need help</li>
+            </ul>
+        </div>
+        
+        <!-- Login Progress -->
+        <div class="login-progress" id="progress-indicator">
+            <div class="progress-step">
+                <span id="progress-icon">💳</span>
+                <span id="progress-text">Please insert your card</span>
+            </div>
+        </div>
+        
+        <!-- Card Visual -->
+        <div class="card-visual" id="card-visual" style="display: none;">
+            <h3>🏦 EasyATM Card</h3>
+            <div class="card-number-display" id="card-display">**** **** **** ****</div>
+            <div style="font-size: 14px; opacity: 0.9;">Keep this card safe</div>
+        </div>
+        
+        <!-- Login Form -->
+        <form id="card-login-form" style="display: none;">
+            <!-- Card Number Input -->
+            <div class="form-group">
+                <label for="card-number" style="font-size: 20px; font-weight: bold;">
+                    💳 Card Number (16 digits)
+                </label>
+                <input 
+                    type="text" 
+                    id="card-number" 
+                    class="card-input"
+                    placeholder="1234 5678 9012 3456"
+                    maxlength="19"
+                    autocomplete="off"
+                    readonly
+                />
+            </div>
+            
+            <!-- PIN Input -->
+            <div class="form-group">
+                <label for="pin" style="font-size: 20px; font-weight: bold;">
+                    🔐 Enter your 4-digit PIN
+                </label>
+                <input 
+                    type="password" 
+                    id="pin" 
+                    class="pin-input"
+                    placeholder="••••"
+                    maxlength="4"
+                    autocomplete="off"
+                    readonly
+                />
+            </div>
+            
+            <!-- Virtual Keypad -->
+            <div class="virtual-keypad" id="virtual-keypad">
+                <button type="button" class="keypad-btn" data-key="1">1</button>
+                <button type="button" class="keypad-btn" data-key="2">2</button>
+                <button type="button" class="keypad-btn" data-key="3">3</button>
+                <button type="button" class="keypad-btn" data-key="4">4</button>
+                <button type="button" class="keypad-btn" data-key="5">5</button>
+                <button type="button" class="keypad-btn" data-key="6">6</button>
+                <button type="button" class="keypad-btn" data-key="7">7</button>
+                <button type="button" class="keypad-btn" data-key="8">8</button>
+                <button type="button" class="keypad-btn" data-key="9">9</button>
+                <button type="button" class="keypad-btn" data-key="clear">Clear</button>
+                <button type="button" class="keypad-btn" data-key="0">0</button>
+                <button type="button" class="keypad-btn" data-key="backspace">⌫</button>
+            </div>
+            
+            <!-- Attempts Remaining -->
+            <div id="attempts-warning" class="attempts-remaining" style="display: none;">
+                ⚠️ <span id="attempts-count">3</span> attempts remaining
+            </div>
+            
+            <!-- Error/Success Messages -->
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="success-message" class="success-message" style="display: none;"></div>
+            
+            <!-- Action Buttons -->
+            <div class="actions" style="margin-top: 32px;">
+                <button type="button" class="btn btn-ghost btn-lg" onclick="cancelLogin()">
+                    ❌ Cancel
+                </button>
+                <button type="button" class="btn btn-primary btn-lg" id="login-btn" onclick="submitLogin()" disabled>
+                    ✅ Login
+                </button>
+            </div>
+        </form>
+        
+        <!-- Help Section -->
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--border);">
+            <h3>🆘 Need Help?</h3>
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="playInstructions()">
+                    🔊 Audio Instructions
+                </button>
+                <button class="btn btn-secondary" onclick="callSupport()">
+                    📞 Call Support
+                </button>
+                <button class="btn btn-secondary" onclick="simulateCardInsert()">
+                    💳 Simulate Card Insert
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CardLoginManager {
+            constructor() {
+                this.cardInserted = false;
+                this.currentPin = '';
+                this.attemptsRemaining = 3;
+                this.isProcessing = false;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.updateProgressIndicator();
+                
+                // Welcome message
+                setTimeout(() => {
+                    this.speak("Welcome to EasyATM. Please insert your card to begin.", 'normal');
+                }, 1500);
+            }
+            
+            setupEventListeners() {
+                // Virtual keypad
+                document.getElementById('virtual-keypad').addEventListener('click', (e) => {
+                    if (e.target.matches('.keypad-btn')) {
+                        const key = e.target.getAttribute('data-key');
+                        this.handleKeypadPress(key);
+                    }
+                });
+                
+                // Physical keyboard support
+                document.addEventListener('keydown', (e) => {
+                    if (this.cardInserted) {
+                        this.handlePhysicalKey(e);
+                    }
+                });
+                
+                // Form validation
+                const cardInput = document.getElementById('card-number');
+                const pinInput = document.getElementById('pin');
+                
+                [cardInput, pinInput].forEach(input => {
+                    if (input) {
+                        input.addEventListener('input', () => this.validateForm());
+                    }
+                });
+            }
+            
+            handleKeypadPress(key) {
+                if (this.isProcessing) return;
+                
+                const pinInput = document.getElementById('pin');
+                const cardInput = document.getElementById('card-number');
+                
+                // Audio feedback
+                this.speak(key === 'clear' ? 'Clear' : key === 'backspace' ? 'Backspace' : key, 'quiet');
+                
+                // Visual feedback
+                event.target.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    event.target.style.transform = '';
+                }, 150);
+                
+                if (key === 'clear') {
+                    this.currentPin = '';
+                    if (pinInput) pinInput.value = '';
+                    this.clearMessages();
+                } else if (key === 'backspace') {
+                    this.currentPin = this.currentPin.slice(0, -1);
+                    if (pinInput) pinInput.value = '•'.repeat(this.currentPin.length);
+                } else if (/^\d$/.test(key) && this.currentPin.length < 4) {
+                    this.currentPin += key;
+                    if (pinInput) pinInput.value = '•'.repeat(this.currentPin.length);
+                }
+                
+                this.validateForm();
+                
+                // Auto-submit when PIN is complete
+                if (this.currentPin.length === 4 && this.canSubmit()) {
+                    setTimeout(() => this.submitLogin(), 500);
+                }
+            }
+            
+            handlePhysicalKey(e) {
+                if (e.key >= '0' && e.key <= '9') {
+                    e.preventDefault();
+                    this.handleKeypadPress(e.key);
+                } else if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    this.handleKeypadPress('backspace');
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.handleKeypadPress('clear');
+                } else if (e.key === 'Enter' && this.canSubmit()) {
+                    e.preventDefault();
+                    this.submitLogin();
+                }
+            }
+            
+            simulateCardInsert(cardNumber = '1234567812345678') {
+                if (this.cardInserted) {
+                    this.speak("Card already inserted", 'normal');
+                    return;
+                }
+                
+                this.speak("Card detected. Reading card information.", 'normal');
+                
+                // Simulate card reading delay
+                setTimeout(() => {
+                    this.cardInserted = true;
+                    
+                    // Update display
+                    const cardInput = document.getElementById('card-number');
+                    const cardDisplay = document.getElementById('card-display');
+                    const cardVisual = document.getElementById('card-visual');
+                    const form = document.getElementById('card-login-form');
+                    
+                    // Format card number with spaces
+                    const formattedCard = cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    const maskedCard = cardNumber.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '$1 **** **** $4');
+                    
+                    if (cardInput) cardInput.value = formattedCard;
+                    if (cardDisplay) cardDisplay.textContent = maskedCard;
+                    if (cardVisual) cardVisual.style.display = 'block';
+                    if (form) form.style.display = 'block';
+                    
+                    this.updateProgressIndicator();
+                    this.speak("Card accepted. Please enter your 4-digit PIN using the keypad.", 'normal');
+                    
+                    // Focus on PIN area
+                    const pinInput = document.getElementById('pin');
+                    if (pinInput) pinInput.focus();
+                    
+                }, 2000);
+            }
+            
+            async submitLogin() {
+                if (!this.canSubmit() || this.isProcessing) return;
+                
+                this.isProcessing = true;
+                const loginBtn = document.getElementById('login-btn');
+                
+                try {
+                    // Update UI
+                    if (loginBtn) {
+                        loginBtn.disabled = true;
+                        loginBtn.textContent = '🔄 Verifying...';
+                    }
+                    
+                    this.speak("Verifying your PIN. Please wait.", 'normal');
+                    this.clearMessages();
+                    
+                    const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
+                    
+                    const response = await fetch('/api/card/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            cardNumber: cardNumber,
+                            pin: this.currentPin
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        // Successful login
+                        this.showSuccess('Login successful! Welcome to EasyATM.');
+                        this.speak("Login successful. Redirecting to main menu.", 'normal');
+                        
+                        // Store authentication data
+                        localStorage.setItem('cardToken', result.token);
+                        localStorage.setItem('cardUser', JSON.stringify(result.user));
+                        localStorage.setItem('cardAccount', JSON.stringify(result.account));
+                        
+                        // Redirect after delay
+                        setTimeout(() => {
+                            window.location.href = '/index-elderly.html';
+                        }, 3000);
+                        
+                    } else {
+                        // Failed login
+                        this.attemptsRemaining--;
+                        
+                        if (this.attemptsRemaining > 0 && result.shouldRetry) {
+                            this.showError(`${result.error} ${this.attemptsRemaining} attempts remaining.`);
+                            this.speak(`Incorrect PIN. ${this.attemptsRemaining} attempts remaining.`, 'urgent');
+                            this.updateAttemptsDisplay();
+                            this.currentPin = '';
+                            document.getElementById('pin').value = '';
+                        } else {
+                            this.showError(result.error);
+                            this.speak(`${result.error} Please contact support if you need help.`, 'urgent');
+                            this.disableLogin();
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.error('Login error:', error);
+                    this.showError('System error. Please try again or contact support.');
+                    this.speak("System error occurred. Please try again or contact support.", 'urgent');
+                    
+                } finally {
+                    this.isProcessing = false;
+                    
+                    // Reset login button
+                    if (loginBtn && this.attemptsRemaining > 0) {
+                        loginBtn.disabled = !this.canSubmit();
+                        loginBtn.textContent = '✅ Login';
+                    }
+                }
+            }
+            
+            canSubmit() {
+                const cardNumber = document.getElementById('card-number')?.value?.replace(/\s/g, '') || '';
+                return this.cardInserted && 
+                       cardNumber.length === 16 && 
+                       this.currentPin.length === 4 && 
+                       this.attemptsRemaining > 0;
+            }
+            
+            validateForm() {
+                const loginBtn = document.getElementById('login-btn');
+                if (loginBtn) {
+                    loginBtn.disabled = !this.canSubmit();
+                }
+            }
+            
+            updateProgressIndicator() {
+                const icon = document.getElementById('progress-icon');
+                const text = document.getElementById('progress-text');
+                
+                if (!this.cardInserted) {
+                    if (icon) icon.textContent = '💳';
+                    if (text) text.textContent = 'Please insert your card';
+                } else {
+                    if (icon) icon.textContent = '🔐';
+                    if (text) text.textContent = 'Enter your PIN';
+                }
+            }
+            
+            updateAttemptsDisplay() {
+                const warning = document.getElementById('attempts-warning');
+                const count = document.getElementById('attempts-count');
+                
+                if (this.attemptsRemaining <= 2) {
+                    if (warning) warning.style.display = 'block';
+                    if (count) count.textContent = this.attemptsRemaining;
+                }
+            }
+            
+            disableLogin() {
+                const keypad = document.getElementById('virtual-keypad');
+                const loginBtn = document.getElementById('login-btn');
+                
+                if (keypad) {
+                    keypad.style.opacity = '0.5';
+                    keypad.style.pointerEvents = 'none';
+                }
+                
+                if (loginBtn) {
+                    loginBtn.disabled = true;
+                    loginBtn.textContent = '❌ Login Disabled';
+                }
+            }
+            
+            showError(message) {
+                const errorDiv = document.getElementById('error-message');
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    errorDiv.style.display = 'block';
+                }
+                this.clearSuccess();
+            }
+            
+            showSuccess(message) {
+                const successDiv = document.getElementById('success-message');
+                if (successDiv) {
+                    successDiv.textContent = message;
+                    successDiv.style.display = 'block';
+                }
+                this.clearError();
+            }
+            
+            clearError() {
+                const errorDiv = document.getElementById('error-message');
+                if (errorDiv) errorDiv.style.display = 'none';
+            }
+            
+            clearSuccess() {
+                const successDiv = document.getElementById('success-message');
+                if (successDiv) successDiv.style.display = 'none';
+            }
+            
+            clearMessages() {
+                this.clearError();
+                this.clearSuccess();
+            }
+            
+            speak(text, priority = 'normal') {
+                if (!window.speechSynthesis) return;
+                
+                if (priority === 'urgent') {
+                    window.speechSynthesis.cancel();
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = "en-SG";
+                utterance.rate = priority === 'quiet' ? 1.0 : 0.8;
+                utterance.volume = priority === 'quiet' ? 0.3 : 0.9;
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Global functions
+        function cancelLogin() {
+            if (confirm("Cancel login and return to welcome screen?")) {
+                location.reload();
+            }
+        }
+        
+        function playInstructions() {
+            const instructions = `
+                To use EasyATM with your card:
+                
+                Step 1: Insert your ATM card into the slot, or click Simulate Card Insert for demo.
+                Step 2: When prompted, enter your 4-digit PIN using the keypad on screen.
+                Step 3: Press the Login button or press Enter to continue.
+                
+                For security, never share your PIN with anyone. 
+                Cover the keypad when entering your PIN.
+                
+                If you make a mistake, use the Clear button to start over.
+                If you need help, call our support line at 1800 EASYATM.
+            `;
+            
+            loginManager.speak(instructions, 'normal');
+        }
+        
+        function callSupport() {
+            loginManager.speak("Calling EasyATM support. Please have your card ready.", 'normal');
+            
+            if (confirm("📞 Call EasyATM Support?\n1800-EASYATM (1800-327-9286)")) {
+                window.location.href = "tel:18003279286";
+            }
+        }
+        
+        function simulateCardInsert() {
+            loginManager.simulateCardInsert();
+        }
+        
+        // Initialize
+        let loginManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            loginManager = new CardLoginManager();
+        });
+        
+        // Check if user is already logged in
+        function checkExistingAuth() {
+            const token = localStorage.getItem('cardToken');
+            const user = localStorage.getItem('cardUser');
+            
+            if (token && user) {
+                // User is already logged in, redirect to main app
+                window.location.href = '/index-elderly.html';
+            }
+        }
+        
+        // Run auth check on page load
+        checkExistingAuth();
+        
+        console.log("🎯 EasyATM Card Login (Elderly-Optimized) Loaded Successfully!");
+    </script>
+</body>
+</html>

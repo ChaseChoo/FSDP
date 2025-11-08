@@ -1,0 +1,529 @@
+/* ===== ELDERLY-OPTIMIZED EASYATM THEME ===== */
+:root {
+  --red: #c41230;
+  --red-light: #f94c57;
+  --orange: #ff8c00;
+  --bg: #fafafa;
+  --panel: #ffffff;
+  --border: #e5e7eb;
+  --text: #222222;
+  --muted: #666666;
+  --radius: 14px;
+  --shadow: 0 4px 18px rgba(0,0,0,0.08);
+  --focus: 0 0 0 4px rgba(196,18,48,0.5); /* Stronger focus for elderly users */
+  --transition: all 0.3s ease; /* Slower transitions for better visibility */
+  
+  /* Elderly-optimized font sizes */
+  --font-xl: 22px;    /* For main headings */
+  --font-lg: 20px;    /* For buttons and important text */
+  --font-md: 18px;    /* For body text */
+  --font-sm: 16px;    /* For hints and small text */
+  
+  /* Elderly-friendly spacing */
+  --touch-target: 48px; /* Minimum 48px for easy touch/click */
+  --button-padding: 16px 24px; /* Larger padding for easier targeting */
+}
+
+html,body {
+  margin:0;
+  padding:0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Arial, sans-serif; /* Simplified font stack for better readability */
+  line-height: 1.6; /* Increased line height for better readability */
+  font-size: var(--font-md); /* Base font size increased */
+}
+
+/* === Enhanced Layout for Elderly === */
+.container {
+  max-width: 800px; /* Slightly narrower for better focus */
+  margin: 24px auto;
+  padding: 0 20px; /* More padding for touch devices */
+}
+
+header.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding: 16px 0;
+  border-bottom: 2px solid var(--border); /* Visual separator */
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Increased gap for better spacing */
+}
+
+.logo {
+  background: var(--red);
+  color: #fff;
+  font-weight: 900;
+  font-size: 28px; /* Larger logo text */
+  border-radius: 50%;
+  width: 60px; 
+  height: 60px; /* Larger logo for better visibility */
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff; /* White border for better contrast */
+  box-shadow: var(--shadow);
+}
+
+.title h1 {
+  font-size: var(--font-xl);
+  margin: 0;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.subtitle {
+  font-size: var(--font-md);
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* === Enhanced Safe Mode Toggle for Elderly === */
+.safe {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--panel);
+  border: 3px solid var(--red); /* Stronger border for visibility */
+  border-radius: 999px;
+  padding: 12px 20px;
+  box-shadow: var(--shadow);
+  min-height: var(--touch-target); /* Ensure touch target size */
+}
+
+.safe input {
+  appearance: none;
+  width: 60px; /* Larger toggle */
+  height: 32px;
+  background: #ddd;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition);
+  border: 2px solid #ccc;
+}
+
+.safe input::after {
+  content: "";
+  position: absolute;
+  width: 26px; /* Larger toggle handle */
+  height: 26px;
+  border-radius: 50%;
+  background: white;
+  left: 3px; 
+  top: 3px;
+  transition: var(--transition);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.safe input:checked {
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.safe input:checked::after {
+  transform: translateX(28px);
+}
+
+.safe input:focus {
+  box-shadow: var(--focus);
+}
+
+.safe label {
+  font-weight: 700;
+  color: var(--text);
+  font-size: var(--font-md);
+  cursor: pointer;
+}
+
+/* === Enhanced Banner for Elderly === */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #fff3f3;
+  border: 3px solid #ffc9c9; /* Thicker border */
+  border-left: 8px solid var(--red); /* Thicker accent border */
+  padding: 20px 24px;
+  border-radius: var(--radius);
+  color: #b00020;
+  margin-bottom: 32px;
+  font-size: var(--font-md); /* Larger text */
+}
+
+.banner strong {
+  color: var(--red);
+  font-size: var(--font-lg);
+}
+
+.banner .tip {
+  color: #aa0000; 
+  font-size: var(--font-md);
+  margin-top: 8px;
+}
+
+/* === Enhanced Cards === */
+.card {
+  background: var(--panel);
+  border: 2px solid var(--border); /* Thicker border */
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px 24px; /* More padding */
+  margin-bottom: 32px;
+  font-size: var(--font-md);
+}
+
+/* === Enhanced Forms for Elderly === */
+form {
+  display: grid;
+  gap: 24px; /* More spacing between form elements */
+}
+
+.row {
+  display: grid; 
+  gap: 12px;
+}
+
+.row.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media(max-width: 700px) {
+  .row.grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+label {
+  font-weight: 700;
+  font-size: var(--font-lg); /* Larger labels */
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+input[type=text],
+input[type=number],
+select,
+textarea {
+  padding: var(--button-padding); /* Larger padding */
+  font-size: var(--font-lg); /* Larger input text */
+  border: 3px solid var(--border); /* Thicker border */
+  border-radius: 12px;
+  background: white;
+  color: var(--text);
+  transition: var(--transition);
+  min-height: var(--touch-target);
+  box-sizing: border-box;
+}
+
+input:focus, 
+select:focus, 
+textarea:focus {
+  border-color: var(--red);
+  box-shadow: var(--focus);
+  outline: none;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: var(--font-sm);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* === Enhanced Buttons for Elderly === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  padding: var(--button-padding);
+  border-radius: 12px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  font-size: var(--font-lg); /* Larger button text */
+  transition: var(--transition);
+  text-decoration: none;
+  min-height: var(--touch-target);
+  min-width: 120px; /* Minimum button width */
+  text-align: center;
+}
+
+.btn:focus {
+  box-shadow: var(--focus);
+  outline: none;
+}
+
+.btn:hover {
+  transform: translateY(-2px); /* Subtle lift effect for feedback */
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.btn-primary {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+
+.btn-primary:hover {
+  background: var(--red-light);
+  border-color: var(--red-light);
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.btn-secondary:hover {
+  background: #fff0f0;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 3px solid var(--border);
+  color: var(--muted);
+}
+
+.btn-ghost:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.btn-lg {
+  font-size: var(--font-xl);
+  padding: 20px 32px;
+  min-height: 60px; /* Extra large buttons */
+}
+
+/* === Enhanced Chips for Elderly === */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* More spacing */
+  margin-top: 12px;
+}
+
+.chip {
+  padding: 12px 20px; /* Larger chips */
+  background: #fff5f5;
+  border: 2px solid #ffbdbd;
+  border-radius: 999px;
+  color: var(--red);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--font-md);
+  transition: var(--transition);
+  min-height: var(--touch-target);
+  min-width: 60px;
+  text-align: center;
+}
+
+.chip:hover, .chip:focus {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+  transform: translateY(-1px);
+}
+
+/* === Enhanced Status Messages === */
+.summary {
+  background: #fff5f5;
+  border: 3px dashed #ffbdbd; /* Thicker dashed border */
+  border-radius: 12px;
+  padding: 20px 24px;
+  color: #700;
+  font-size: var(--font-md);
+  line-height: 1.6;
+}
+
+.summary strong {
+  color: var(--red);
+  font-size: var(--font-lg);
+}
+
+/* === Enhanced Actions Container === */
+.actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+@media(max-width: 600px) {
+  .actions {
+    flex-direction: column;
+  }
+  
+  .actions .btn {
+    width: 100%;
+  }
+}
+
+/* === Enhanced Footer Notes === */
+.footnotes {
+  color: var(--muted);
+  font-size: var(--font-sm);
+  margin-top: 20px;
+  text-align: center;
+  line-height: 1.6;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: var(--radius);
+}
+
+/* === Elderly-Specific Accessibility Enhancements === */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: #000000;
+    --text: #000000;
+    --bg: #ffffff;
+  }
+  
+  .btn-primary {
+    border: 3px solid #000000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Large text mode support */
+@media (min-resolution: 120dpi) {
+  :root {
+    --font-xl: 26px;
+    --font-lg: 24px;
+    --font-md: 22px;
+    --font-sm: 20px;
+  }
+}
+
+/* Print styles for receipts */
+@media print {
+  body {
+    background: white;
+    color: black;
+    font-size: 14pt;
+    line-height: 1.5;
+  }
+  
+  .btn, .safe, .banner {
+    display: none;
+  }
+  
+  .card {
+    border: 2px solid black;
+    page-break-inside: avoid;
+  }
+}
+
+/* Focus management for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--red);
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Enhanced error states */
+.error {
+  border-color: #dc3545 !important;
+  background-color: #f8d7da !important;
+  color: #721c24 !important;
+}
+
+.error-message {
+  background: #f8d7da;
+  border: 3px solid #dc3545;
+  color: #721c24;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  font-size: var(--font-md);
+  font-weight: 600;
+  margin: 12px 0;
+}
+
+/* Success states */
+.success {
+  border-color: #28a745 !important;
+  background-color: #d4edda !important;
+  color: #155724 !important;
+}
+
+.success-message {
+  background: #d4edda;
+  border: 3px solid #28a745;
+  color: #155724;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  font-size: var(--font-md);
+  font-weight: 600;
+  margin: 12px 0;
+}
+
+/* Loading states */
+.loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border: 2px solid var(--red);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
