@@ -35,6 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let listeningActive = false;
   let hoverReadCooldown = false;
   let cachedVoices = [];
+let tempOtpToken = null;
+let lastOtpIdentifier = null;
 
   // I18N dictionaries
   const i18n = {
@@ -466,6 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
       lang_ms: /(malay|bahasa melayu)/i,
       lang_ta: /(tamil|தமிழ்)/i,
     };
+
 
     if (intents.lang_en.test(lower)) return switchLang("en");
     if (intents.lang_zh.test(lower)) return switchLang("zh");
