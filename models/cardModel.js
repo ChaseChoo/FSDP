@@ -398,16 +398,23 @@ async function logCardTransaction(userId, cardNumber, transactionType, amount, s
         const pool = transaction || await poolPromise;
         const request = pool.request();
         
+        // Handle null userId - skip logging if userId is null
+        if (userId === null) {
+            console.warn(`Skipping transaction log for ${transactionType} - userId is null (card not found)`);
+            return;
+        }
+        
         request.input("userId", mssql.Int, userId);
         request.input("cardNumber", mssql.NVarChar(16), cardNumber);
         request.input("transactionType", mssql.NVarChar(50), transactionType);
         request.input("amount", mssql.Decimal(18, 2), amount);
         request.input("status", mssql.NVarChar(20), status);
+        request.input("atmLocation", mssql.NVarChar(100), "ATM-WEB-001"); // Default ATM location
         request.input("notes", mssql.NVarChar(200), notes);
         
         await request.query(`
             INSERT INTO CardTransactions (UserId, CardNumber, TransactionType, Amount, Status, ATMLocation, CreatedAt)
-            VALUES (@userId, @cardNumber, @transactionType, @amount, @status, @notes, GETUTCDATE())
+            VALUES (@userId, @cardNumber, @transactionType, @amount, @status, @atmLocation, GETUTCDATE())
         `);
         
     } catch (error) {
