@@ -83,6 +83,7 @@ body.atm-body {
 
 .atm-page {
   display: none;
+  margin-top: 50px;
 }
 
 .atm-page.active {
@@ -177,6 +178,7 @@ body.atm-body {
 }
 
 .quick-grid {
+  
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
@@ -525,7 +527,7 @@ body.atm-body {
 }
 
 .mic-track {
-  width: 52px;
+  width: 34px;
   height: 22px;
   border-radius: 999px;
   background-color: #e5e7eb;
@@ -535,8 +537,8 @@ body.atm-body {
 
 .mic-knob {
   position: absolute;
-  top: 2.7px;
-  left: 2.3px;
+  top: 2.4px;
+  left: 2.4px;
   width: 17.5px;
   height: 17.5px;
   border-radius: 999px;
@@ -556,7 +558,12 @@ body.atm-body {
 .mic-labels {
   font-size: 0.78rem;
   color: #6b7280;
+  display: flex;
+  flex-direction: column; /* stack text vertically */
+  line-height: 1.3;
+  text-align: left;
 }
+
 
 .mic-on {
   color: #111827;
@@ -580,7 +587,8 @@ body.atm-body {
   border: 1px solid #d1d5db;
   background-color: #ffffff;
   color: #374151;
-  padding: 5px 8px;
+  padding: 5px ;
+  width: 85px;
   font-size: 0.78rem;
 }
 
