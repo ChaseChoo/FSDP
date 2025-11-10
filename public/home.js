@@ -26,6 +26,8 @@ let navHistory = ["main"];
 let recognition;
 let listeningActive = false;
 let hoverReadCooldown = false;
+let tempOtpToken = null;
+let lastOtpIdentifier = null;
 
 // -----------------------------
 // I18N (EN, ZH, MS, TA)
@@ -311,12 +313,12 @@ if (cashConfirm) cashConfirm.onclick = ()=> immediateWithdraw(selectedCashAmount
 // -----------------------------
 function logBot(text){
   if (!chatlog) return;
-  chatlog.innerHTML += `<div>🤖 ${text}</div>`;
+  chatlog.innerHTML += `<div class="bot">🤖 ${text}</div>`;
   chatlog.scrollTop = chatlog.scrollHeight;
 }
 function logUser(text){
   if (!chatlog) return;
-  chatlog.innerHTML += `<div>🧍 ${text}</div>`;
+  chatlog.innerHTML += `<div class="user">🧍 ${text}</div>`;
   chatlog.scrollTop = chatlog.scrollHeight;
 }
 function formatCurrency(n){ return `S$${(n||0).toFixed(2)}`; }
@@ -353,6 +355,9 @@ function handleCommand(raw){
     balance: /(balance|余额|baki|இருப்பு|semakan baki|check balance)/i,
     transfer: /(transfer|转账|汇款|pindah|pindahan|பரிமாற்றம்)/i,
     activate: /(activate|激活|aktif|aktifkan|செயற்படுத்து)/i,
+    request_otp: /(request otp|send otp|send code|otp please|one time pass|one-time pass|send passcode|send pin)/i,
+    verify_otp: /(verify otp|verify code|my otp is|otp is|the code is|code is)/i,
+    set_password: /(change password|set password|reset password|new password|set pass)/i,
     menu: /(menu|home|主菜单|首页|utama|முகப்பு)/i,
     lang_en: /(english|inggeris|ஆங்கிலம்)/i,
     lang_zh: /(chinese|中文|华文|中文语言)/i,
@@ -384,6 +389,51 @@ function handleCommand(raw){
     logBot(i18n[currentLang].switched + " Transfer.");
     return;
   }
+  // OTP request
+  if (intents.request_otp.test(lower)){
+    // try to extract identifier (email or phone) from the text
+    const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+    const phoneMatch = text.match(/(\+?\d[\d\s\-]{6,}\d)/);
+    const identifier = emailMatch ? emailMatch[0] : (phoneMatch ? phoneMatch[0].replace(/\s|-/g,'') : null);
+    if (!identifier){ logBot('Please provide an email or phone number to send the OTP to.'); speak('Please provide an email or phone number to send the OTP to.'); return; }
+    lastOtpIdentifier = identifier;
+    logBot(`Requesting OTP for ${identifier}...`);
+    apiRequestOtp(identifier).then(r=>{
+      if (r.success === false) return logBot('Failed to request OTP: '+ (r.error||'unknown'));
+      logBot(r.message || 'OTP requested.');
+      if (r.otp) logBot(`(dev) OTP: ${r.otp}`);
+    }).catch(e=>{ logBot('Error requesting OTP'); console.error(e); });
+    return;
+  }
+
+  // OTP verify
+  if (intents.verify_otp.test(lower)){
+    const codeMatch = text.match(/(\d{4,6})/);
+    if (!codeMatch){ logBot('Please provide the numeric OTP code.'); speak('Please provide the numeric OTP code.'); return; }
+    const code = codeMatch[1];
+    const identifier = lastOtpIdentifier || null;
+    if (!identifier){ logBot('I don\'t know which account — please include email or phone when requesting the OTP.'); return; }
+    logBot('Verifying OTP...');
+    apiVerifyOtp(identifier, code).then(r=>{
+      if (r && r.tempToken){ tempOtpToken = r.tempToken; logBot('OTP verified. You can now set a new password with: "set password YOUR_NEW_PASSWORD".'); }
+      else logBot('OTP verification failed.');
+    }).catch(e=>{ logBot('OTP verification error'); console.error(e); });
+    return;
+  }
+
+  // set password
+  if (intents.set_password.test(lower)){
+    const pwMatch = text.match(/(?:to|is)\s+(.+)$/i);
+    const newPw = pwMatch ? pwMatch[1].trim() : null;
+    if (!newPw){ logBot('Please say: set password NEWPASSWORD'); return; }
+    if (!tempOtpToken){ logBot('No verified OTP token found. Please verify OTP first.'); return; }
+    logBot('Updating password...');
+    apiChangePasswordWithTempToken(tempOtpToken, newPw).then(r=>{
+      if (r && r.success){ tempOtpToken = null; logBot('Password updated successfully. You can now login.'); }
+      else logBot('Failed to change password: '+(r.error||JSON.stringify(r)));
+    }).catch(e=>{ logBot('Change password error'); console.error(e); });
+    return;
+  }
   if (intents.activate.test(lower)){
     showPage("activate");
     return;
@@ -395,6 +445,30 @@ function handleCommand(raw){
 
   logBot(i18n[currentLang].not_understood);
   speak(i18n[currentLang].not_understood);
+}
+
+// -----------------------------
+// API helpers for OTP & password
+// -----------------------------
+async function apiRequestOtp(identifier){
+  const res = await fetch('/auth/request-otp', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ identifier })
+  });
+  return res.json();
+}
+
+async function apiVerifyOtp(identifier, otp){
+  const res = await fetch('/auth/verify-otp', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ identifier, otp })
+  });
+  return res.json();
+}
+
+async function apiChangePasswordWithTempToken(tempToken, newPassword){
+  const res = await fetch('/auth/change-password', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ tempToken, newPassword })
+  });
+  return res.json();
 }
 
 // Text input
