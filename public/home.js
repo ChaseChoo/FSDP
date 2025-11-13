@@ -721,6 +721,6 @@ let lastOtpIdentifier = null;
   if (langSelectTop) langSelectTop.value = currentLang;
 
   logBot(
-    'ATM ready. Try: "withdraw 50 dollars" / "取现 50" / "keluarkan 50" / "50 பணம் எடு".'
+    'ATM ready.'
   );
 });
