@@ -320,6 +320,8 @@ let lastOtpIdentifier = null;
     target.classList.add("active");
     navHistory.push(name);
     updatePageVisibility();
+    // Announce numeric options for the page (ATM numeric-pad friendly)
+    displayMenuOptions(name);
   }
 
   function goBack() {
@@ -443,12 +445,139 @@ let lastOtpIdentifier = null;
     showPage("main");
   }
 
+  // Numeric menu system (ATM number-pad friendly)
+  let currentMenuPage = "main";
+
+  const menuMap = {
+    main: [
+      { key: 1, label: "Get Cash", action: () => showPage("cash") },
+      { key: 2, label: "Non Cash Services", action: () => showPage("noncash") },
+      { key: 3, label: "Balance enquiry", action: () => { updateBalanceUI(); showPage("balance"); } },
+      { key: 4, label: "Activate card", action: () => showPage("activate") },
+      { key: 5, label: "Transfer funds", action: () => showPage("transfer") },
+    ],
+    noncash: [
+      { key: 1, label: "Balance enquiry", action: () => { updateBalanceUI(); showPage("balance"); } },
+      { key: 2, label: "Transfer funds", action: () => showPage("transfer") },
+      { key: 3, label: "Activate card", action: () => showPage("activate") },
+      { key: 9, label: "Back", action: () => goBack() },
+    ],
+    cash: [
+      { key: 1, label: "S$50", action: () => selectDenomAmount(50) },
+      { key: 2, label: "S$80", action: () => selectDenomAmount(80) },
+      { key: 3, label: "S$100", action: () => selectDenomAmount(100) },
+      { key: 4, label: "S$500", action: () => selectDenomAmount(500) },
+      { key: 5, label: "Other amount", action: () => promptOtherAmount() },
+      { key: 9, label: "Confirm", action: () => immediateWithdraw(selectedCashAmount) },
+    ],
+    transfer: [
+      { key: 1, label: "Enter amount", action: () => focusTransferField(0) },
+      { key: 2, label: "To account", action: () => focusTransferField(1) },
+      { key: 3, label: "Bank", action: () => focusTransferField(2) },
+      { key: 4, label: "Payee name", action: () => focusTransferField(3) },
+      { key: 9, label: "Confirm", action: () => showPage("transferConfirm") },
+    ],
+    activate: [
+      { key: 1, label: "Card last 4", action: () => focusActivateField(0) },
+      { key: 2, label: "Enter OTP", action: () => focusActivateField(1) },
+      { key: 9, label: "Confirm", action: () => document.getElementById("activateConfirm") && document.getElementById("activateConfirm").click() },
+    ],
+  };
+
+  function displayMenuOptions(page) {
+    currentMenuPage = page || "main";
+    const opts = menuMap[currentMenuPage] || menuMap.main;
+    if (!opts || !opts.length) return;
+    // Log numbered options to the chat so user can press numbers on keypad
+    logBot("Options:");
+    const labels = opts.map((o) => `${o.key} — ${o.label}`);
+    labels.forEach((l) => logBot(l));
+    try {
+      // Speak a short prompt (not every option to avoid long speech)
+      speak("Press a number to choose an option.");
+    } catch {}
+  }
+
+  function getCurrentActivePage() {
+    for (const k of Object.keys(pages)) {
+      const el = pages[k];
+      if (el && el.classList.contains("active")) return k;
+    }
+    return "main";
+  }
+
+  function handleNumericSelection(input) {
+    const key = parseInt((input || "").toString().trim(), 10);
+    if (Number.isNaN(key)) return false;
+    const page = currentMenuPage || getCurrentActivePage();
+    const opts = menuMap[page] || menuMap.main;
+    const found = opts.find((o) => o.key === key);
+    if (!found) {
+      logBot(i18n[currentLang].not_understood || "Invalid selection.");
+      speak(i18n[currentLang].not_understood || "Invalid selection.");
+      return true;
+    }
+    // Execute action
+    try {
+      found.action();
+    } catch (e) {
+      console.error(e);
+    }
+    return true;
+  }
+
+  function selectDenomAmount(amount) {
+    denomButtons.forEach((b) => b.classList.remove("selected"));
+    const btn = denomButtons.find((b) => parseFloat(b.dataset.amount) === amount);
+    if (btn) btn.classList.add("selected");
+    selectedCashAmount = amount;
+    logBot(`${formatCurrency(amount)} selected.`);
+  }
+
+  function promptOtherAmount() {
+    const el = document.getElementById("cashOther");
+    if (el) {
+      el.focus();
+      logBot("Enter the amount using the number pad, then press Set.");
+      speak("Enter the amount then press Set.");
+    }
+  }
+
+  function focusTransferField(index) {
+    const inputs = Array.from(document.querySelectorAll("#transferPage .field-input"));
+    if (inputs[index]) {
+      inputs[index].focus();
+      logBot("Focused " + (inputs[index].placeholder || "field") + ". Enter digits then Confirm.");
+    }
+  }
+
+  function focusActivateField(index) {
+    const inputs = Array.from(document.querySelectorAll("#activatePage .field-input"));
+    if (inputs[index]) {
+      inputs[index].focus();
+      logBot("Focused " + (inputs[index].placeholder || "field") + ".");
+    }
+  }
+
   // Handle commands from input / voice
 
   function handleCommand(raw) {
     const text = (raw || "").trim();
     if (!text) return;
     const lower = text.toLowerCase();
+
+    // If the user input is numeric-only, route to numeric menu handler
+    if (/^\d{1,6}$/.test(text)) {
+      handleNumericSelection(text);
+      return;
+    }
+
+    // If user input is numeric-only, treat as numeric menu selection or amount
+    const numericOnly = /^\s*\d+\s*$/.test(text);
+    if (numericOnly) {
+      const handled = handleNumericSelection(text);
+      if (handled) return;
+    }
 
     const numMatch = text.replace(/,/g, "").match(/(\d+(\.\d+)?)/);
     const amount = numMatch ? parseFloat(numMatch[1]) : null;
@@ -664,6 +793,28 @@ let lastOtpIdentifier = null;
       toggleListening(micToggle.checked);
     });
   }
+
+  // Capture hardware/keyboard numeric presses when no input is focused
+  (function registerKeypadListener() {
+    document.addEventListener("keydown", (ev) => {
+      // ignore when typing into inputs or selects
+      const active = document.activeElement;
+      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT")) return;
+      const k = ev.key;
+      if (!k) return;
+      if (/^[0-9]$/.test(k)) {
+        // treat single key as numeric selection for the current menu
+        handleNumericSelection(k);
+        ev.preventDefault();
+      }
+      if (k === "Escape") {
+        goBack();
+      }
+      if (k === "*") {
+        // optional future use
+      }
+    });
+  })();
 
   // Language select
 

@@ -1,0 +1,18 @@
+/* Compact chat widget for login help */
+:root{--chat-width:320px;--chat-h:420px;--bg:#ffffff;--accent:#c41230;--muted:#6b7280}
+#login-chat{position:fixed;right:18px;bottom:18px;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;z-index:1200}
+#login-chat .chat-toggle{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:999px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.15)}
+#login-chat .chat-window{width:var(--chat-width);height:var(--chat-h);background:var(--bg);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.18);overflow:hidden;margin-top:12px;display:flex;flex-direction:column}
+#login-chat.collapsed .chat-window{display:none}
+#login-chat .chat-header{background:linear-gradient(90deg,var(--accent),#ff5a6a);color:#fff;padding:12px 14px;font-weight:700}
+#login-chat .chat-header{display:flex;align-items:center;justify-content:space-between}
+#login-chat .chat-header .chat-controls-top{display:flex;gap:8px;align-items:center}
+#login-chat .chat-header select{border-radius:6px;padding:6px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:#fff}
+#login-chat .chat-header .tts-btn{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.12);padding:6px 8px;border-radius:6px;cursor:pointer}
+#login-chat .chat-log{flex:1;padding:12px;overflow:auto;background:#fbfbfb}
+#login-chat .chat-log .bot{background:#fff;color:#111;border-radius:10px;padding:8px 10px;margin:8px 0;display:inline-block;max-width:90%}
+#login-chat .chat-log .user{background:#f5f5f5;color:#111;border-radius:10px;padding:8px 10px;margin:8px 0;display:inline-block;align-self:flex-end;max-width:90%}
+#login-chat .chat-controls{display:flex;padding:10px;border-top:1px solid #eee}
+#login-chat .chat-input{flex:1;padding:10px;border:1px solid #e6e6e6;border-radius:8px;font-size:0.95rem}
+#login-chat .chat-send{background:var(--accent);color:#fff;border:none;padding:8px 12px;margin-left:8px;border-radius:8px;cursor:pointer}
+@media (max-width:520px){#login-chat{right:10px;left:10px;bottom:10px}#login-chat .chat-window{width:auto;height:360px}}
