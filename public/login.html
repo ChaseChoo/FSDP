@@ -4,336 +4,297 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasyATM - Login</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        .login-container {
-            max-width: 500px;
-            margin: 32px auto;
-            padding: 30px;
-            background: var(--panel);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
-        
-        .login-tabs {
-            display: flex;
-            margin-bottom: 24px;
-            border-bottom: 2px solid var(--border);
-            background: var(--panel);
-            border-radius: var(--radius) var(--radius) 0 0;
-            overflow: hidden;
-        }
-        
-        .tab-button {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--muted);
-            transition: var(--transition);
-            border-bottom: 3px solid transparent;
-        }
-        
-        .tab-button.active {
-            color: var(--red);
-            border-bottom: 3px solid var(--red);
-            background: rgba(196, 18, 48, 0.05);
-        }
-        
-        .tab-button:hover {
-            background: rgba(196, 18, 48, 0.1);
-            color: var(--red);
-        }
-        
-        .tab-content {
-            display: none;
-            animation: fade 0.3s ease;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .qr-section {
-            padding: 22px 20px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin: 20px 0;
-        }
-        
-        #qr-canvas {
-            margin: 20px 0;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
-        
-        .status-message {
-            padding: 12px 14px;
-            border-radius: var(--radius);
-            margin: 15px 0;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-        
-        .status-waiting {
-            background: #fff5f5;
-            color: var(--red);
-            border: 1px dashed #ffbdbd;
-        }
-        
-        .status-success {
-            background: #f0f9ff;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .status-error {
-            background: #fef2f2;
-            color: var(--red);
-            border: 1px solid var(--red);
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 700;
-            color: var(--text);
-            font-size: 1rem;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            font-size: 1.05rem;
-            background: white;
-            color: var(--text);
-            transition: var(--transition);
-            box-sizing: border-box;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--red);
-            box-shadow: var(--focus);
-        }
-        
-        .btn {
-            background: var(--red);
-            color: white;
-            border: 2px solid transparent;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 1.05rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            width: 100%;
-            margin-top: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .btn:hover {
-            background: var(--red-light);
-        }
-        
-        .btn:disabled {
-            background: var(--muted);
-            cursor: not-allowed;
-        }
-        
-        .refresh-btn {
-            background: var(--muted);
-            font-size: 0.9rem;
-            padding: 8px 16px;
-            width: auto;
-            margin: 10px 5px;
-        }
-        
-        .refresh-btn:hover {
-            background: #545b62;
-        }
-        
-        .mobile-instructions {
-            background: #fff5f5;
-            border: 1px dashed #ffbdbd;
-            padding: 15px;
-            border-radius: var(--radius);
-            margin: 15px 0;
-            text-align: left;
-        }
-        
-        .mobile-instructions h4 {
-            margin: 0 0 10px 0;
-            color: var(--red);
-            font-weight: 700;
-        }
-        
-        .mobile-instructions ol {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        
-        .mobile-instructions li {
-            margin: 5px 0;
-            color: var(--text);
-        }
-        
-        .timer {
-            font-size: 0.9rem;
-            color: var(--muted);
-            margin: 10px 0;
-        }
-        
-        .brand {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .logo {
-            background: var(--red);
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: 900;
-            margin-bottom: 15px;
-        }
-        
-        .login-container h1 {
-            font-size: 1.8rem;
-            margin: 0 0 10px 0;
-            font-weight: 700;
-            color: var(--text);
-        }
-        
-        .login-container p {
-            color: var(--muted);
-            margin: 0 0 20px 0;
-        }
-        
-        .footer-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-            color: var(--muted);
-            font-size: 0.9rem;
-        }
-        
-        .footer-section p {
-            margin: 5px 0;
-        }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <div class="brand">
-            <div class="logo"><span>EA</span></div>
-            <h1>EasyATM Login</h1>
-            <p>Secure Banking Access</p>
-        </div>
-        
-        <div class="login-tabs">
-            <button class="tab-button active" onclick="switchTab('qr')">QR Login</button>
-            <button class="tab-button" onclick="switchTab('form')">Manual Login</button>
-            <button class="tab-button" onclick="switchTab('signup')">Sign Up</button>
-        </div>
-        
-        <!-- QR Code Login Tab -->
-        <div id="qr-tab" class="tab-content active">
-            <h3>Scan to Login</h3>
-            <div class="mobile-instructions">
-                <h4>📱 Mobile Login Instructions:</h4>
-                <ol>
-                    <li>Open your mobile banking app or camera</li>
-                    <li>Scan the QR code below</li>
-                    <li>Approve the login on your mobile device</li>
-                    <li>You'll be automatically logged in</li>
-                </ol>
-            </div>
-            
-            <div class="qr-section">
-                <canvas id="qr-canvas" width="200" height="200"></canvas>
-                <div id="qr-status" class="status-message status-waiting">
-                    🕐 Waiting for mobile authentication...
-                </div>
-                <div class="timer" id="qr-timer">Expires in: 5:00</div>
-                <button class="btn refresh-btn" onclick="refreshQR()">🔄 Refresh QR Code</button>
-            </div>
-        </div>
-        
-        <!-- Manual Login Tab -->
-        <div id="form-tab" class="tab-content">
-            <h3>Manual Login</h3>
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="email">Email or Phone:</label>
-                    <input type="text" id="email" name="email" required placeholder="Enter email or phone number">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required placeholder="Enter password">
-                </div>
-                <button type="submit" class="btn">🔐 Login</button>
-            </form>
-        </div>
-        
-        <!-- Signup Tab -->
-        <div id="signup-tab" class="tab-content">
-            <h3>Create Account</h3>
-            <form id="signup-form">
-                <div class="form-group">
-                    <label for="signup-name">Full Name:</label>
-                    <input type="text" id="signup-name" name="name" required placeholder="Enter your full name">
-                </div>
-                <div class="form-group">
-                    <label for="signup-email">Email:</label>
-                    <input type="email" id="signup-email" name="email" required placeholder="Enter your email">
-                </div>
-                <div class="form-group">
-                    <label for="signup-phone">Phone Number:</label>
-                    <input type="tel" id="signup-phone" name="phone" required placeholder="Enter phone number">
-                </div>
-                <div class="form-group">
-                    <label for="signup-password">Password:</label>
-                    <input type="password" id="signup-password" name="password" required placeholder="Create password">
-                </div>
-                <div class="form-group">
-                    <label for="signup-confirm">Confirm Password:</label>
-                    <input type="password" id="signup-confirm" name="confirmPassword" required placeholder="Confirm password">
-                </div>
-                <button type="submit" class="btn">✨ Create Account</button>
-            </form>
-        </div>
-        
-        <div class="footer-section">
-            <p>🔒 Your data is encrypted and secure</p>
-            <p>Need help? Contact support: 1800-EASYATM</p>
-        </div>
-    </div>
     
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    
+    <!-- Use home page styles -->
+    <link rel="stylesheet" href="home.css">
+</head>
+<body class="atm-body">
+    <main class="atm-shell">
+        <section class="atm-card">
+            <div class="atm-layout">
+                <!-- Main Login Area -->
+                <div class="atm-left">
+                    <!-- Header -->
+                    <div class="atm-header">
+                        <p class="atm-hello">Welcome back!</p>
+                        <h1 class="atm-title">EasyATM Login</h1>
+                    </div>
+        
+                    <!-- Login Options -->
+                    <div class="atm-pages">
+                        <section id="loginMenu" class="atm-page active">
+                            <div class="atm-main-grid">
+                                <button id="btnCardLogin" class="cta-card cta-primary hover-tts" onclick="window.location.href='/card-login'">
+                                    <div class="cta-row">
+                                        <div>
+                                            <p class="cta-title">Insert Card</p>
+                                            <p class="cta-sub">ATM Card + PIN</p>
+                                        </div>
+                                        <div class="cta-icon-pill">
+                                            <i data-lucide="credit-card" class="icon"></i>
+                                        </div>
+                                    </div>
+                                </button>
+
+                                <button id="btnMobileAuth" class="cta-card cta-outline hover-tts" onclick="window.location.href='/mobile-auth'">
+                                    <div class="cta-row">
+                                        <div>
+                                            <p class="cta-title">Mobile Banking</p>
+                                            <p class="cta-sub">Scan QR Code</p>
+                                        </div>
+                                        <div class="cta-icon-pill light">
+                                            <i data-lucide="smartphone" class="icon"></i>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <!-- ATM Help Options -->
+                            <div class="quick-services">
+                                <div class="quick-grid">
+                                    <button id="btnHelp" class="tile-card hover-tts">
+                                        <div class="tile-corner">
+                                            <i data-lucide="help-circle" class="icon-xs"></i>
+                                        </div>
+                                        <div class="tile-row">
+                                            <div class="tile-icon">
+                                                <i data-lucide="phone" class="icon"></i>
+                                            </div>
+                                            <div>
+                                                <p class="tile-title">Need Help?</p>
+                                                <p class="tile-sub">Call 1800-EASYATM</p>
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    <button id="btnAccessibility" class="tile-card hover-tts">
+                                        <div class="tile-corner">
+                                            <i data-lucide="volume-2" class="icon-xs"></i>
+                                        </div>
+                                        <div class="tile-row">
+                                            <div class="tile-icon">
+                                                <i data-lucide="accessibility" class="icon"></i>
+                                            </div>
+                                            <div>
+                                                <p class="tile-title">Audio Assistance</p>
+                                                <p class="tile-sub">Voice guidance</p>
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    <button id="btnLanguage" class="tile-card hover-tts">
+                                        <div class="tile-corner">
+                                            <i data-lucide="globe" class="icon-xs"></i>
+                                        </div>
+                                        <div class="tile-row">
+                                            <div class="tile-icon">
+                                                <i data-lucide="languages" class="icon"></i>
+                                            </div>
+                                            <div>
+                                                <p class="tile-title">Language</p>
+                                                <p class="tile-sub">English | 中文 | Melayu</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+        
+                        <!-- ATM Instructions Page -->
+                        <section id="instructions-tab" class="atm-page">
+                            <div class="page-header">
+                                <h2 class="page-title">How to Use This ATM</h2>
+                                <button class="ghost-btn backBtn hover-tts" type="button" onclick="switchTab('menu')">
+                                    <i data-lucide="arrow-left" class="icon-xs"></i>
+                                    <span>Back</span>
+                                </button>
+                            </div>
+
+                            <div class="quick-grid">
+                                <div class="balance-card" style="flex-direction: column; text-align: center; padding: 20px;">
+                                    <div class="balance-label" style="margin-bottom: 16px;">
+                                        <div class="balance-icon">
+                                            <i data-lucide="credit-card" class="icon"></i>
+                                        </div>
+                                        <span>Card Authentication</span>
+                                    </div>
+                                    <div class="confirm-box">
+                                        <p class="confirm-text">
+                                            <strong>Step 1:</strong> Insert your ATM card<br>
+                                            <strong>Step 2:</strong> Enter your 4-digit PIN<br>
+                                            <strong>Step 3:</strong> Select your transaction
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="balance-card" style="flex-direction: column; text-align: center; padding: 20px;">
+                                    <div class="balance-label" style="margin-bottom: 16px;">
+                                        <div class="balance-icon">
+                                            <i data-lucide="smartphone" class="icon"></i>
+                                        </div>
+                                        <span>Mobile Banking</span>
+                                    </div>
+                                    <div class="confirm-box">
+                                        <p class="confirm-text">
+                                            <strong>Step 1:</strong> Open mobile banking app<br>
+                                            <strong>Step 2:</strong> Scan QR code displayed<br>
+                                            <strong>Step 3:</strong> Approve on your device
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="page-actions">
+                                <button class="btn-primary hover-tts" onclick="window.location.href='/card-login'">
+                                    <i data-lucide="arrow-right" style="width: 16px; height: 16px; margin-right: 6px;"></i>
+                                    Start ATM Session
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Right Assistant Panel -->
+                <aside class="atm-right">
+                    <div class="topbar">
+                        <div class="mic-wrap">
+                            <div id="micToggleLabel" class="mic-toggle hover-tts">
+                                <div class="mic-track">
+                                    <div class="mic-knob"></div>
+                                </div>
+                                <div class="mic-labels">
+                                    <span class="mic-on">Listening</span>
+                                    <span class="mic-off">Mic Off</span>
+                                </div>
+                            </div>
+                            <input id="micToggle" type="checkbox" class="mic-hidden" />
+                        </div>
+
+                        <div class="top-right-controls">
+                            <select id="langSelectTop" class="lang-select">
+                                <option value="en">English</option>
+                                <option value="zh">中文</option>
+                                <option value="ms">Bahasa Melayu</option>
+                                <option value="ta">தமிழ்</option>
+                            </select>
+                            <div class="divider"></div>
+                            <button id="exitBtn" class="exit-btn hover-tts" type="button">
+                                <i data-lucide="log-out" class="icon"></i>
+                                <span class="exit-label">Exit</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Help Chat -->
+                    <div class="chat-shell">
+                        <div id="chatlog" class="chat-log">
+                            <div style="padding: 8px; color: #6b7280; text-align: center; font-size: 0.8rem;">
+                                <p><strong>Welcome to EasyATM!</strong></p>
+                                <p>This ATM supports voice commands and touch interface.</p>
+                                <p style="margin-top: 12px; font-size: 0.75rem;">Try: "Insert card" or "Show instructions"</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-row">
+                            <input id="userInput" type="text" class="chat-input" placeholder="Say 'insert card' or 'need help'..." />
+                            <button id="sendBtn" class="chat-send hover-tts" type="button">
+                                <i data-lucide="mic" class="icon-xs"></i>
+                            </button>
+                        </div>
+                        <div class="chat-footer">
+                            <div class="chat-tip">Tip: "insert card" or "instructions"</div>
+                            <select id="langSelect" class="lang-select-small">
+                                <option value="en">English</option>
+                                <option value="zh">中文</option>
+                                <option value="ms">Bahasa Melayu</option>
+                                <option value="ta">தமிழ்</option>
+                            </select>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+        <!-- Inline chatbot for help on login page -->
+        <link rel="stylesheet" href="login-chat.css">
+        <div id="login-chat" class="chat-widget collapsed" aria-hidden="true">
+            <button id="chatToggle" class="chat-toggle" aria-label="Open help chat">Help</button>
+            <div class="chat-window">
+                <div class="chat-header">
+                    <span>Help Assistant</span>
+                    <div class="chat-controls-top">
+                        <select id="chatLang" title="Language">
+                            <option value="en">English</option>
+                            <option value="zh">中文</option>
+                            <option value="ms">Bahasa</option>
+                            <option value="ta">தமிழ்</option>
+                        </select>
+                        <button id="chatTTS" class="tts-btn" title="Toggle speech">🔊</button>
+                    </div>
+                </div>
+                <div id="loginChatLog" class="chat-log"></div>
+                <div class="chat-controls">
+                    <input id="loginChatInput" class="chat-input" placeholder="Type 'forgot pin' or ask for access code" />
+                    <button id="loginChatSend" class="chat-send">Send</button>
+                </div>
+            </div>
+        </div>
+        <script src="login-chat.js"></script>
     <!-- QR Code Library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <!-- Login Logic -->
     <script src="login.js"></script>
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Navigation functions for ATM interface
+        function switchTab(tab) {
+            // Hide all pages
+            document.querySelectorAll('.atm-page').forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            if (tab === 'menu') {
+                document.getElementById('loginMenu').classList.add('active');
+            } else if (tab === 'instructions') {
+                document.getElementById('instructions-tab').classList.add('active');
+            }
+        }
+        
+        // Back button functionality
+        document.querySelectorAll('.backBtn').forEach(btn => {
+            btn.addEventListener('click', () => switchTab('menu'));
+        });
+
+        // Add click handlers for ATM help buttons
+        document.getElementById('btnHelp')?.addEventListener('click', () => {
+            switchTab('instructions');
+        });
+
+        document.getElementById('btnAccessibility')?.addEventListener('click', () => {
+            // Toggle audio assistance
+            const micToggle = document.getElementById('micToggle');
+            micToggle.checked = !micToggle.checked;
+            document.getElementById('micToggleLabel').classList.toggle('on', micToggle.checked);
+        });
+
+        document.getElementById('btnLanguage')?.addEventListener('click', () => {
+            // Cycle through languages
+            const langSelect = document.getElementById('langSelectTop');
+            const options = langSelect.options;
+            const currentIndex = langSelect.selectedIndex;
+            const nextIndex = (currentIndex + 1) % options.length;
+            langSelect.selectedIndex = nextIndex;
+        });
+    </script>
 </body>
 </html>

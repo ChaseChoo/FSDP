@@ -9,6 +9,12 @@ export async function createUser(userData) {
     
     try {
         const pool = await poolPromise;
+        
+        // Check if pool is available
+        if (!pool) {
+            throw new Error("Database connection not available");
+        }
+        
         const transaction = new mssql.Transaction(pool);
         
         await transaction.begin();
@@ -50,7 +56,11 @@ export async function createUser(userData) {
             return result.recordset[0];
             
         } catch (error) {
-            await transaction.rollback();
+            try {
+                await transaction.rollback();
+            } catch (rollbackError) {
+                console.error("Error rolling back transaction:", rollbackError);
+            }
             throw error;
         }
     } catch (error) {
@@ -62,6 +72,12 @@ export async function createUser(userData) {
 export async function authenticateUser(emailOrPhone, password) {
     try {
         const pool = await poolPromise;
+        
+        // Check if pool is available
+        if (!pool) {
+            throw new Error("Database connection not available");
+        }
+        
         const request = pool.request();
         
         request.input("identifier", mssql.NVarChar(200), emailOrPhone);
@@ -100,6 +116,11 @@ export async function authenticateUser(emailOrPhone, password) {
 export async function findUserByEmailOrPhone(emailOrPhone) {
     try {
         const pool = await poolPromise;
+        
+        if (!pool) {
+            throw new Error("Database connection not available");
+        }
+        
         const request = pool.request();
         
         request.input("identifier", mssql.NVarChar(200), emailOrPhone);

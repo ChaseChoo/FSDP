@@ -186,6 +186,9 @@ class LoginManager {
             confirmPassword: formData.get('confirmPassword')
         };
         
+        // Debug: Log the form data being sent
+        console.log('Signup data being sent:', signupData);
+        
         // Validate passwords match
         if (signupData.password !== signupData.confirmPassword) {
             alert('Passwords do not match');
@@ -207,7 +210,13 @@ class LoginManager {
                 alert('Account created successfully! You can now log in.');
                 switchTab('form'); // Switch to login tab
             } else {
-                alert(result.error || 'Signup failed. Please try again.');
+                // Show specific validation errors if available
+                if (result.details && result.details.length > 0) {
+                    alert('Validation errors:\n• ' + result.details.join('\n• '));
+                } else {
+                    alert(result.error || 'Signup failed. Please try again.');
+                }
+                console.error('Signup validation errors:', result.details);
             }
         } catch (error) {
             console.error('Signup error:', error);
@@ -274,7 +283,8 @@ function checkExistingAuth() {
     
     if (token && user) {
         // User is already logged in, redirect to main app
-        window.location.href = '/index.html';
+        // window.location.href = '/index.html'; // DISABLED FOR TESTING
+        console.log('User already logged in, but redirect disabled for testing');
     }
 }
 

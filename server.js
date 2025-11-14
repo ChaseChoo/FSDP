@@ -7,6 +7,8 @@ import authRoutes from "./routes/authRoutes.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import qrAuthRoutes from "./routes/qrAuthRoutes.js";
 import loginRoutes from "./routes/loginRoutes.js";
+import cardRoutes from "./routes/cardRoutes.js";
+import supportRoutes from "./routes/supportRoutes.js";
 import { sessionCount } from "./services/sessionStore.js";
 import fakeLogin from "./middleware/fakeLogin.js";
 import requireSession from "./middleware/requireSession.js";
@@ -54,17 +56,23 @@ app.use("/account", fakeLogin, accountRoutes);
 app.use("/auth", authRoutes);
 app.use("/api", qrAuthRoutes); // QR authentication and login/signup
 app.use("/api", loginRoutes); // Login and signup functionality
+app.use("/api/card", cardRoutes); // Card-based authentication
+app.use("/support", supportRoutes); // Support live agent demo
 
 // Transaction history API endpoint (JSON)
 app.get("/api/transactions", fakeLogin, requireSession, getTransactionHistory);
 
 // Serve frontend pages
 app.get("/", (req, res) => {
-  res.sendFile(path.resolve("public/login.html"));
+  res.sendFile(path.resolve("public/index.html"));
 });
 
 app.get("/login", (req, res) => {
   res.sendFile(path.resolve("public/login.html"));
+});
+
+app.get("/card-login", (req, res) => {
+  res.sendFile(path.resolve("public/card-login.html"));
 });
 
 app.get("/mobile-auth", (req, res) => {
