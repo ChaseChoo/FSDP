@@ -1,0 +1,22 @@
+{
+  "FAKE_USER": [
+    {
+      "Id": "dev-1762937003515-0.9071621673550456",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WITHDRAW",
+      "Amount": 100,
+      "BalanceAfter": 0,
+      "Description": null,
+      "CreatedAt": "2025-11-12T08:43:23.515Z"
+    },
+    {
+      "Id": "dev-1762936978406-0.8051404224658298",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "DEPOSIT",
+      "Amount": 100,
+      "BalanceAfter": 100,
+      "Description": null,
+      "CreatedAt": "2025-11-12T08:42:58.406Z"
+    }
+  ]
+}

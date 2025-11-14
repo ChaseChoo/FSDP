@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/account";
+const API_URL = "/account";
 
 // Simulate JWT login
 const fakeToken = "FAKE_JWT_TOKEN";
@@ -6,17 +6,23 @@ localStorage.setItem("token", fakeToken);
 
 async function getBalance() {
   const res = await fetch(`${API_URL}/balance`, {
+    credentials: "include",
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
   });
+  if (!res.ok) {
+    console.error("Balance fetch failed", res.status);
+    return;
+  }
   const data = await res.json();
   document.getElementById("balance").textContent = data.balance;
 }
 
 async function deposit() {
-  const amount = document.getElementById("amount").value;
+  const amount = Number(document.getElementById("amount").value);
   console.log("Depositing", amount);
   const res = await fetch(`${API_URL}/deposit`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -25,27 +31,36 @@ async function deposit() {
   });
   const data = await res.json();
   console.log("Deposit response:", data);
-  getBalance();
+  await getBalance();
 }
 
 async function withdraw() {
-  const amount = document.getElementById("amount").value;
-  await fetch(`${API_URL}/withdraw`, {  // remove extra /account
+  const amount = Number(document.getElementById("amount").value);
+  const res = await fetch(`${API_URL}/withdraw`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${localStorage.getItem("token")}`
     },
     body: JSON.stringify({ amount })
   });
-  getBalance();
+  if (!res.ok) console.error("Withdraw failed", res.status);
+  await getBalance();
 }
 
 async function getTransactions() {
-  const res = await fetch(`${API_URL}/transactions`, {
+  const res = await fetch(`/api/transactions`, {
+    credentials: "include",
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
   });
-  const data = await res.json();
+  if (!res.ok) {
+    console.error("Transactions fetch failed", res.status);
+    return;
+  }
+  const text = await res.text();
+  console.log("Response body:", text);
+  const data = JSON.parse(text);
   const tableBody = document.querySelector("#transactionTable tbody");
   tableBody.innerHTML = "";
   data.transactions.forEach(t => {
