@@ -34,11 +34,11 @@ app.use("/api/card", cardRoutes); // Card-based authentication
 
 // Serve frontend pages
 app.get("/", (req, res) => {
-  res.sendFile(path.resolve("public/card-login.html"));
+  res.sendFile(path.resolve("public/index.html"));
 });
 
 app.get("/login", (req, res) => {
-  res.sendFile(path.resolve("public/card-login.html"));
+  res.sendFile(path.resolve("public/login.html"));
 });
 
 app.get("/card-login", (req, res) => {

@@ -283,7 +283,8 @@ function checkExistingAuth() {
     
     if (token && user) {
         // User is already logged in, redirect to main app
-        window.location.href = '/index.html';
+        // window.location.href = '/index.html'; // DISABLED FOR TESTING
+        console.log('User already logged in, but redirect disabled for testing');
     }
 }
 

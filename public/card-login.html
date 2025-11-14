@@ -1,613 +1,457 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyATM - Card Login</title>
-    <link rel="stylesheet" href="styles-elderly.css">
-    <meta name="description" content="EasyATM Card Login - Safe and simple banking">
+    <title>ATM Card Authentication - EasyATM</title>
+    <link rel="stylesheet" href="home.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        .card-login-container {
+        .atm-interface {
+            max-width: 500px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            color: white;
+        }
+        
+        .screen {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 3px solid #475569;
+            min-height: 300px;
+            position: relative;
+        }
+        
+        .screen-content {
             text-align: center;
         }
         
-        .card-input, .pin-input {
+        .card-insertion-area {
+            text-align: center;
+            margin: 32px 0;
+        }
+        
+        .card-slot {
+            width: 220px;
+            height: 12px;
+            background: #374151;
+            margin: 24px auto;
+            border-radius: 6px;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card-slot::before {
+            content: "INSERT CARD HERE";
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .card-animation {
+            width: 200px;
+            height: 120px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 8px;
+            margin: 24px auto;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .card-animation.show {
+            display: block;
+            animation: cardInsert 2s ease-in-out;
+        }
+        
+        @keyframes cardInsert {
+            0% { transform: translateY(-100px) rotateY(15deg); opacity: 0; }
+            50% { transform: translateY(0) rotateY(0deg); opacity: 1; }
+            100% { transform: translateY(0) rotateY(0deg); opacity: 1; }
+        }
+        
+        .chip {
+            width: 24px;
+            height: 18px;
+            background: #fbbf24;
+            border-radius: 3px;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        
+        .card-number {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
             font-family: 'Courier New', monospace;
-            font-weight: bold;
-            text-align: center;
-            font-size: var(--font-lg);
-        }
-        
-        .card-input {
+            font-size: 14px;
+            color: white;
             letter-spacing: 2px;
         }
         
-        .pin-input {
-            letter-spacing: 8px;
-            font-size: 28px;
+        .pin-entry {
+            display: none;
+            text-align: center;
         }
         
-        .virtual-keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            max-width: 320px;
-            margin: 32px auto;
+        .pin-entry.show {
+            display: block;
         }
         
-        .keypad-btn {
-            font-size: 24px;
-            font-weight: bold;
-            min-height: 60px;
+        .pin-display {
+            background: #1e293b;
+            border: 2px solid #475569;
+            border-radius: 8px;
             padding: 16px;
-        }
-        
-        .keypad-btn.wide {
-            grid-column: span 2;
-        }
-        
-        .progress-step {
+            margin: 24px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            letter-spacing: 8px;
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            font-size: var(--font-lg);
-            font-weight: 600;
+            max-width: 300px;
+            margin: 0 auto;
         }
         
-        .form-group {
-            margin-bottom: 32px;
-        }
-        
-        .form-group label {
-            display: block;
-            font-size: var(--font-lg);
+        .keypad-btn {
+            background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
+            border: 2px solid #9ca3af;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 16px;
-            color: var(--text);
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 60px;
         }
         
-        .card-auth-title {
-            font-size: var(--font-xl);
-            margin: 0 0 16px 0;
-            font-weight: 700;
-            color: var(--text);
+        .keypad-btn:hover {
+            background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
+            transform: translateY(-2px);
         }
         
-        @media (max-width: 768px) {
-            .virtual-keypad {
-                max-width: 280px;
-                gap: 12px;
-            }
-            
-            .keypad-btn {
-                font-size: 20px;
-                min-height: 50px;
-            }
-            
-            .pin-input {
-                font-size: 24px;
-            }
+        .keypad-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+        
+        .keypad-secondary {
+            background: linear-gradient(to bottom, #9ca3af, #6b7280);
+            color: white;
+            font-size: 16px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            background: linear-gradient(to bottom, #dc2626, #b91c1c);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn.confirm {
+            background: linear-gradient(to bottom, #16a34a, #15803d);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 32px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #475569;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .status-message {
+            font-size: 18px;
+            margin: 16px 0;
+        }
+        
+        .error {
+            color: #ef4444;
+        }
+        
+        .success {
+            color: #10b981;
+        }
+        
+        .back-link {
+            color: #64748b;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: color 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        .back-link:hover {
+            color: #3b82f6;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <!-- Skip link for screen readers -->
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-    
-    <header class="header" role="banner">
-        <div class="brand">
-            <div class="logo" aria-hidden="true"><span>EA</span></div>
-            <div class="title">
-                <h1>EasyATM</h1>
-                <div class="subtitle">Card Authentication</div>
+    <div class="container">
+        <a href="/login" class="back-link">
+            <i data-lucide="arrow-left"></i>
+            Back to Login Options
+        </a>
+        
+        <header class="header">
+            <div class="logo">
+                <i data-lucide="landmark"></i>
+                <span>EasyATM</span>
             </div>
-        </div>
-        <div class="safe" role="group" aria-label="Safe Mode Toggle">
-            <input id="safemode" type="checkbox" checked aria-describedby="safe-description" />
-            <label for="safemode">🛡️ Safe Mode</label>
-        </div>
-    </header>
+        </header>
 
-    <!-- Safe Mode Description -->
-    <div id="safe-description" class="sr-only">
-        Safe Mode provides enhanced security during card authentication.
+        <main class="main-content">
+            <div class="atm-interface">
+                <div class="screen">
+                    <!-- Step 1: Card Insertion -->
+                    <div id="card-insertion" class="screen-content">
+                        <h2>Insert Your ATM Card</h2>
+                        <p>Please insert your ATM card into the slot below</p>
+                        
+                        <div class="card-insertion-area">
+                            <div class="card-slot"></div>
+                            <button onclick="insertCard()" class="keypad-btn" style="margin-top: 20px; width: 200px;">
+                                <i data-lucide="credit-card"></i>
+                                Insert Card
+                            </button>
+                        </div>
+                        
+                        <p style="font-size: 14px; color: #64748b; margin-top: 24px;">
+                            <i data-lucide="shield-check"></i>
+                            Your card information is protected with bank-level encryption
+                        </p>
+                    </div>
+                    
+                    <!-- Card Animation -->
+                    <div id="card-animation" class="card-animation">
+                        <div class="chip"></div>
+                        <div class="card-number">•••• •••• •••• 2222</div>
+                    </div>
+                    
+                    <!-- Step 2: PIN Entry -->
+                    <div id="pin-entry" class="pin-entry">
+                        <h2>Enter Your PIN</h2>
+                        <p>Please enter your 4-digit PIN</p>
+                        
+                        <div class="pin-display" id="pin-display">
+                            <span id="pin-dots"></span>
+                        </div>
+                        
+                        <div class="keypad">
+                            <button class="keypad-btn" onclick="enterDigit('1')">1</button>
+                            <button class="keypad-btn" onclick="enterDigit('2')">2</button>
+                            <button class="keypad-btn" onclick="enterDigit('3')">3</button>
+                            <button class="keypad-btn" onclick="enterDigit('4')">4</button>
+                            <button class="keypad-btn" onclick="enterDigit('5')">5</button>
+                            <button class="keypad-btn" onclick="enterDigit('6')">6</button>
+                            <button class="keypad-btn" onclick="enterDigit('7')">7</button>
+                            <button class="keypad-btn" onclick="enterDigit('8')">8</button>
+                            <button class="keypad-btn" onclick="enterDigit('9')">9</button>
+                            <button class="keypad-btn keypad-secondary" onclick="clearPin()">Clear</button>
+                            <button class="keypad-btn" onclick="enterDigit('0')">0</button>
+                            <button class="keypad-btn keypad-secondary" onclick="deleteDigit()">Delete</button>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="cancelTransaction()">Cancel</button>
+                            <button class="action-btn confirm" onclick="submitPin()" id="submit-btn" disabled>Enter</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div id="loading" class="loading">
+                        <div class="spinner"></div>
+                        <div class="status-message" id="status-message">Verifying your credentials...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <main id="main-content" class="card-login-container" role="main">
-        <h1 class="card-auth-title">💳 Card Authentication</h1>
-        <p style="font-size: var(--font-md); margin-bottom: 32px; color: var(--muted);">Please insert your card and enter your PIN to continue</p>
-        
-        <!-- Security Information -->
-        <div class="card" style="background: #fff3cd; border-color: #ffc107;">
-            <h3>🛡️ Your Security is Our Priority</h3>
-            <ul style="text-align: left; font-size: var(--font-md); line-height: 1.8;">
-                <li>Never share your PIN with anyone</li>
-                <li>Cover the keypad when entering your PIN</li>
-                <li>If you feel unsafe, cancel and leave immediately</li>
-                <li>Contact us at 1800-EASYATM if you need help</li>
-            </ul>
-        </div>
-        
-        <!-- Login Progress -->
-        <div class="card" id="progress-indicator" style="background: #e3f2fd; border-color: #2196f3;">
-            <div class="progress-step">
-                <span id="progress-icon" style="font-size: 24px;">💳</span>
-                <span id="progress-text" style="font-size: var(--font-lg); font-weight: 600;">Please insert your card</span>
-            </div>
-        </div>
-        
-        <!-- Card Visual -->
-        <div class="card" id="card-visual" style="display: none; background: linear-gradient(135deg, #c41230, #f94c57); color: white; border-color: var(--red);">
-            <h3 style="margin-top: 0;">🏦 EasyATM Card</h3>
-            <div class="card-number-display" id="card-display" style="font-family: 'Courier New', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px;">**** **** **** ****</div>
-            <div style="font-size: var(--font-sm); opacity: 0.9;">Keep this card safe</div>
-        </div>
-        
-        <!-- Login Form -->
-        <div class="card" id="card-login-form" style="display: none;">
-            <!-- Card Number Input -->
-            <div class="form-group">
-                <label for="card-number">
-                    💳 Card Number (16 digits)
-                </label>
-                <input 
-                    type="text" 
-                    id="card-number" 
-                    class="card-input"
-                    placeholder="1234 5678 9012 3456"
-                    maxlength="19"
-                    autocomplete="off"
-                    readonly
-                />
-            </div>
-            
-            <!-- PIN Input -->
-            <div class="form-group">
-                <label for="pin">
-                    🔐 Enter your 4-digit PIN
-                </label>
-                <input 
-                    type="password" 
-                    id="pin" 
-                    class="pin-input"
-                    placeholder="••••"
-                    maxlength="4"
-                    autocomplete="off"
-                    readonly
-                />
-            </div>
-            
-            <!-- Virtual Keypad -->
-            <div class="virtual-keypad" id="virtual-keypad">
-                <button type="button" class="btn keypad-btn" data-key="1">1</button>
-                <button type="button" class="btn keypad-btn" data-key="2">2</button>
-                <button type="button" class="btn keypad-btn" data-key="3">3</button>
-                <button type="button" class="btn keypad-btn" data-key="4">4</button>
-                <button type="button" class="btn keypad-btn" data-key="5">5</button>
-                <button type="button" class="btn keypad-btn" data-key="6">6</button>
-                <button type="button" class="btn keypad-btn" data-key="7">7</button>
-                <button type="button" class="btn keypad-btn" data-key="8">8</button>
-                <button type="button" class="btn keypad-btn" data-key="9">9</button>
-                <button type="button" class="btn keypad-btn" data-key="clear">Clear</button>
-                <button type="button" class="btn keypad-btn" data-key="0">0</button>
-                <button type="button" class="btn keypad-btn" data-key="backspace">⌫</button>
-            </div>
-            
-            <!-- Attempts Remaining -->
-            <div id="attempts-warning" class="card" style="display: none; background: #fff3e0; border-color: #ff9800; text-align: center; font-size: var(--font-lg); font-weight: 600;">
-                ⚠️ <span id="attempts-count">3</span> attempts remaining
-            </div>
-            
-            <!-- Error/Success Messages -->
-            <div id="error-message" class="card" style="display: none; background: #ffebee; border-color: #f44336; color: #c62828; text-align: center; font-size: var(--font-lg); font-weight: 600;"></div>
-            <div id="success-message" class="card" style="display: none; background: #e8f5e8; border-color: #4caf50; color: #2e7d32; text-align: center; font-size: var(--font-lg); font-weight: 600;"></div>
-            
-            <!-- Action Buttons -->
-            <div class="actions" style="justify-content: center;">
-                <button type="button" class="btn btn-ghost" onclick="cancelLogin()">
-                    ❌ Cancel
-                </button>
-                <button type="button" class="btn btn-primary" id="login-btn" onclick="submitLogin()" disabled>
-                    ✅ Login
-                </button>
-            </div>
-        </div>
-        
-        <!-- Help Section -->
-        <div class="card" style="background: #f0f9ff; border-color: #0ea5e9;">
-            <h3 style="margin-top: 0; color: #1976d2;">🆘 Need Help?</h3>
-            <div class="actions" style="justify-content: center;">
-                <button class="btn btn-secondary" onclick="playInstructions()">
-                    🔊 Audio Instructions
-                </button>
-                <button class="btn btn-secondary" onclick="callSupport()">
-                    📞 Call Support
-                </button>
-                <button class="btn btn-secondary" onclick="simulateCardInsert()">
-                    💳 Simulate Card Insert
-                </button>
-            </div>
-        </div>
-    </main>
-</div>
-
     <script>
-        class CardLoginManager {
-            constructor() {
-                this.cardInserted = false;
-                this.currentPin = '';
-                this.attemptsRemaining = 3;
-                this.isProcessing = false;
-                
-                this.init();
-            }
+        let pin = '';
+        let isProcessing = false;
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function insertCard() {
+            if (isProcessing) return;
             
-            init() {
-                this.setupEventListeners();
-                this.updateProgressIndicator();
-                
-                // Welcome message
-                setTimeout(() => {
-                    this.speak("Welcome to EasyATM. Please insert your card to begin.", 'normal');
-                }, 1500);
-            }
+            // Hide insertion screen
+            document.getElementById('card-insertion').style.display = 'none';
             
-            setupEventListeners() {
-                // Virtual keypad
-                document.getElementById('virtual-keypad').addEventListener('click', (e) => {
-                    if (e.target.matches('.keypad-btn')) {
-                        const key = e.target.getAttribute('data-key');
-                        this.handleKeypadPress(key);
-                    }
+            // Show card animation
+            const cardAnimation = document.getElementById('card-animation');
+            cardAnimation.classList.add('show');
+            
+            // After animation, show PIN entry
+            setTimeout(() => {
+                cardAnimation.style.display = 'none';
+                document.getElementById('pin-entry').classList.add('show');
+            }, 2500);
+        }
+
+        function enterDigit(digit) {
+            if (pin.length < 4 && !isProcessing) {
+                pin += digit;
+                updatePinDisplay();
+                
+                if (pin.length === 4) {
+                    document.getElementById('submit-btn').disabled = false;
+                }
+            }
+        }
+
+        function deleteDigit() {
+            if (pin.length > 0 && !isProcessing) {
+                pin = pin.slice(0, -1);
+                updatePinDisplay();
+                
+                if (pin.length < 4) {
+                    document.getElementById('submit-btn').disabled = true;
+                }
+            }
+        }
+
+        function clearPin() {
+            if (!isProcessing) {
+                pin = '';
+                updatePinDisplay();
+                document.getElementById('submit-btn').disabled = true;
+            }
+        }
+
+        function updatePinDisplay() {
+            const dots = '•'.repeat(pin.length);
+            document.getElementById('pin-dots').textContent = dots;
+        }
+
+        async function submitPin() {
+            if (pin.length !== 4 || isProcessing) return;
+            
+            isProcessing = true;
+            
+            // Hide PIN entry and show loading
+            document.getElementById('pin-entry').style.display = 'none';
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                const response = await fetch('/api/card/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cardNumber: '5555444433332222',
+                        pin: pin
+                    }),
                 });
+
+                const data = await response.json();
                 
-                // Physical keyboard support
-                document.addEventListener('keydown', (e) => {
-                    if (this.cardInserted) {
-                        this.handlePhysicalKey(e);
-                    }
-                });
-                
-                // Form validation
-                const cardInput = document.getElementById('card-number');
-                const pinInput = document.getElementById('pin');
-                
-                [cardInput, pinInput].forEach(input => {
-                    if (input) {
-                        input.addEventListener('input', () => this.validateForm());
-                    }
-                });
-            }
-            
-            handleKeypadPress(key) {
-                if (this.isProcessing) return;
-                
-                const pinInput = document.getElementById('pin');
-                const cardInput = document.getElementById('card-number');
-                
-                // Audio feedback
-                this.speak(key === 'clear' ? 'Clear' : key === 'backspace' ? 'Backspace' : key, 'quiet');
-                
-                // Visual feedback
-                event.target.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    event.target.style.transform = '';
-                }, 150);
-                
-                if (key === 'clear') {
-                    this.currentPin = '';
-                    if (pinInput) pinInput.value = '';
-                    this.clearMessages();
-                } else if (key === 'backspace') {
-                    this.currentPin = this.currentPin.slice(0, -1);
-                    if (pinInput) pinInput.value = '•'.repeat(this.currentPin.length);
-                } else if (/^\d$/.test(key) && this.currentPin.length < 4) {
-                    this.currentPin += key;
-                    if (pinInput) pinInput.value = '•'.repeat(this.currentPin.length);
-                }
-                
-                this.validateForm();
-                
-                // Auto-submit when PIN is complete
-                if (this.currentPin.length === 4 && this.canSubmit()) {
-                    setTimeout(() => this.submitLogin(), 500);
-                }
-            }
-            
-            handlePhysicalKey(e) {
-                if (e.key >= '0' && e.key <= '9') {
-                    e.preventDefault();
-                    this.handleKeypadPress(e.key);
-                } else if (e.key === 'Backspace') {
-                    e.preventDefault();
-                    this.handleKeypadPress('backspace');
-                } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    this.handleKeypadPress('clear');
-                } else if (e.key === 'Enter' && this.canSubmit()) {
-                    e.preventDefault();
-                    this.submitLogin();
-                }
-            }
-            
-            simulateCardInsert(cardNumber = '1234567812345678') {
-                if (this.cardInserted) {
-                    this.speak("Card already inserted", 'normal');
-                    return;
-                }
-                
-                this.speak("Card detected. Reading card information.", 'normal');
-                
-                // Simulate card reading delay
-                setTimeout(() => {
-                    this.cardInserted = true;
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
                     
-                    // Update display
-                    const cardInput = document.getElementById('card-number');
-                    const cardDisplay = document.getElementById('card-display');
-                    const cardVisual = document.getElementById('card-visual');
-                    const form = document.getElementById('card-login-form');
+                    document.getElementById('status-message').innerHTML = 
+                        '<span class="success">✓ Authentication successful!</span>';
                     
-                    // Format card number with spaces
-                    const formattedCard = cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
-                    const maskedCard = cardNumber.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '$1 **** **** $4');
-                    
-                    if (cardInput) cardInput.value = formattedCard;
-                    if (cardDisplay) cardDisplay.textContent = maskedCard;
-                    if (cardVisual) cardVisual.style.display = 'block';
-                    if (form) form.style.display = 'block';
-                    
-                    this.updateProgressIndicator();
-                    this.speak("Card accepted. Please enter your 4-digit PIN using the keypad.", 'normal');
-                    
-                    // Focus on PIN area
-                    const pinInput = document.getElementById('pin');
-                    if (pinInput) pinInput.focus();
-                    
-                }, 2000);
-            }
-            
-            async submitLogin() {
-                if (!this.canSubmit() || this.isProcessing) return;
-                
-                this.isProcessing = true;
-                const loginBtn = document.getElementById('login-btn');
-                
-                try {
-                    // Update UI
-                    if (loginBtn) {
-                        loginBtn.disabled = true;
-                        loginBtn.textContent = '🔄 Verifying...';
-                    }
-                    
-                    this.speak("Verifying your PIN. Please wait.", 'normal');
-                    this.clearMessages();
-                    
-                    const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
-                    
-                    const response = await fetch('/api/card/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            cardNumber: cardNumber,
-                            pin: this.currentPin
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (response.ok && result.success) {
-                        // Successful login
-                        this.showSuccess('Login successful! Welcome to EasyATM.');
-                        this.speak("Login successful. Redirecting to main menu.", 'normal');
-                        
-                        // Store authentication data
-                        localStorage.setItem('cardToken', result.token);
-                        localStorage.setItem('cardUser', JSON.stringify(result.user));
-                        localStorage.setItem('cardAccount', JSON.stringify(result.account));
-                        
-                        // Redirect after delay
-                        setTimeout(() => {
-                            window.location.href = '/index-elderly.html';
-                        }, 3000);
-                        
-                    } else {
-                        // Failed login
-                        this.attemptsRemaining--;
-                        
-                        if (this.attemptsRemaining > 0 && result.shouldRetry) {
-                            this.showError(`${result.error} ${this.attemptsRemaining} attempts remaining.`);
-                            this.speak(`Incorrect PIN. ${this.attemptsRemaining} attempts remaining.`, 'urgent');
-                            this.updateAttemptsDisplay();
-                            this.currentPin = '';
-                            document.getElementById('pin').value = '';
-                        } else {
-                            this.showError(result.error);
-                            this.speak(`${result.error} Please contact support if you need help.`, 'urgent');
-                            this.disableLogin();
-                        }
-                    }
-                    
-                } catch (error) {
-                    console.error('Login error:', error);
-                    this.showError('System error. Please try again or contact support.');
-                    this.speak("System error occurred. Please try again or contact support.", 'urgent');
-                    
-                } finally {
-                    this.isProcessing = false;
-                    
-                    // Reset login button
-                    if (loginBtn && this.attemptsRemaining > 0) {
-                        loginBtn.disabled = !this.canSubmit();
-                        loginBtn.textContent = '✅ Login';
-                    }
-                }
-            }
-            
-            canSubmit() {
-                const cardNumber = document.getElementById('card-number')?.value?.replace(/\s/g, '') || '';
-                return this.cardInserted && 
-                       cardNumber.length === 16 && 
-                       this.currentPin.length === 4 && 
-                       this.attemptsRemaining > 0;
-            }
-            
-            validateForm() {
-                const loginBtn = document.getElementById('login-btn');
-                if (loginBtn) {
-                    loginBtn.disabled = !this.canSubmit();
-                }
-            }
-            
-            updateProgressIndicator() {
-                const icon = document.getElementById('progress-icon');
-                const text = document.getElementById('progress-text');
-                
-                if (!this.cardInserted) {
-                    if (icon) icon.textContent = '💳';
-                    if (text) text.textContent = 'Please insert your card';
+                    setTimeout(() => {
+                        window.location.href = '/home.html';
+                    }, 2000);
                 } else {
-                    if (icon) icon.textContent = '🔐';
-                    if (text) text.textContent = 'Enter your PIN';
+                    throw new Error(data.message || 'Authentication failed');
                 }
-            }
-            
-            updateAttemptsDisplay() {
-                const warning = document.getElementById('attempts-warning');
-                const count = document.getElementById('attempts-count');
+            } catch (error) {
+                document.getElementById('status-message').innerHTML = 
+                    '<span class="error">✗ ' + error.message + '</span>';
                 
-                if (this.attemptsRemaining <= 2) {
-                    if (warning) warning.style.display = 'block';
-                    if (count) count.textContent = this.attemptsRemaining;
-                }
-            }
-            
-            disableLogin() {
-                const keypad = document.getElementById('virtual-keypad');
-                const loginBtn = document.getElementById('login-btn');
-                
-                if (keypad) {
-                    keypad.style.opacity = '0.5';
-                    keypad.style.pointerEvents = 'none';
-                }
-                
-                if (loginBtn) {
-                    loginBtn.disabled = true;
-                    loginBtn.textContent = '❌ Login Disabled';
-                }
-            }
-            
-            showError(message) {
-                const errorDiv = document.getElementById('error-message');
-                if (errorDiv) {
-                    errorDiv.textContent = message;
-                    errorDiv.style.display = 'block';
-                }
-                this.clearSuccess();
-            }
-            
-            showSuccess(message) {
-                const successDiv = document.getElementById('success-message');
-                if (successDiv) {
-                    successDiv.textContent = message;
-                    successDiv.style.display = 'block';
-                }
-                this.clearError();
-            }
-            
-            clearError() {
-                const errorDiv = document.getElementById('error-message');
-                if (errorDiv) errorDiv.style.display = 'none';
-            }
-            
-            clearSuccess() {
-                const successDiv = document.getElementById('success-message');
-                if (successDiv) successDiv.style.display = 'none';
-            }
-            
-            clearMessages() {
-                this.clearError();
-                this.clearSuccess();
-            }
-            
-            speak(text, priority = 'normal') {
-                if (!window.speechSynthesis) return;
-                
-                if (priority === 'urgent') {
-                    window.speechSynthesis.cancel();
-                }
-                
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = "en-SG";
-                utterance.rate = priority === 'quiet' ? 1.0 : 0.8;
-                utterance.volume = priority === 'quiet' ? 0.3 : 0.9;
-                
-                window.speechSynthesis.speak(utterance);
+                setTimeout(() => {
+                    pin = '';
+                    updatePinDisplay();
+                    isProcessing = false;
+                    
+                    document.getElementById('loading').classList.remove('show');
+                    document.getElementById('pin-entry').style.display = 'block';
+                }, 3000);
             }
         }
-        
-        // Global functions
-        function cancelLogin() {
-            if (confirm("Cancel login and return to welcome screen?")) {
-                location.reload();
+
+        function cancelTransaction() {
+            if (confirm('Are you sure you want to cancel this transaction?')) {
+                window.location.href = '/login';
             }
         }
-        
-        function playInstructions() {
-            const instructions = `
-                To use EasyATM with your card:
-                
-                Step 1: Insert your ATM card into the slot, or click Simulate Card Insert for demo.
-                Step 2: When prompted, enter your 4-digit PIN using the keypad on screen.
-                Step 3: Press the Login button or press Enter to continue.
-                
-                For security, never share your PIN with anyone. 
-                Cover the keypad when entering your PIN.
-                
-                If you make a mistake, use the Clear button to start over.
-                If you need help, call our support line at 1800 EASYATM.
-            `;
-            
-            loginManager.speak(instructions, 'normal');
-        }
-        
-        function callSupport() {
-            loginManager.speak("Calling EasyATM support. Please have your card ready.", 'normal');
-            
-            if (confirm("📞 Call EasyATM Support?\n1800-EASYATM (1800-327-9286)")) {
-                window.location.href = "tel:18003279286";
+
+        document.addEventListener('keydown', function(event) {
+            if (document.getElementById('pin-entry').classList.contains('show') && !isProcessing) {
+                if (event.key >= '0' && event.key <= '9') {
+                    enterDigit(event.key);
+                } else if (event.key === 'Backspace') {
+                    deleteDigit();
+                } else if (event.key === 'Enter' && pin.length === 4) {
+                    submitPin();
+                } else if (event.key === 'Escape') {
+                    clearPin();
+                }
             }
-        }
-        
-        function simulateCardInsert() {
-            loginManager.simulateCardInsert();
-        }
-        
-        // Initialize
-        let loginManager;
-        document.addEventListener('DOMContentLoaded', function() {
-            loginManager = new CardLoginManager();
         });
-        
-        // Check if user is already logged in
-        function checkExistingAuth() {
-            const token = localStorage.getItem('cardToken');
-            const user = localStorage.getItem('cardUser');
-            
-            if (token && user) {
-                // User is already logged in, redirect to main app
-                window.location.href = '/index-elderly.html';
-            }
-        }
-        
-        // Run auth check on page load
-        checkExistingAuth();
-        
-        console.log("🎯 EasyATM Card Login (Elderly-Optimized) Loaded Successfully!");
     </script>
 </body>
 </html>
