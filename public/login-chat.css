@@ -1,7 +1,7 @@
 /* Compact chat widget for login help */
 :root{--chat-width:320px;--chat-h:420px;--bg:#ffffff;--accent:#c41230;--muted:#6b7280}
 #login-chat{position:fixed;right:18px;bottom:18px;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;z-index:1200}
-#login-chat .chat-toggle{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:999px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.15)}
+#login-chat .chat-toggle{background:var(--accent);color:#fff;border:none;padding:16px 20px;border-radius:12px;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,0.18);font-size:1.05rem;font-weight:700;min-width:70px;min-height:48px}
 #login-chat .chat-window{width:var(--chat-width);height:var(--chat-h);background:var(--bg);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.18);overflow:hidden;margin-top:12px;display:flex;flex-direction:column}
 #login-chat.collapsed .chat-window{display:none}
 #login-chat .chat-header{background:linear-gradient(90deg,var(--accent),#ff5a6a);color:#fff;padding:12px 14px;font-weight:700}

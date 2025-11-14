@@ -158,63 +158,7 @@
                     </div>
                 </div>
 
-                <!-- Right Assistant Panel -->
-                <aside class="atm-right">
-                    <div class="topbar">
-                        <div class="mic-wrap">
-                            <div id="micToggleLabel" class="mic-toggle hover-tts">
-                                <div class="mic-track">
-                                    <div class="mic-knob"></div>
-                                </div>
-                                <div class="mic-labels">
-                                    <span class="mic-on">Listening</span>
-                                    <span class="mic-off">Mic Off</span>
-                                </div>
-                            </div>
-                            <input id="micToggle" type="checkbox" class="mic-hidden" />
-                        </div>
-
-                        <div class="top-right-controls">
-                            <select id="langSelectTop" class="lang-select">
-                                <option value="en">English</option>
-                                <option value="zh">中文</option>
-                                <option value="ms">Bahasa Melayu</option>
-                                <option value="ta">தமிழ்</option>
-                            </select>
-                            <div class="divider"></div>
-                            <button id="exitBtn" class="exit-btn hover-tts" type="button">
-                                <i data-lucide="log-out" class="icon"></i>
-                                <span class="exit-label">Exit</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Help Chat -->
-                    <div class="chat-shell">
-                        <div id="chatlog" class="chat-log">
-                            <div style="padding: 8px; color: #6b7280; text-align: center; font-size: 0.8rem;">
-                                <p><strong>Welcome to EasyATM!</strong></p>
-                                <p>This ATM supports voice commands and touch interface.</p>
-                                <p style="margin-top: 12px; font-size: 0.75rem;">Try: "Insert card" or "Show instructions"</p>
-                            </div>
-                        </div>
-                        <div class="chat-input-row">
-                            <input id="userInput" type="text" class="chat-input" placeholder="Say 'insert card' or 'need help'..." />
-                            <button id="sendBtn" class="chat-send hover-tts" type="button">
-                                <i data-lucide="mic" class="icon-xs"></i>
-                            </button>
-                        </div>
-                        <div class="chat-footer">
-                            <div class="chat-tip">Tip: "insert card" or "instructions"</div>
-                            <select id="langSelect" class="lang-select-small">
-                                <option value="en">English</option>
-                                <option value="zh">中文</option>
-                                <option value="ms">Bahasa Melayu</option>
-                                <option value="ta">தமிழ்</option>
-                            </select>
-                        </div>
-                    </div>
-                </aside>
+                <!-- Right Assistant Panel removed: login page uses compact Help button only -->
             </div>
         </section>
     </main>
@@ -281,19 +225,27 @@
         });
 
         document.getElementById('btnAccessibility')?.addEventListener('click', () => {
-            // Toggle audio assistance
             const micToggle = document.getElementById('micToggle');
-            micToggle.checked = !micToggle.checked;
-            document.getElementById('micToggleLabel').classList.toggle('on', micToggle.checked);
+            const micLabel = document.getElementById('micToggleLabel');
+            if (micToggle) {
+                micToggle.checked = !micToggle.checked;
+                if (micLabel) micLabel.classList.toggle('on', micToggle.checked);
+            } else {
+                // Fallback: toggle chat TTS if available
+                const ttsBtn = document.getElementById('chatTTS');
+                if (ttsBtn) ttsBtn.click();
+            }
         });
 
         document.getElementById('btnLanguage')?.addEventListener('click', () => {
-            // Cycle through languages
-            const langSelect = document.getElementById('langSelectTop');
+            // Cycle through available language selects (prefer top, then chat)
+            const langSelect = document.getElementById('langSelectTop') || document.getElementById('chatLang') || document.getElementById('langSelect');
+            if (!langSelect) return;
             const options = langSelect.options;
-            const currentIndex = langSelect.selectedIndex;
+            const currentIndex = langSelect.selectedIndex || 0;
             const nextIndex = (currentIndex + 1) % options.length;
             langSelect.selectedIndex = nextIndex;
+            if (langSelect.id === 'chatLang') langSelect.dispatchEvent(new Event('change'));
         });
     </script>
 </body>
