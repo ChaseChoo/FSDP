@@ -34,37 +34,29 @@
           <label for="method">PayNow Method</label>
           <select id="method" name="method" aria-label="Select method">
             <option>Mobile Number</option>
-            <option>NRIC/FIN</option>
-            <option>UEN</option>
-            <option>VPA (Virtual Payment Address)</option>
-            <option>Scan QR</option>
           </select>
           <div class="hint">Choose how to identify the recipient.</div>
         </div>
 
         <div class="row">
           <label for="recipient">Recipient</label>
-          <input id="recipient" name="recipient" type="text" placeholder="e.g., 9123 4567 / S1234567A / 20191888A" required />
-          <div class="hint">In Safe Mode, limit to your approved list (backend feature).</div>
+          <!-- This is an ATM-focused page: only allow digits for recipient (e.g., mobile number). -->
+          <input id="recipient" name="recipient" type="tel" inputmode="numeric" pattern="\d*" class="numeric-only" placeholder="e.g., 91234567" required aria-describedby="recipient-hint" />
+          <div id="recipient-hint" class="hint">Enter digits only (mobile/NRIC numeric identifier). In Safe Mode, limit to your approved list.</div>
         </div>
       </div>
 
       <div class="grid-2">
         <div class="row">
           <label for="amount">Amount (SGD)</label>
-          <input id="amount" name="amount" type="number" min="1" step="1" placeholder="Enter amount" required />
+          <!-- Numeric-only: keep type=number but add explicit inputmode and class for JS enforcement -->
+          <input id="amount" name="amount" type="number" inputmode="numeric" pattern="\d+" min="1" step="1" placeholder="Enter amount" class="numeric-only" required />
           <div class="chips" aria-label="Quick amounts">
             <span class="chip" aria-hidden="true">$10</span>
             <span class="chip" aria-hidden="true">$20</span>
             <span class="chip" aria-hidden="true">$50</span>
             <span class="chip" aria-hidden="true">$100</span>
           </div>
-        </div>
-
-        <div class="row">
-          <label for="purpose">Purpose (Optional)</label>
-          <input id="purpose" name="purpose" type="text" placeholder="E.g., Groceries, Allowance, Utilities" />
-          <div class="hint">Appears in your transaction history/receipt.</div>
         </div>
       </div>
 
@@ -80,9 +72,46 @@
     </form>
   </main>
 
-  <p class="footnotes">Tip: You can add Text-to-Speech to read labels and warnings aloud.</p>
+  
 </div>
   <script src="app.js"></script>
   <script src="fraud-detection-system.js"></script>
+  <script>
+    // Enforce numeric-only input for fields marked with .numeric-only
+    (function () {
+      function enforceDigits(el) {
+        if (!el) return;
+        // On input, strip non-digit characters
+        el.addEventListener('input', function (e) {
+          var start = el.selectionStart;
+          var cleaned = el.value.replace(/\D+/g, '');
+          if (el.value !== cleaned) {
+            el.value = cleaned;
+            try { el.setSelectionRange(start - 1, start - 1); } catch (err) { /* ignore */ }
+          }
+        });
+
+        // On paste, only insert digits
+        el.addEventListener('paste', function (e) {
+          e.preventDefault();
+          var text = '';
+          try { text = (e.clipboardData || window.clipboardData).getData('text'); } catch (err) { }
+          text = (text || '').replace(/\D+/g, '');
+          if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+            document.execCommand('insertText', false, text);
+          } else {
+            // Fallback: append
+            el.value = (el.value + text).replace(/\D+/g, '');
+          }
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        Array.prototype.slice.call(document.querySelectorAll('.numeric-only')).forEach(function (el) {
+          enforceDigits(el);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

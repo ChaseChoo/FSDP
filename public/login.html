@@ -222,6 +222,31 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
+        <!-- Inline chatbot for help on login page -->
+        <link rel="stylesheet" href="login-chat.css">
+        <div id="login-chat" class="chat-widget collapsed" aria-hidden="true">
+            <button id="chatToggle" class="chat-toggle" aria-label="Open help chat">Help</button>
+            <div class="chat-window">
+                <div class="chat-header">
+                    <span>Help Assistant</span>
+                    <div class="chat-controls-top">
+                        <select id="chatLang" title="Language">
+                            <option value="en">English</option>
+                            <option value="zh">中文</option>
+                            <option value="ms">Bahasa</option>
+                            <option value="ta">தமிழ்</option>
+                        </select>
+                        <button id="chatTTS" class="tts-btn" title="Toggle speech">🔊</button>
+                    </div>
+                </div>
+                <div id="loginChatLog" class="chat-log"></div>
+                <div class="chat-controls">
+                    <input id="loginChatInput" class="chat-input" placeholder="Type 'forgot pin' or ask for access code" />
+                    <button id="loginChatSend" class="chat-send">Send</button>
+                </div>
+            </div>
+        </div>
+        <script src="login-chat.js"></script>
     <!-- QR Code Library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     

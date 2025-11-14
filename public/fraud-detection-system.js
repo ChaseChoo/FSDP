@@ -1,10 +1,20 @@
-// Load/define approvedRecipients safely (try API, then localStorage, then defaults)
-const defaultApprovedRecipients = [
+// Prevent double-loading which causes duplicate const/let declarations when the script
+// is accidentally included more than once on the same page.
+if (window.__fraud_detection_system_loaded) {
+  try { console.warn('[fraud] fraud-detection-system.js already loaded; skipping second initialization'); } catch (e) {}
+} else {
+  window.__fraud_detection_system_loaded = true;
+
+  // Load/define approvedRecipients safely (try API, then localStorage, then defaults)
+  const defaultApprovedRecipients = [
   { id: 1, label: 'Self - Mobile', value: '91234567' },
   { id: 2, label: 'Partner - Mobile', value: '98765432' }
 ];
 
 let approvedRecipients = [];
+
+// Debug: confirm this script is loaded
+try { console.log('[fraud] fraud-detection-system.js loaded'); } catch (e) {}
 
 function normalizeNumber(input) {
   return String(input || '').replace(/\D/g, '');
@@ -73,8 +83,12 @@ function checkHighRiskTransaction(method, recipient, amount, purpose) {
   return riskScore;
 }
 
-document.querySelector("form")?.addEventListener("submit", function (e) {
-  e.preventDefault();
+// Attach on DOMContentLoaded to be robust; use capture so this runs before app.js handlers
+document.addEventListener('DOMContentLoaded', function () {
+  var theForm = document.querySelector('form');
+  if (!theForm) { try { console.warn('[fraud] form not found on page'); } catch (e) {} ; return; }
+  try { console.log('[fraud] attaching submit handler (capture)'); } catch (e) {}
+  theForm.addEventListener('submit', function (e) {
 
   const methodEl = document.getElementById("method");
   const recipientEl = document.getElementById("recipient");
@@ -88,12 +102,34 @@ document.querySelector("form")?.addEventListener("submit", function (e) {
   const amount = amountEl.value;
   const purpose = purposeEl ? purposeEl.value : "";
 
+  try { console.log('[fraud] submit handler running, amount=', amount, ' recipient=', recipient); } catch (e) {}
+
   // ATM constraint: recipient must contain only digits (no letters or symbols)
   if (!/^\d+$/.test(recipient)) {
     alert("Recipient must contain only numbers (digits 0-9). Remove spaces, letters or symbols.");
     // focus the field so user can correct
     recipientEl.focus();
+    // stop other submit handlers (they may redirect)
+    try { e.preventDefault(); e.stopImmediatePropagation(); } catch (err) { /* ignore */ }
     return;
+  }
+
+  // Immediate high-value warning: amounts >= 1000 should prompt the user.
+  const numericAmount = Number(amount);
+  if (Number.isFinite(numericAmount) && numericAmount >= 1000) {
+    // Block submission until user explicitly confirms for high-value transfers
+    if (typeof ttsSpeak === "function") {
+      ttsSpeak("Warning. Transactions of one thousand Singapore dollars or more are higher risk. Please verify the recipient and amount.");
+    }
+    var proceed = confirm("⚠️ Warning: Transactions of SGD 1,000 or more are higher risk. Do you want to continue?");
+    if (!proceed) {
+      // focus the amount field so user can correct or cancel
+      try { amountEl.focus(); } catch (err) { /* ignore */ }
+      // prevent other submit handlers from running (like app.js which redirects)
+      try { e.preventDefault(); e.stopImmediatePropagation(); } catch (err) { /* ignore */ }
+      try { console.log('[fraud] user cancelled high-value confirm'); } catch (e) {}
+      return; // stop submission
+    }
   }
 
   const risk = checkHighRiskTransaction(method, recipient, amount, purpose);
@@ -113,4 +149,7 @@ document.querySelector("form")?.addEventListener("submit", function (e) {
   localStorage.setItem("paynow_purpose", purpose);
 
   window.location.href = "confirm-paynow.html";
-});
+    }, true);
+  });
+
+} // end single-load guard
