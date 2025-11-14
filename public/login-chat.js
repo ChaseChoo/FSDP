@@ -91,6 +91,84 @@
 
   function speak(text){ if(!ttsEnabled || !text || !('speechSynthesis' in window)) return; const u = new SpeechSynthesisUtterance(text); u.lang = speechLang(currentLang); const v = pickVoice(currentLang); if(v) u.voice = v; u.rate = 1.0; u.pitch = 1.0; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
 
+  // Numeric menu for ATM numpad-friendly interaction
+  let currentMenu = 'main';
+  const menuMap = {
+    main: [
+      { key: 1, label: 'Forgot PIN', action: () => startForgotFlow() },
+      { key: 2, label: 'Get access code', action: () => startAccessFlow() },
+      { key: 3, label: 'Contact support', action: () => startSupportSession('Guest','User requests live agent') },
+      { key: 9, label: 'Exit', action: () => closeChat() },
+    ],
+    awaiting_identifier: [
+      { key: 9, label: 'Cancel', action: () => cancelFlow() }
+    ],
+    awaiting_otp: [
+      { key: 9, label: 'Cancel', action: () => cancelFlow() }
+    ],
+    awaiting_newpin: [
+      { key: 9, label: 'Cancel', action: () => cancelFlow() }
+    ]
+  };
+
+  function displayMenu(page){
+    currentMenu = page || 'main';
+    const opts = menuMap[currentMenu] || [];
+    appendBot('Options:');
+    opts.forEach(o => appendBot(`${o.key} — ${o.label}`));
+    speak('Press a number to choose an option.');
+  }
+
+  function handleNumericSelection(input){
+    const s = (''+input).trim();
+    if(!/^[0-9]{1,3}$/.test(s)) return false;
+    const key = parseInt(s,10);
+    const opts = menuMap[currentMenu] || [];
+    const found = opts.find(x => x.key === key);
+    if(!found){ appendBot(i18n[currentLang].not_understood); return true; }
+    try{ found.action(); }catch(e){ console.error(e); }
+    return true;
+  }
+
+  function startForgotFlow(){ appendBot(i18n[currentLang].reset_intro); promptForIdentifier(); }
+  function startAccessFlow(){ appendBot(i18n[currentLang].access_intro); promptForIdentifier(); }
+  function contactSupport(){ appendBot('Contact support: 1800-EASYATM or support@example.com'); }
+  
+  // Live support integration (demo): start session and stream via SSE
+  async function startSupportSession(name, initialMessage){
+    try{
+      const r = await fetch('/support/start',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name, initialMessage})});
+      const jb = await r.json();
+      if(jb && jb.sessionId){
+        state.supportSessionId = jb.sessionId;
+        appendBot('Connected to support. Session: ' + jb.sessionId);
+        connectSupportStream(jb.sessionId);
+        // inform agent console (for demo, agent page polls list)
+      }else{
+        appendBot('Could not start support session.');
+      }
+    }catch(e){ appendBot('Network error while starting support session.'); }
+  }
+
+  async function sendSupportMessage(text){
+    if(!state.supportSessionId) return;
+    try{
+      await fetch('/support/message',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sessionId: state.supportSessionId, from: 'user', message: text})});
+    }catch(e){ appendBot('Network error sending message to support.'); }
+  }
+
+  let supportEventSource = null;
+  function connectSupportStream(sessionId){
+    if(supportEventSource){ try{ supportEventSource.close(); }catch(e){} }
+    supportEventSource = new EventSource('/support/stream/'+sessionId);
+    supportEventSource.addEventListener('message', (e)=>{
+      try{ const m = JSON.parse(e.data); if(m.from === 'agent'){ appendBot('[Agent] '+m.text); } else { appendBot(m.text); } }catch(err){}
+    });
+    supportEventSource.onerror = ()=>{ /* ignore */ };
+  }
+  function closeChat(){ chatRoot.classList.add('collapsed'); chatRoot.setAttribute('aria-hidden','true'); }
+  function cancelFlow(){ state = { step: 'idle', identifier: null, tempToken: null }; appendBot('Cancelled.'); displayMenu('main'); }
+
   function appendBot(text){
     const d = document.createElement('div'); d.className='bot'; d.textContent = '🤖 '+text; logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight; try{ speak(text); }catch(e){}
   }
@@ -103,6 +181,7 @@
     const hidden = chatRoot.classList.contains('collapsed');
     chatRoot.setAttribute('aria-hidden', hidden ? 'true' : 'false');
     if(!hidden) input.focus();
+    if(!hidden){ displayMenu('main'); }
   });
 
   // language & TTS controls
@@ -110,6 +189,20 @@
   const ttsBtn = document.getElementById('chatTTS');
   if(langSel){ langSel.value = currentLang; langSel.addEventListener('change', ()=>{ currentLang = langSel.value; appendBot(i18n[currentLang].welcome); }); }
   if(ttsBtn){ ttsBtn.addEventListener('click', ()=>{ ttsEnabled = !ttsEnabled; ttsBtn.textContent = ttsEnabled ? '🔊' : '🔈'; }); ttsBtn.textContent = ttsEnabled ? '🔊' : '🔈'; }
+
+  // global keypad listener: when chat open and input not focused, single-digit keys act as menu selections
+  document.addEventListener('keydown', (ev) => {
+    if(chatRoot.classList.contains('collapsed')) return;
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return;
+    const k = ev.key;
+    if(!k) return;
+    if(/^[0-9]$/.test(k)){
+      handleNumericSelection(k);
+      ev.preventDefault();
+    }
+    if(k === 'Escape') closeChat();
+  });
 
   // simple intent detection
   function isForgotPin(text){ return /forgot.*pin|forgot.*pin number|forgot.*pin|reset pin/i.test(text); }
@@ -157,6 +250,17 @@
 
   function onSend(){
     const txt = (input.value||'').trim(); if(!txt) return; input.value=''; appendUser(txt);
+
+    // If currently in a live support session, send to support API
+    if(state.supportSessionId){
+      sendSupportMessage(txt);
+      return;
+    }
+
+    // If numeric-only and at idle or menu, treat as selection
+    if(/^\d{1,3}$/.test(txt) && (state.step === 'idle' || state.step === 'awaiting-identifier' || state.step === 'awaiting-otp' || state.step === 'awaiting-newpin')){
+      if(handleNumericSelection(txt)) return;
+    }
 
     if(state.step === 'idle'){
       if(isForgotPin(txt)){
