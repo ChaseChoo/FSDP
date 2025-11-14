@@ -1,4 +1,3 @@
-// middleware/requireSession.js
 import jwt from "jsonwebtoken";
 import { findSession } from "../services/sessionStore.js";
 import dotenv from "dotenv";
@@ -7,6 +6,19 @@ dotenv.config();
 const JWT_VERIFY_SECRET = process.env.JWT_VERIFY_SECRET || "";
 
 export default function requireSession(req, res, next) {
+  // If an earlier middleware already set req.user (e.g. DEV_ALLOW_ALL), skip verification
+  if (req.user) {
+    console.log("requireSession: skipping verification because req.user is already set ->", req.user);
+    return next();
+  }
+
+  // DEV: allow anonymous read access for GETs when enabled
+  if (process.env.DEV_ALLOW_READ === "true" && req.method === "GET") {
+    req.user = { externalId: "ANON", id: "anon", username: "anon", readonly: true };
+    console.log("requireSession: DEV_ALLOW_READ active — anonymous read access granted");
+    return next();
+  }
+
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith("Bearer ")) return res.status(401).json({ error: "Missing Authorization Bearer token" });
 

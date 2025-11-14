@@ -16,6 +16,9 @@ const dbConfig = {
   pool: { max: 10, min: 0, idleTimeoutMillis: 30000 },
 };
 
+// debug: confirm connection user
+console.log("MSSQL connecting as user:", dbConfig.user);
+
 const poolPromise = new mssql.ConnectionPool(dbConfig)
   .connect()
   .then(pool => {
