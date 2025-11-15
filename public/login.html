@@ -9,20 +9,352 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
     
-    <!-- Use home page styles -->
-    <link rel="stylesheet" href="home.css">
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            max-width: 800px;
+            width: 100%;
+            min-height: 500px;
+            display: flex;
+        }
+
+        .login-left {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-right {
+            flex: 1;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .login-header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 24px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #1f2937;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qr-section {
+            text-align: center;
+        }
+
+        .qr-code {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: inline-block;
+        }
+
+        .qr-timer {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .status-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 16px 0;
+            font-weight: 500;
+        }
+
+        .status-waiting {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .refresh-btn {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .refresh-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .alternative-login {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .alt-btn {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            color: #374151;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .alt-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                max-width: 400px;
+            }
+            
+            .login-right {
+                border-left: none;
+                border-top: 1px solid #e2e8f0;
+            }
+        }
+    </style>
 </head>
-<body class="atm-body">
-    <main class="atm-shell">
-        <section class="atm-card">
-            <div class="atm-layout">
-                <!-- Main Login Area -->
-                <div class="atm-left">
-                    <!-- Header -->
-                    <div class="atm-header">
-                        <p class="atm-hello">Welcome back!</p>
-                        <h1 class="atm-title">EasyATM Login</h1>
+<body>
+    <div class="login-container">
+        <div class="login-left">
+            <div class="logo">
+                <div class="logo-icon">EA</div>
+                <div class="logo-text">EasyATM</div>
+            </div>
+            
+            <div class="login-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to your account to continue</p>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('form')">Login Form</button>
+                <button class="tab-button" onclick="switchTab('qr')">QR Code</button>
+            </div>
+
+            <!-- Login Form Tab -->
+            <div id="form-tab" class="tab-content active">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email or Phone</label>
+                        <input class="form-input" type="text" id="email" name="email" required>
                     </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-input" type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">Sign In</button>
+                </form>
+                
+                <div style="text-align: center;">
+                    <button class="tab-button" onclick="switchTab('signup')" style="background: none; border: none; color: #667eea; cursor: pointer;">
+                        Don't have an account? Sign up
+                    </button>
+                </div>
+            </div>
+
+            <!-- Signup Form Tab -->
+            <div id="signup-tab" class="tab-content">
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label class="form-label" for="signup-name">Full Name</label>
+                        <input class="form-input" type="text" id="signup-name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signup-email">Email</label>
+                        <input class="form-input" type="email" id="signup-email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signup-phone">Phone</label>
+                        <input class="form-input" type="tel" id="signup-phone" name="phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signup-password">Password</label>
+                        <input class="form-input" type="password" id="signup-password" name="password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="signup-confirm">Confirm Password</label>
+                        <input class="form-input" type="password" id="signup-confirm" name="confirmPassword" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">Create Account</button>
+                </form>
+                
+                <div style="text-align: center;">
+                    <button class="tab-button" onclick="switchTab('form')" style="background: none; border: none; color: #667eea; cursor: pointer;">
+                        Already have an account? Sign in
+                    </button>
+                </div>
+            </div>
         
                     <!-- Login Options -->
                     <div class="atm-pages">
