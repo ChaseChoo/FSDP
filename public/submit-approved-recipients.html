@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Submit Approved Recipients — EasyATM</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .form-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .recipients { margin-top:16px; }
+    .recipient { display:flex; gap:8px; align-items:center; padding:8px; border:1px solid #eee; margin-bottom:6px; }
+    .recipient .v { flex:1; }
+    .btn { padding:6px 10px; cursor:pointer; }
+    .btn-danger { background:#e74c3c; color:white; border:none; }
+    .btn-primary { background:#2d89ff; color:white; border:none; }
+    .hint { color:#555; font-size:0.95rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="brand"><div class="logo" aria-hidden="true"><span>EA</span></div><div class="title"><h1>Approved Recipients</h1><div class="subtitle">Safe Mode — Manage your approved contacts</div></div></div>
+    </header>
+
+    <main class="card">
+      <p class="hint">Use this page to add phone numbers / identifiers you trust. The fraud detection system will check against this list (stored in localStorage). You can add labels for easy identification.</p>
+
+      <form id="add-form" class="row" onsubmit="return false;" aria-label="Add approved recipient">
+        <div class="form-row">
+          <input id="value" placeholder="Value (digits or ID) e.g. 91234567" aria-label="Recipient value" type="tel" inputmode="numeric" pattern="\d*" class="numeric-only" />
+          <button id="add-btn" class="btn btn-primary">Add</button>
+        </div>
+        <div class="hint">Value is stored normalized (non-digits removed). Recommended: mobile numbers or numeric IDs.</div>
+      </form>
+
+      <div class="recipients">
+        <h3>Your approved recipients</h3>
+        <div id="list"></div>
+        <div style="margin-top:12px;">
+          <button id="save-btn" class="btn btn-primary">Save to localStorage</button>
+          <button id="export-btn" class="btn">Export JSON</button>
+          <input id="import-file" type="file" accept="application/json" style="display:inline-block;margin-left:8px;" />
+          <button id="clear-btn" class="btn btn-danger">Clear all</button>
+        </div>
+      </div>
+
+      <p class="hint" style="margin-top:16px;">After saving, go to PayNow and toggle Safe Mode to use this list. The fraud detection script will fall back to localStorage when no API is available.</p>
+
+      <div style="margin-top:18px;"><a href="paynow.html" class="btn">Back to PayNow</a></div>
+    </main>
+  </div>
+
+      <script>
+    (function () {
+      function normalize(v){ return String(v||'').replace(/\D+/g,''); }
+      function uid(){ return Date.now() + Math.floor(Math.random()*1000); }
+
+      var listEl = document.getElementById('list');
+      var valueIn = document.getElementById('value');
+      var addBtn = document.getElementById('add-btn');
+      var saveBtn = document.getElementById('save-btn');
+      var exportBtn = document.getElementById('export-btn');
+      var importFile = document.getElementById('import-file');
+      var clearBtn = document.getElementById('clear-btn');
+
+      var items = []; // { id, value, serverId? }
+      var deletedServerIds = [];
+
+      async function tryLoadFromServer() {
+        try {
+          const resp = await fetch('/api/approved-recipients');
+          if (!resp.ok) throw new Error('no-server');
+          const json = await resp.json();
+          const serverList = json.approvedRecipients || [];
+          // merge serverList with local items: prefer local additions, but attach serverId where values match
+          const mapLocal = {};
+          items.forEach(it => { mapLocal[it.value] = it; });
+          serverList.forEach(s => {
+            const val = (s.Value || s.value || '').toString();
+            if (mapLocal[val]) {
+              mapLocal[val].serverId = s.Id || s.id;
+            } else {
+              items.push({ id: uid(), value: val, serverId: s.Id || s.id });
+            }
+          });
+          render();
+        } catch (err) {
+          // server not available or not authorized; keep local items
+          console.log('approved-recipients: server list not loaded', err.message || err);
+        }
+      }
+
+      function load(){
+        try{
+          var raw = localStorage.getItem('approvedRecipients');
+          if(raw){ items = JSON.parse(raw); }
+          else items = [];
+        }catch(e){ items = []; }
+        render();
+        // try to enrich with server data if possible (non-blocking)
+        tryLoadFromServer();
+      }
+
+      function render(){
+        listEl.innerHTML = '';
+        if(!items.length){ listEl.innerHTML = '<div class="hint">No approved recipients yet.</div>'; return; }
+        items.forEach(function(it){
+          var row = document.createElement('div'); row.className='recipient';
+          var txt = document.createElement('div'); txt.className='v'; txt.textContent = (it.value || '');
+          var edit = document.createElement('button'); edit.className='btn'; edit.textContent='Edit';
+          var del = document.createElement('button'); del.className='btn btn-danger'; del.textContent='Remove';
+          edit.addEventListener('click', function(){
+            var newValue = prompt('Value (digits or ID)', it.value || '');
+            if(newValue===null) return;
+            it.value = normalize(newValue) || newValue.trim();
+            render();
+          });
+          del.addEventListener('click', function(){
+            if (it.serverId) deletedServerIds.push(it.serverId);
+            items = items.filter(x=> x.id !== it.id);
+            render();
+          });
+          row.appendChild(txt); row.appendChild(edit); row.appendChild(del);
+          listEl.appendChild(row);
+        });
+      }
+
+      addBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        var value = (valueIn.value||'').trim();
+        if(!value){ alert('Please enter a value'); return; }
+        var normalized = normalize(value);
+        var entry = { id: uid(), value: normalized || value };
+        items.push(entry);
+        valueIn.value=''; valueIn.focus();
+        render();
+      });
+
+      async function syncWithServer(){
+        // Try to synchronize deletions and upserts to server. If any network/error occurs, fallback to saving locally.
+        try{
+          // delete first
+          for(const sid of deletedServerIds){
+            const dResp = await fetch('/api/approved-recipients/' + sid, { method: 'DELETE' });
+            if (!dResp.ok) console.warn('Failed delete', sid, dResp.status);
+          }
+          deletedServerIds = [];
+
+          // upsert items
+          for(const it of items){
+            if (it.serverId){
+              const p = await fetch('/api/approved-recipients/' + it.serverId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: it.value }) });
+              if (!p.ok) throw new Error('PUT failed');
+            } else {
+              const c = await fetch('/api/approved-recipients', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: it.value }) });
+              if (!c.ok) throw new Error('POST failed');
+              const j = await c.json();
+              const created = j.approvedRecipient || j;
+              if (created && (created.Id || created.id)) it.serverId = created.Id || created.id;
+            }
+          }
+
+          // persist local cache with server ids
+          localStorage.setItem('approvedRecipients', JSON.stringify(items.map(it => ({ id: it.id, value: it.value, serverId: it.serverId }))));
+          alert('Synced with server successfully.');
+        }catch(err){
+          console.error('Sync failed', err);
+          // fallback: save local only
+          try{ localStorage.setItem('approvedRecipients', JSON.stringify(items.map(it => ({ id: it.id, value: it.value, serverId: it.serverId })))); }catch(e){}
+          alert('Failed to sync to server; saved locally instead.');
+        }
+      }
+
+      saveBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        // attempt server sync; if it fails, we already fallback inside
+        syncWithServer();
+      });
+
+      exportBtn.addEventListener('click', function(){
+        var blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a'); a.href = url; a.download = 'approvedRecipients.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      });
+
+      importFile.addEventListener('change', function(e){
+        var f = e.target.files && e.target.files[0];
+        if(!f) return;
+        var r = new FileReader();
+        r.onload = function(){
+          try{ var data = JSON.parse(r.result); if(Array.isArray(data)){
+            // normalize and assign ids; accept arrays of strings or objects with value
+            data = data.map(function(it){ var val = typeof it === 'string' ? it : (it.value || ''); return { id: uid(), value: normalize(val) || val || '' }; });
+            items = items.concat(data); render();
+            alert('Imported ' + data.length + ' recipients. Click Save to persist.');
+          } else alert('JSON must be an array'); }catch(err){ alert('Failed to import: ' + err.message); }
+        };
+        r.readAsText(f);
+      });
+
+      clearBtn.addEventListener('click', function(){
+        if(!confirm('Clear all approved recipients from localStorage?')) return;
+        // attempt server-side deletes for any serverIds before clearing
+        deletedServerIds = items.filter(it => it.serverId).map(it => it.serverId);
+        items = [];
+        render();
+        try{ localStorage.removeItem('approvedRecipients'); }catch(e){}
+      });
+
+      // initial load
+      load();
+
+    })();
+  </script>
+  <script>
+    // Enforce numeric-only for elements with .numeric-only (typing & paste)
+    (function(){
+      function enforce(el){
+        if(!el) return;
+        el.addEventListener('input', function(){
+          var start = el.selectionStart;
+          var cleaned = el.value.replace(/\D+/g,'');
+          if(el.value !== cleaned){ el.value = cleaned; try{ el.setSelectionRange(start-1,start-1);}catch(e){} }
+        });
+        el.addEventListener('paste', function(e){
+          e.preventDefault();
+          var txt = '';
+          try{ txt = (e.clipboardData || window.clipboardData).getData('text'); }catch(e){}
+          txt = (txt||'').replace(/\D+/g,'');
+          if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+            document.execCommand('insertText', false, txt);
+          } else {
+            el.value = (el.value + txt).replace(/\D+/g,'');
+          }
+        });
+      }
+      document.querySelectorAll('.numeric-only').forEach(enforce);
+    })();
+  </script>
+  
+</body>
+</html>

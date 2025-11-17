@@ -9,6 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve the single-page UI from the `public/` folder so API and UI share the same origin.
+app.use(express.static('public'));
+
 const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -38,7 +41,7 @@ async function connectDb() {
 app.get('/api/approved-recipients', async (req, res) => {
   try {
     const pool = poolPromise || await sql.connect(dbConfig);
-    const result = await pool.request().query('SELECT id, label, value, created_at FROM approved_recipients ORDER BY id');
+    const result = await pool.request().query('SELECT id, value, created_at FROM approved_recipients ORDER BY id');
     res.json(result.recordset || []);
   } catch (err) {
     console.error(err);
@@ -48,14 +51,13 @@ app.get('/api/approved-recipients', async (req, res) => {
 
 app.post('/api/approved-recipients', async (req, res) => {
   try {
-    const { label = null, value } = req.body;
+    const { value } = req.body;
     if (!value || !/^\d+$/.test(String(value))) return res.status(400).json({ error: 'value is required and must be digits only' });
 
     const pool = poolPromise || await sql.connect(dbConfig);
     const request = pool.request();
-    request.input('label', sql.NVarChar(200), label);
     request.input('value', sql.NVarChar(50), String(value));
-    const insert = await request.query('INSERT INTO approved_recipients (label, value) OUTPUT INSERTED.id, INSERTED.label, INSERTED.value, INSERTED.created_at VALUES (@label, @value)');
+    const insert = await request.query('INSERT INTO approved_recipients (value) OUTPUT INSERTED.id, INSERTED.value, INSERTED.created_at VALUES (@value)');
     res.status(201).json(insert.recordset[0]);
   } catch (err) {
     console.error(err);
