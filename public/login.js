@@ -13,7 +13,7 @@ class LoginManager {
         this.setupEventListeners();
         this.generateQRCode();
     }
-    
+    n
     setupEventListeners() {
         // Form submissions
         document.getElementById('login-form').addEventListener('submit', (e) => {
@@ -49,7 +49,7 @@ class LoginManager {
             // Start the timer
             this.startTimer();
             
-            // Update status
+            // Update status  
             this.updateStatus('waiting', '🕐 Waiting for mobile authentication...');
             
             // Start polling for authentication
@@ -67,7 +67,7 @@ class LoginManager {
     
     startTimer() {
         let timeLeft = this.qrExpiryTime;
-        const timerElement = document.getElementById('qr-timer');
+        const timerElement = document.getElementById('qr-timer'); 
         
         this.qrTimer = setInterval(() => {
             const minutes = Math.floor(timeLeft / 60);
