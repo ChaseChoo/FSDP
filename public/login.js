@@ -278,8 +278,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Check if user is already logged in
 function checkExistingAuth() {
-    const token = localStorage.getItem('authToken');
+    let token = localStorage.getItem('authToken');
     const user = localStorage.getItem('user');
+    
+    // Check for legacy token format and migrate if needed
+    if (!token) {
+        const legacyToken = localStorage.getItem('token');
+        if (legacyToken) {
+            localStorage.setItem('authToken', legacyToken);
+            localStorage.removeItem('token');
+            token = legacyToken;
+            console.log('Migrated legacy token to authToken format');
+        }
+    }
     
     if (token && user) {
         // User is already logged in, redirect to main app
