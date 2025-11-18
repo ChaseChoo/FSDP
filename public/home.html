@@ -28,18 +28,30 @@
           <div class="atm-left">
             <!-- Header -->
             <div class="atm-header">
-              <p
-                class="atm-hello atm-i18n"
-                data-i18n="hello"
-              >
-                Hello!
-              </p>
-              <h1
-                class="atm-title atm-i18n"
-                data-i18n="what_do"
-              >
-                What would you like to do today?
-              </h1>
+              <div class="header-content">
+                <div>
+                  <p
+                    class="atm-hello atm-i18n"
+                    data-i18n="hello"
+                  >
+                    Hello!
+                  </p>
+                  <h1
+                    class="atm-title atm-i18n"
+                    data-i18n="what_do"
+                  >
+                    What would you like to do today?
+                  </h1>
+                </div>
+                <button id="logoutBtn" class="logout-btn" onclick="handleLogout()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                  End Session
+                </button>
+              </div>
             </div>
 
             <!-- Pending action banner (hidden by default) -->

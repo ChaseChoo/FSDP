@@ -6,7 +6,8 @@ import {
     cardChangePIN, 
     cardBlock, 
     verifyCardSession,
-    authenticateCardToken 
+    authenticateCardToken,
+    getDemoBalances
 } from '../controllers/cardController.js';
 
 const router = express.Router();
@@ -15,6 +16,7 @@ const router = express.Router();
 router.post('/login', cardLogin);
 router.post('/register', cardRegister); // For demo/testing purposes
 router.post('/change-pin', cardChangePIN);
+router.get('/demo-balances', getDemoBalances); // Fetch live demo account balances
 
 // Emergency routes
 router.post('/block', cardBlock);

@@ -1,7 +1,7 @@
 // routes/accountRoutes.js
 import express from "express";
 import requireSession from "../middleware/requireSession.js";
-import { deposit, withdraw, getBalance } from "../controllers/accountController.js";
+import { deposit, withdraw, getBalance, transfer } from "../controllers/accountController.js";
 import { getTransactionHistory } from "../controllers/transactionController.js";
 
 const router = express.Router();
@@ -10,6 +10,7 @@ const router = express.Router();
 router.get("/balance", requireSession, getBalance);
 router.post("/deposit", requireSession, deposit);
 router.post("/withdraw", requireSession, withdraw);
+router.post("/transfer", requireSession, transfer);
 
 // Transaction history
 router.get("/transactions", requireSession, getTransactionHistory);

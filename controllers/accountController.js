@@ -3,7 +3,7 @@ dotenv.config();
 
 import { poolPromise, mssql } from "../models/db.js";
 import { insertTransaction } from "../models/transactionModel.js";
-import { findAccountByUserId } from "../models/accountModel.js";
+import { findAccountByUserId, findAccountByAccountNumber, transferBetweenAccounts } from "../models/accountModel.js";
 import { findUserByExternalId } from "../models/userModel.js";
 import fs from "fs";
 import path from "path";
@@ -30,7 +30,7 @@ if (process.env.DEV_ALLOW_ALL === "true") {
 }
 
 // helper to get/set dev balance
-function getDevBalance(externalId) {
+export function getDevBalance(externalId) {
   if (!devBalances.has(externalId)) {
     devBalances.set(externalId, 0.00);
   }
@@ -85,21 +85,30 @@ export async function deposit(req, res) {
   if (isNaN(amount) || amount <= 0) return res.status(400).json({ error: "Amount must be positive number" });
 
   const externalId = req.user.externalId;
+  const userId = req.user.userId; // For card-based auth
 
   // DEV shortcut: don't touch DB
   if (process.env.DEV_ALLOW_ALL === "true") {
-    const old = getDevBalance(externalId);
+    // Use userId as key for card sessions, otherwise externalId
+    const key = userId ? `user-${userId}` : externalId;
+    const old = getDevBalance(key);
     const newBalance = old + amount;
-    setDevBalance(externalId, newBalance);
-    addDevTransaction(externalId, "DEPOSIT", amount, newBalance, description);
+    setDevBalance(key, newBalance);
+    addDevTransaction(key, "DEPOSIT", amount, newBalance, description);
     const transaction = { id: `dev-${Date.now()}`, Type: "DEPOSIT", Amount: amount, CreatedAt: new Date(), BalanceAfter: newBalance };
     return res.json({ message: "Deposit successful (dev)", newBalance, transaction });
   }
 
-  // production DB flow (unchanged)
+  // production DB flow
   try {
-    const user = await findUserByExternalId(externalId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    // Use userId directly for card-based auth, otherwise lookup by externalId
+    let user;
+    if (userId) {
+      user = { Id: userId };
+    } else {
+      user = await findUserByExternalId(externalId);
+      if (!user) return res.status(404).json({ error: "User not found" });
+    }
 
     const pool = await poolPromise;
     const trx = new mssql.Transaction(pool);
@@ -146,22 +155,31 @@ export async function withdraw(req, res) {
   if (isNaN(amount) || amount <= 0) return res.status(400).json({ error: "Amount must be positive number" });
 
   const externalId = req.user.externalId;
+  const userId = req.user.userId; // For card-based auth
 
   // DEV shortcut
   if (process.env.DEV_ALLOW_ALL === "true") {
-    const current = getDevBalance(externalId);
+    // Use userId as key for card sessions, otherwise externalId
+    const key = userId ? `user-${userId}` : externalId;
+    const current = getDevBalance(key);
     if (current < amount) return res.status(400).json({ error: "Insufficient funds (dev)" });
     const newBalance = current - amount;
-    setDevBalance(externalId, newBalance);
-    addDevTransaction(externalId, "WITHDRAW", amount, newBalance, description);
+    setDevBalance(key, newBalance);
+    addDevTransaction(key, "WITHDRAW", amount, newBalance, description);
     const transaction = { id: `dev-${Date.now()}`, Type: "WITHDRAW", Amount: amount, CreatedAt: new Date(), BalanceAfter: newBalance };
     return res.json({ message: "Withdrawal successful (dev)", newBalance, transaction });
   }
 
-  // production DB flow (unchanged)
+  // production DB flow
   try {
-    const user = await findUserByExternalId(externalId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    // Use userId directly for card-based auth, otherwise lookup by externalId
+    let user;
+    if (userId) {
+      user = { Id: userId };
+    } else {
+      user = await findUserByExternalId(externalId);
+      if (!user) return res.status(404).json({ error: "User not found" });
+    }
 
     const pool = await poolPromise;
     const trx = new mssql.Transaction(pool);
@@ -209,16 +227,25 @@ export async function withdraw(req, res) {
  */
 export async function getBalance(req, res) {
   const externalId = req.user.externalId;
+  const userId = req.user.userId; // For card-based auth
 
   // DEV shortcut
   if (process.env.DEV_ALLOW_ALL === "true") {
-    const balance = getDevBalance(externalId);
+    // Use userId as key for card sessions, otherwise externalId
+    const key = userId ? `user-${userId}` : externalId;
+    const balance = getDevBalance(key);
     return res.json({ balance, currency: "USD" });
   }
 
   try {
-    const user = await findUserByExternalId(externalId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    // Use userId directly for card-based auth, otherwise lookup by externalId
+    let user;
+    if (userId) {
+      user = { Id: userId };
+    } else {
+      user = await findUserByExternalId(externalId);
+      if (!user) return res.status(404).json({ error: "User not found" });
+    }
 
     const account = await findAccountByUserId(user.Id);
     if (!account) return res.status(404).json({ error: "Account not found" });
@@ -227,5 +254,114 @@ export async function getBalance(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error fetching balance" });
+  }
+}
+
+/**
+ * POST /account/transfer
+ */
+export async function transfer(req, res) {
+  const amount = Number(req.body.amount);
+  const toAccountNumber = req.body.toAccountNumber;
+  const description = req.body.description || null;
+
+  if (isNaN(amount) || amount <= 0) {
+    return res.status(400).json({ error: "Amount must be positive number" });
+  }
+
+  if (!toAccountNumber) {
+    return res.status(400).json({ error: "Recipient account number is required" });
+  }
+
+  const externalId = req.user.externalId;
+  const userId = req.user.userId; // For card-based auth
+
+  // DEV shortcut: simulate transfer between dev accounts
+  if (process.env.DEV_ALLOW_ALL === "true") {
+    // Use userId as key for card sessions, otherwise externalId
+    const key = userId ? `user-${userId}` : externalId;
+    const fromBalance = getDevBalance(key);
+    
+    if (fromBalance < amount) {
+      return res.status(400).json({ error: "Insufficient funds (dev)" });
+    }
+
+    // For dev mode, we'll use a simple map to track balances by account number
+    // The recipient account number becomes the key
+    const newFromBalance = fromBalance - amount;
+    setDevBalance(key, newFromBalance);
+    addDevTransaction(key, "TRANSFER_OUT", amount, newFromBalance, 
+      description || `Transfer to ${toAccountNumber}`);
+
+    // Update recipient balance (if they're also in dev mode)
+    const recipientBalance = getDevBalance(toAccountNumber);
+    const newRecipientBalance = recipientBalance + amount;
+    setDevBalance(toAccountNumber, newRecipientBalance);
+    addDevTransaction(toAccountNumber, "TRANSFER_IN", amount, newRecipientBalance, 
+      description || `Transfer from ${key}`);
+
+    return res.json({ 
+      message: "Transfer successful (dev)", 
+      newBalance: newFromBalance,
+      recipientAccount: toAccountNumber,
+      amount 
+    });
+  }
+
+  // Production DB flow
+  try {
+    // Use userId directly for card-based auth, otherwise lookup by externalId
+    let user;
+    if (userId) {
+      user = { Id: userId };
+    } else {
+      user = await findUserByExternalId(externalId);
+      if (!user) return res.status(404).json({ error: "User not found" });
+    }
+
+    // Get sender's account
+    const senderAccount = await findAccountByUserId(user.Id);
+    if (!senderAccount) {
+      return res.status(404).json({ error: "Your account not found" });
+    }
+
+    // Verify recipient account exists
+    const recipientAccount = await findAccountByAccountNumber(toAccountNumber);
+    if (!recipientAccount) {
+      return res.status(404).json({ error: "Recipient account not found" });
+    }
+
+    // Prevent self-transfer
+    if (senderAccount.Id === recipientAccount.AccountId) {
+      return res.status(400).json({ error: "Cannot transfer to your own account" });
+    }
+
+    // Perform the transfer
+    const result = await transferBetweenAccounts(
+      senderAccount.AccountNumber,
+      toAccountNumber,
+      amount,
+      description
+    );
+
+    return res.json({ 
+      message: "Transfer successful", 
+      fromAccount: result.fromAccount,
+      toAccount: result.toAccount,
+      amount: result.amount
+    });
+
+  } catch (err) {
+    console.error("Transfer error:", err);
+    
+    if (err.message === 'Insufficient funds') {
+      return res.status(400).json({ error: err.message });
+    }
+    
+    if (err.message === 'One or both accounts not found') {
+      return res.status(404).json({ error: err.message });
+    }
+
+    return res.status(500).json({ error: "Server error during transfer" });
   }
 }

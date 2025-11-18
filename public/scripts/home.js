@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // State
   let currentLang = "en";
-  let balance = 1240.0;
+  let balance = 0.0; // Will be loaded from API
   let selectedCashAmount = null;
   let navHistory = ["main"];
   let recognition = null;
@@ -45,6 +45,37 @@ document.addEventListener("DOMContentLoaded", () => {
 let tempOtpToken = null;
 let lastOtpIdentifier = null;
   let pendingWithdrawal = null; // { amount: number }
+
+  // Fetch balance from API
+  async function loadBalance() {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.warn('No token found, using default balance');
+        return;
+      }
+
+      const response = await fetch('/account/balance', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        balance = parseFloat(data.balance) || 0.0;
+        console.log('Balance loaded:', balance);
+        updateBalanceUI();
+      } else {
+        console.error('Failed to fetch balance:', response.status);
+      }
+    } catch (error) {
+      console.error('Error loading balance:', error);
+    }
+  }
 
   // I18N dictionaries
   const i18n = {
@@ -218,6 +249,18 @@ let lastOtpIdentifier = null;
         )}.`,
       balance_is: (bal) => `உங்கள் இருப்பு ${formatCurrency(bal)}.`,
     },
+  };
+
+  // Logout functionality
+  window.handleLogout = function() {
+    // Clear all stored data
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('cardNumber');
+    sessionStorage.clear();
+    
+    // Redirect to login page
+    window.location.href = '/login';
   };
 
   // Helpers
@@ -437,7 +480,7 @@ let lastOtpIdentifier = null;
     });
   }
 
-  function immediateWithdraw(amount) {
+  async function immediateWithdraw(amount) {
     const dict = i18n[currentLang];
     const amt = parseFloat(amount || 0);
 
@@ -453,16 +496,41 @@ let lastOtpIdentifier = null;
       return;
     }
 
-    balance -= amt;
-    updateBalanceUI();
-    logBot(dict.withdrawn_now(amt, balance));
-    speak(dict.withdraw_msg);
-    // show a brief on-screen success confirmation
-    try{ showSuccessBanner('Withdraw successful — ' + formatCurrency(amt)); }catch(e){}
-    // hide pending banner if present
-    try{ hidePendingBanner(); }catch(e){}
-    // after a short delay return to main menu so user sees confirmation
-    setTimeout(()=>{ showPage("main"); }, 900);
+    // Call API to process withdrawal
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/account/withdraw', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ amount: amt, description: 'ATM withdrawal' })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        balance = parseFloat(data.newBalance) || balance - amt;
+        updateBalanceUI();
+        logBot(dict.withdrawn_now(amt, balance));
+        speak(dict.withdraw_msg);
+        // show a brief on-screen success confirmation
+        try{ showSuccessBanner('Withdraw successful — ' + formatCurrency(amt)); }catch(e){}
+        // hide pending banner if present
+        try{ hidePendingBanner(); }catch(e){}
+        // after a short delay return to main menu so user sees confirmation
+        setTimeout(()=>{ showPage("main"); }, 900);
+      } else {
+        const error = await response.json();
+        logBot(`Error: ${error.error || 'Withdrawal failed'}`);
+        speak('Transaction failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Withdrawal error:', error);
+      logBot('Network error. Please try again.');
+      speak('Network error. Please try again.');
+    }
   }
 
   // Numeric menu system (ATM number-pad friendly)
@@ -965,7 +1033,7 @@ let lastOtpIdentifier = null;
     }, stepMs);
   }
 
-  function finalizeDeposit(amount){
+  async function finalizeDeposit(amount){
     // confirm amount against expected (if provided) and update balance
     const expected = depositInProgress ? depositInProgress.expected : 0;
     if(expected && expected > 0 && Math.abs(amount - expected) > 0.01){
@@ -975,17 +1043,46 @@ let lastOtpIdentifier = null;
       depositInProgress = null;
       return;
     }
-    // accept and update balance
-    balance += amount;
-    updateBalanceUI();
-    logBot(`Deposit accepted. ${formatCurrency(amount)} added to your account.`);
-    speak('Deposit accepted. Thank you.');
-    showSuccessBanner('Deposit successful — ' + formatCurrency(amount));
-    // cleanup UI
-    resetCountingUI();
-    depositInProgress = null;
-    // return to main after short delay
-    setTimeout(()=>{ showPage('main'); }, 1200);
+    
+    // Call API to process deposit
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/account/deposit', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ amount: amount, description: 'ATM deposit' })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        balance = parseFloat(data.newBalance) || balance + amount;
+        updateBalanceUI();
+        logBot(`Deposit accepted. ${formatCurrency(amount)} added to your account.`);
+        speak('Deposit accepted. Thank you.');
+        showSuccessBanner('Deposit successful — ' + formatCurrency(amount));
+        // cleanup UI
+        resetCountingUI();
+        depositInProgress = null;
+        // return to main after short delay
+        setTimeout(()=>{ showPage('main'); }, 1200);
+      } else {
+        const error = await response.json();
+        logBot(`Error: ${error.error || 'Deposit failed'}`);
+        speak('Transaction failed. Please try again.');
+        resetCountingUI();
+        depositInProgress = null;
+      }
+    } catch (error) {
+      console.error('Deposit error:', error);
+      logBot('Network error. Please try again.');
+      speak('Network error. Please try again.');
+      resetCountingUI();
+      depositInProgress = null;
+    }
   }
 
   if(startInsertBtn){ startInsertBtn.addEventListener('click', ()=>{
@@ -1141,6 +1238,9 @@ cachedVoices
   updatePageVisibility();
   if (langSelect) langSelect.value = currentLang;
   if (langSelectTop) langSelectTop.value = currentLang;
+
+  // Load balance from API on page load
+  loadBalance();
 
   logBot(
     'ATM ready.'

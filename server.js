@@ -35,18 +35,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// DEV: if you want the app to always behave as "logged in" for testing,
-// set DEV_ALLOW_ALL=true in your .env. This middleware sets a dev user
-// on every request before static files / routes are handled.
-if (process.env.DEV_ALLOW_ALL) {
-  app.use((req, res, next) => {
-    req.user = { externalId: "FAKE_USER", id: "dev-user", username: "dev" };
-    // optional debug:
-    console.log("DEV_ALLOW_ALL active - req.user injected for", req.method, req.path);
-    next();
-  });
-}
-
 // Serve static files from 'public' folder
 app.use(express.static("public"));
 

@@ -31,8 +31,21 @@ export default function requireSession(req, res, next) {
     return res.status(401).json({ error: "Invalid token" });
   }
 
-  // Expect payload.sub or payload.email as external id
-  const externalId = payload.sub || payload.email || payload.id;
+  // Check if this is a card-based ATM session (has externalId in payload)
+  if (payload.sessionType === 'ATM_CARD' && payload.externalId) {
+    req.user = { 
+      externalId: payload.externalId,
+      userId: payload.userId,
+      cardNumber: payload.cardNumber,
+      sessionType: 'ATM_CARD',
+      tokenPayload: payload
+    };
+    console.log("requireSession: ATM card session authenticated ->", req.user.externalId);
+    return next();
+  }
+
+  // Expect payload.sub or payload.email as external id (for non-card sessions)
+  const externalId = payload.sub || payload.email || payload.id || payload.externalId;
   if (!externalId) return res.status(400).json({ error: "Token payload missing external id (sub/email/id)" });
 
   const session = findSession(externalId);

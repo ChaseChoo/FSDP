@@ -258,17 +258,26 @@
         <main class="main-content">
             <div class="atm-interface">
                 <div class="screen">
-                    <!-- Step 1: Card Insertion -->
+                    <!-- Step 1: Card Selection -->
                     <div id="card-insertion" class="screen-content">
                         <h2>Insert Your ATM Card</h2>
-                        <p>Please insert your ATM card into the slot below</p>
+                        <p>Please select which card to insert</p>
                         
                         <div class="card-insertion-area">
                             <div class="card-slot"></div>
-                            <button onclick="insertCard()" class="keypad-btn" style="margin-top: 20px; width: 200px;">
-                                <i data-lucide="credit-card"></i>
-                                Insert Card
-                            </button>
+                            
+                            <div style="display: flex; gap: 16px; justify-content: center; margin-top: 24px;">
+                                <button onclick="insertCard('5555444433332222')" class="keypad-btn" style="width: 180px; background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                                    <i data-lucide="credit-card"></i>
+                                    Account 1<br>
+                                    <span id="acct1Balance" style="font-size: 11px; opacity: 0.8;">Loading...</span>
+                                </button>
+                                <button onclick="insertCard('4444333322221111')" class="keypad-btn" style="width: 180px; background: linear-gradient(135deg, #10b981, #059669);">
+                                    <i data-lucide="credit-card"></i>
+                                    Account 2<br>
+                                    <span id="acct2Balance" style="font-size: 11px; opacity: 0.8;">Loading...</span>
+                                </button>
+                            </div>
                         </div>
                         
                         <p style="font-size: 14px; color: #64748b; margin-top: 24px;">
@@ -325,13 +334,61 @@
 
     <script>
         let pin = '';
+        let cardNumber = '';
         let isProcessing = false;
 
         // Initialize Lucide icons
         lucide.createIcons();
 
-        function insertCard() {
+        // Format currency helper
+        function formatCurrency(amount, currency) {
+            const cur = currency || 'SGD';
+            try {
+                return new Intl.NumberFormat('en-SG', { 
+                    style: 'currency', 
+                    currency: cur,
+                    minimumFractionDigits: 2
+                }).format(Number(amount || 0));
+            } catch {
+                return `$${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+        }
+
+        // Load live balances from database
+        async function loadDemoBalances() {
+            try {
+                const res = await fetch('/api/card/demo-balances');
+                if (!res.ok) throw new Error('Failed to load balances');
+                
+                const data = await res.json();
+                if (data.success && data.accounts) {
+                    const acct1 = data.accounts.find(a => a.cardNumber === '5555444433332222');
+                    const acct2 = data.accounts.find(a => a.cardNumber === '4444333322221111');
+                    
+                    if (acct1) {
+                        document.getElementById('acct1Balance').textContent = formatCurrency(acct1.balance, acct1.currency);
+                    }
+                    if (acct2) {
+                        document.getElementById('acct2Balance').textContent = formatCurrency(acct2.balance, acct2.currency);
+                    }
+                    lucide.createIcons();
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                console.warn('Could not load live balances, using fallback:', error);
+                document.getElementById('acct1Balance').textContent = '$5,000.00';
+                document.getElementById('acct2Balance').textContent = '$7,500.00';
+            }
+        }
+
+        // Load balances on page load
+        loadDemoBalances();
+
+        function insertCard(selectedCardNumber) {
             if (isProcessing) return;
+            
+            cardNumber = selectedCardNumber;
             
             // Hide insertion screen
             document.getElementById('card-insertion').style.display = 'none';
@@ -398,7 +455,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        cardNumber: '5555444433332222',
+                        cardNumber: cardNumber,
                         pin: pin
                     }),
                 });
@@ -406,7 +463,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
                     document.getElementById('status-message').innerHTML = 

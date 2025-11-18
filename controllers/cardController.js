@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken';
 import { authenticateCard, createCard, changePIN, blockCard, logCardTransaction } from '../models/cardModel.js';
 import { findAccountByUserId, createAccountForUser } from '../models/accountModel.js';
+import { poolPromise, mssql } from '../models/db.js';
 
 const JWT_SECRET = process.env.JWT_VERIFY_SECRET || 'your-fallback-secret-key';
 const JWT_EXPIRES_IN = '24h'; // Shorter session for ATM security
@@ -14,8 +15,11 @@ export async function cardLogin(req, res) {
     try {
         const { cardNumber, pin } = req.body;
         
+        console.log('🔐 Card Login Attempt:', { cardNumber, pinLength: pin?.length });
+        
         // Input validation
         if (!cardNumber || !pin) {
+            console.log('❌ Missing credentials');
             return res.status(400).json({
                 success: false,
                 error: 'Card number and PIN are required',
@@ -26,8 +30,12 @@ export async function cardLogin(req, res) {
         // Clean card number (remove spaces and hyphens)
         const cleanCardNumber = cardNumber.replace(/[\s\-]/g, '');
         
+        console.log('🔍 Authenticating card:', cleanCardNumber);
+        
         // Authenticate card
         const authResult = await authenticateCard(cleanCardNumber, pin);
+        
+        console.log('📊 Auth result:', { success: authResult.success, error: authResult.error });
         
         if (!authResult.success) {
             return res.status(401).json({
@@ -352,5 +360,76 @@ export function authenticateCardToken(req, res, next) {
             success: false,
             error: 'Invalid session'
         });
+    }
+}
+
+/**
+ * GET /api/card/demo-balances
+ * Fetch current balances for the two demo accounts from the database
+ */
+export async function getDemoBalances(req, res) {
+    try {
+        // In DEV mode, get balances from in-memory store
+        if (process.env.DEV_ALLOW_ALL === 'true') {
+            const { getDevBalance } = await import('../controllers/accountController.js');
+            
+            // Card 5555444433332222 is userId 6, Card 4444333322221111 is userId 9
+            const accounts = [
+                {
+                    fullName: 'Test User ATM',
+                    cardNumber: '5555444433332222',
+                    accountNumber: 'ACC-5555444433332222',
+                    balance: getDevBalance('user-6'),
+                    currency: 'SGD'
+                },
+                {
+                    fullName: 'Demo User Two',
+                    cardNumber: '4444333322221111',
+                    accountNumber: 'ACC-4444333322221111',
+                    balance: getDevBalance('user-9'),
+                    currency: 'SGD'
+                }
+            ];
+            
+            return res.json({ success: true, accounts });
+        }
+        
+        // In production, query the database
+        const pool = await poolPromise;
+        if (!pool) {
+            return res.status(503).json({ success: false, error: 'Database not available' });
+        }
+        
+        const request = pool.request();
+        request.input('card1', mssql.NVarChar(20), '5555444433332222');
+        request.input('card2', mssql.NVarChar(20), '4444333322221111');
+        
+        const query = `
+            SELECT 
+                u.FullName,
+                u.CardNumber,
+                a.AccountNumber,
+                a.Balance,
+                a.Currency
+            FROM Users u
+            INNER JOIN Accounts a ON u.Id = a.UserId
+            WHERE u.CardNumber IN (@card1, @card2) AND a.Status = 'ACTIVE'
+            ORDER BY u.CardNumber
+        `;
+        
+        const result = await request.query(query);
+        
+        const accounts = result.recordset.map(r => ({
+            fullName: r.FullName,
+            cardNumber: r.CardNumber,
+            accountNumber: r.AccountNumber,
+            balance: parseFloat(r.Balance),
+            currency: r.Currency
+        }));
+        
+        res.json({ success: true, accounts });
+    } catch (error) {
+        console.error('getDemoBalances error:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch demo balances' });
     }
 }
