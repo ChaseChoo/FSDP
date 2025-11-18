@@ -42,6 +42,23 @@
               </h1>
             </div>
 
+            <!-- Pending action banner (hidden by default) -->
+            <div id="pendingBanner" class="pending-banner" aria-hidden="true" style="display:none;">
+              <div class="pending-content">
+                <div id="pendingText" class="pending-text">You requested to withdraw S$0.00</div>
+                <div class="pending-actions">
+                  <button id="pendingConfirmBtn" class="btn-primary">Confirm</button>
+                  <button id="pendingCancelBtn" class="btn-secondary">Cancel</button>
+                </div>
+              </div>
+            </div>
+            <!-- Success banner (shows briefly after actions) -->
+            <div id="successBanner" class="success-banner" aria-hidden="true" style="display:none;">
+              <div class="success-content">
+                <span id="successText">Withdraw successful</span>
+              </div>
+            </div>
+
             <!-- Pages Wrapper -->
             <div class="atm-pages">
               <!-- MAIN MENU -->
@@ -199,6 +216,24 @@
                         </div>
                       </div>
                     </button>
+
+                    <button
+                      id="btnDeposit"
+                      class="tile-card hover-tts"
+                    >
+                      <div class="tile-corner">
+                        <i data-lucide="package" class="icon-xs"></i>
+                      </div>
+                      <div class="tile-row">
+                        <div class="tile-icon">
+                          <i data-lucide="credit-card" class="icon"></i>
+                        </div>
+                        <div>
+                          <p class="tile-title">Deposit Cash</p>
+                          <p class="tile-sub">Insert cash to top-up balance</p>
+                        </div>
+                      </div>
+                    </button>
                   </div>
                 </div>
               </section>
@@ -291,6 +326,30 @@
                     >
                       Confirm
                     </button>
+                  </div>
+                </div>
+              </section>
+
+              <!-- DEPOSIT PAGE -->
+              <section id="depositPage" class="atm-page">
+                <div class="page-header">
+                  <h2 class="page-title">Deposit Cash</h2>
+                  <button class="ghost-btn backBtn hover-tts" type="button">
+                    <i data-lucide="arrow-left" class="icon-xs"></i>
+                    <span>Back</span>
+                  </button>
+                </div>
+
+                <div style="padding:18px;">
+                  <p>Enter the amount you plan to deposit, then press <strong>Insert Cash</strong>. When instructed, place the cash into the deposit slot.</p>
+                  <div style="display:flex; gap:10px; align-items:center; margin-top:12px;">
+                    <input id="depositAmount" type="number" min="1" step="1" placeholder="S$0" class="field-input" style="max-width:160px;" />
+                    <button id="startInsert" class="btn-primary">Insert Cash</button>
+                  </div>
+
+                  <div id="countingBox" style="margin-top:18px; display:none; padding:12px; border-radius:10px; border:1px solid #e5e7eb; background:#fff;">
+                    <div id="countingText">Waiting for cash insertion...</div>
+                    <div id="countProgress" style="margin-top:8px; height:8px; background:#f3f4f6; border-radius:6px; overflow:hidden;"><div id="countBar" style="width:0%; height:100%; background:#10b981;"></div></div>
                   </div>
                 </div>
               </section>

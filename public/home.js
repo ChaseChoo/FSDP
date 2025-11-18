@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pages = {
     main: document.getElementById("mainMenu"),
     cash: document.getElementById("cashPage"),
+    deposit: document.getElementById("depositPage"),
     noncash: document.getElementById("nonCashPage"),
     balance: document.getElementById("balancePage"),
     activate: document.getElementById("activatePage"),
@@ -23,6 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const micToggle = document.getElementById("micToggle");
   const micToggleLabel = document.getElementById("micToggleLabel");
   const exitBtn = document.getElementById("exitBtn");
+  const pendingBanner = document.getElementById('pendingBanner');
+  const pendingText = document.getElementById('pendingText');
+  const pendingConfirmBtn = document.getElementById('pendingConfirmBtn');
+  const pendingCancelBtn = document.getElementById('pendingCancelBtn');
+  const successBanner = document.getElementById('successBanner');
+  const successText = document.getElementById('successText');
 
   const tfMode = document.getElementById("tfMode");
 
@@ -37,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let cachedVoices = [];
 let tempOtpToken = null;
 let lastOtpIdentifier = null;
+  let pendingWithdrawal = null; // { amount: number }
 
   // I18N dictionaries
   const i18n = {
@@ -449,7 +457,12 @@ let lastOtpIdentifier = null;
     updateBalanceUI();
     logBot(dict.withdrawn_now(amt, balance));
     speak(dict.withdraw_msg);
-    showPage("main");
+    // show a brief on-screen success confirmation
+    try{ showSuccessBanner('Withdraw successful — ' + formatCurrency(amt)); }catch(e){}
+    // hide pending banner if present
+    try{ hidePendingBanner(); }catch(e){}
+    // after a short delay return to main menu so user sees confirmation
+    setTimeout(()=>{ showPage("main"); }, 900);
   }
 
   // Numeric menu system (ATM number-pad friendly)
@@ -462,6 +475,7 @@ let lastOtpIdentifier = null;
       { key: 3, label: "Balance enquiry", action: () => { updateBalanceUI(); showPage("balance"); } },
       { key: 4, label: "Activate card", action: () => showPage("activate") },
       { key: 5, label: "Transfer funds", action: () => showPage("transfer") },
+      { key: 6, label: "Deposit cash", action: () => showPage("deposit") },
     ],
     noncash: [
       { key: 1, label: "Balance enquiry", action: () => { updateBalanceUI(); showPage("balance"); } },
@@ -566,12 +580,85 @@ let lastOtpIdentifier = null;
     }
   }
 
+  // Try to convert simple number words to numbers (e.g., "fifty" -> 50)
+  function wordsToNumber(str) {
+    if (!str) return null;
+    const small = {
+      zero:0, one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9,
+      ten:10, eleven:11, twelve:12, thirteen:13, fourteen:14, fifteen:15, sixteen:16,
+      seventeen:17, eighteen:18, nineteen:19
+    };
+    const tens = { twenty:20, thirty:30, forty:40, fifty:50, sixty:60, seventy:70, eighty:80, ninety:90 };
+    const parts = str.toLowerCase().replace(/[^a-z0-9\s-]/g,' ').split(/\s|-/).filter(Boolean);
+    let total = 0; let last = 0;
+    for (const p of parts) {
+      if (small[p] !== undefined) { last += small[p]; }
+      else if (tens[p] !== undefined) { last += tens[p]; }
+      else if (p === 'hundred') { last = last === 0 ? 100 : last * 100; }
+      else if (/^\d+$/.test(p)) { last += parseInt(p,10); }
+      else if (/^(\d+)(\.\d+)?$/.test(p)) { last += parseFloat(p); }
+      else { /* ignore unknown words */ }
+    }
+    total += last;
+    return total || null;
+  }
+
+  // Flash/highlight all major options briefly (used when ATM announces ready)
+  function flashAllOptions(duration = 1200) {
+    try{
+      const selectors = ['.cta-card', '.tile-card', '.denom-btn', '.btn-primary'];
+      const els = Array.from(document.querySelectorAll(selectors.join(',')));
+      els.forEach((el)=> el.classList.add('flash-highlight'));
+      setTimeout(()=> els.forEach((el)=> el.classList.remove('flash-highlight')), duration);
+    }catch(e){}
+  }
+
   // Handle commands from input / voice
 
   function handleCommand(raw) {
     const text = (raw || "").trim();
     if (!text) return;
     const lower = text.toLowerCase();
+
+    // If we have a pending withdrawal, accept confirmation via voice/text
+    if (pendingWithdrawal) {
+      const affirm = /(yes|confirm|okay|ok|confirmar|ya|sure)/i;
+      const deny = /(no|cancel|not now|don't|dont|nope)/i;
+      if (affirm.test(lower)) {
+        logBot(`Confirmed. Processing withdrawal of ${formatCurrency(pendingWithdrawal)}.`);
+        speak(`Confirmed. Dispensing ${formatCurrency(pendingWithdrawal)}.`);
+        hidePendingBanner();
+        immediateWithdraw(pendingWithdrawal);
+        pendingWithdrawal = null;
+        return;
+      }
+      if (deny.test(lower)) {
+        logBot('Withdrawal cancelled.');
+        speak('Cancelled.');
+        hidePendingBanner();
+        pendingWithdrawal = null;
+        return;
+      }
+      // if neither yes/no, prompt user to confirm
+      logBot('Please say "yes" to confirm or "no" to cancel.');
+      speak('Please say yes to confirm or no to cancel.');
+      return;
+    }
+
+    // If a deposit is in progress (counting), allow voice to cancel or confirm
+    if (depositInProgress) {
+      const affirm = /(yes|confirm|okay|ok|sure|continue)/i;
+      const deny = /(no|cancel|stop|abort|don't|dont|nope)/i;
+      if (deny.test(lower)) {
+        // cancel deposit counting
+        try{ if(countInterval) { clearInterval(countInterval); countInterval = null; } resetCountingUI(); depositInProgress = null; logBot('Deposit cancelled.'); speak('Cancelled.'); }catch(e){}
+        return;
+      }
+      if (affirm.test(lower) && depositInProgress.inserted && depositInProgress.inserted>0) {
+        try{ const amt = depositInProgress.inserted; finalizeDeposit(amt); }catch(e){}
+        return;
+      }
+    }
 
     // If the user input is numeric-only, route to numeric menu handler
     if (/^\d{1,6}$/.test(text)) {
@@ -592,6 +679,8 @@ let lastOtpIdentifier = null;
     const intents = {
       withdraw:
         /(withdraw|get cash|取现|提取|提款|keluar|pengeluaran|tarik|wang|பணம் எடு|எடு|வெளியேற்று)/i,
+      deposit:
+        /(deposit|top up|top-up|topup|insert cash|存入|存款|depositar|simpan|masukkan|setorkan)/i,
       balance:
         /(balance|余额|baki|இருப்பு|semakan baki|check balance)/i,
       transfer:
@@ -612,10 +701,41 @@ let lastOtpIdentifier = null;
     if (intents.lang_ta.test(lower)) return switchLang("ta");
 
     if (intents.withdraw.test(lower)) {
-      if (amount) return immediateWithdraw(amount);
+      if (amount) {
+        // ask for confirmation before dispensing
+        pendingWithdrawal = amount;
+        logBot(`You requested to withdraw ${formatCurrency(amount)}. Please confirm (yes/no).`);
+        speak(`You requested to withdraw ${formatCurrency(amount)}. Please confirm.`);
+        showPendingBanner(amount);
+        return;
+      }
       showPage("cash");
       logBot(i18n[currentLang].need_amount);
       speak(i18n[currentLang].need_amount);
+      return;
+    }
+
+    if (intents.deposit.test(lower)) {
+      // try extract numeric amount from spoken text, including words
+      const numMatch = text.replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
+      let amount = numMatch ? parseFloat(numMatch[1]) : null;
+      if (!amount) {
+        const byWords = wordsToNumber(text);
+        if (byWords) amount = byWords;
+      }
+      if (amount) {
+        // Go to deposit page and start deposit flow with expected amount
+        logBot(`Starting deposit of ${formatCurrency(amount)}. Please insert cash.`);
+        speak(`Starting deposit of ${amount} dollars. Please insert cash.`);
+        showPage('deposit');
+        // small delay so UI changes are visible before starting counting
+        setTimeout(()=> startDeposit(amount), 400);
+        return;
+      }
+      // otherwise show deposit page
+      showPage('deposit');
+      logBot('Please enter the amount to deposit then press Insert Cash.');
+      speak('Please enter the amount to deposit then press Insert Cash.');
       return;
     }
 
@@ -731,6 +851,150 @@ let lastOtpIdentifier = null;
   }
 
   registerHoverTTS();
+
+  // Pending banner helpers
+  let pendingTimer = null;
+  function showPendingBanner(amount){
+    try{
+      if(!pendingBanner) return;
+      pendingText.textContent = `You requested to withdraw ${formatCurrency(amount)}. Confirm?`;
+      pendingBanner.style.display = 'block';
+      pendingBanner.classList.add('visible');
+      pendingBanner.setAttribute('aria-hidden','false');
+      // start auto-cancel after 30s
+      if(pendingTimer) clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(()=>{
+        // auto-cancel
+        try{
+          if(pendingWithdrawal){
+            logBot('Pending withdrawal timed out and was cancelled.');
+            speak('Request timed out. Cancelled.');
+            pendingWithdrawal = null;
+          }
+          hidePendingBanner();
+        }catch(e){}
+      }, 30000);
+    }catch(e){}
+  }
+  function hidePendingBanner(){
+    try{
+      if(!pendingBanner) return;
+      pendingBanner.classList.remove('visible');
+      // allow animation then hide
+      setTimeout(()=>{ try{ pendingBanner.style.display = 'none'; pendingBanner.setAttribute('aria-hidden','true'); }catch(e){} }, 320);
+      if(pendingTimer){ clearTimeout(pendingTimer); pendingTimer = null; }
+    }catch(e){}
+  }
+
+  // Success banner helpers
+  let successTimer = null;
+  function showSuccessBanner(msg, ms = 3500){
+    try{
+      if(!successBanner) return;
+      successText.textContent = msg || 'Success';
+      successBanner.style.display = 'block';
+      successBanner.classList.add('visible');
+      successBanner.setAttribute('aria-hidden','false');
+      if(successTimer) clearTimeout(successTimer);
+      successTimer = setTimeout(()=>{ hideSuccessBanner(); }, ms);
+    }catch(e){}
+  }
+  function hideSuccessBanner(){
+    try{
+      if(!successBanner) return;
+      successBanner.classList.remove('visible');
+      setTimeout(()=>{ try{ successBanner.style.display = 'none'; successBanner.setAttribute('aria-hidden','true'); }catch(e){} }, 320);
+      if(successTimer) { clearTimeout(successTimer); successTimer = null; }
+    }catch(e){}
+  }
+
+  if(pendingConfirmBtn){ pendingConfirmBtn.addEventListener('click', ()=>{
+    if(!pendingWithdrawal) return;
+    logBot(`Confirmed. Processing withdrawal of ${formatCurrency(pendingWithdrawal)}.`);
+    speak(`Confirmed. Dispensing ${formatCurrency(pendingWithdrawal)}.`);
+    hidePendingBanner();
+    immediateWithdraw(pendingWithdrawal);
+    pendingWithdrawal = null;
+  }); }
+  if(pendingCancelBtn){ pendingCancelBtn.addEventListener('click', ()=>{
+    if(!pendingWithdrawal) return;
+    logBot('Withdrawal cancelled.');
+    speak('Cancelled.');
+    hidePendingBanner();
+    pendingWithdrawal = null;
+  }); }
+
+  // Deposit flow elements
+  const depositAmountEl = document.getElementById('depositAmount');
+  const startInsertBtn = document.getElementById('startInsert');
+  const countingBox = document.getElementById('countingBox');
+  const countingText = document.getElementById('countingText');
+  const countBar = document.getElementById('countBar');
+
+  let depositInProgress = null; // { expected: number, inserted: number }
+  let countInterval = null;
+
+  function resetCountingUI(){
+    try{ if(countingBox) countingBox.style.display = 'none'; if(countBar) countBar.style.width = '0%'; if(countingText) countingText.textContent = 'Waiting for cash insertion...'; }catch(e){}
+  }
+
+  function startDeposit(expected){
+    if(!expected || expected <= 0) expected = 0;
+    depositInProgress = { expected: expected, inserted: 0 };
+    // show counting UI
+    try{ if(countingBox) countingBox.style.display = 'block'; if(countBar) countBar.style.width = '0%'; }catch(e){}
+    logBot('Please insert the cash into the deposit slot now.');
+    speak('Please insert the cash into the deposit slot now.');
+    // simulate counting: over ~2.5s update progress then produce final amount
+    let progress = 0; const steps = 25; const totalMs = 2500; const stepMs = totalMs/steps;
+    if(countInterval) clearInterval(countInterval);
+    countInterval = setInterval(()=>{
+      progress += 1;
+      try{ if(countBar) countBar.style.width = (progress/steps*100)+'%'; }catch(e){}
+      if(progress >= steps){
+        clearInterval(countInterval); countInterval = null;
+        // simulate inserted amount: if expected provided, use it; else random small amount
+        const inserted = depositInProgress.expected && depositInProgress.expected>0 ? depositInProgress.expected : Math.floor((Math.random()*200)+10);
+        depositInProgress.inserted = inserted;
+        try{ if(countingText) countingText.textContent = `Counted S$${inserted.toFixed(2)}`; }catch(e){}
+        logBot(`Counted ${formatCurrency(inserted)}.`);
+        speak(`Counted ${inserted} dollars.`);
+        // verify
+        setTimeout(()=>{ finalizeDeposit(inserted); }, 600);
+      }
+    }, stepMs);
+  }
+
+  function finalizeDeposit(amount){
+    // confirm amount against expected (if provided) and update balance
+    const expected = depositInProgress ? depositInProgress.expected : 0;
+    if(expected && expected > 0 && Math.abs(amount - expected) > 0.01){
+      logBot(`Inserted amount ${formatCurrency(amount)} does not match expected ${formatCurrency(expected)}. Please cancel and try again.`);
+      speak('Inserted amount does not match expected. Please cancel and try again.');
+      resetCountingUI();
+      depositInProgress = null;
+      return;
+    }
+    // accept and update balance
+    balance += amount;
+    updateBalanceUI();
+    logBot(`Deposit accepted. ${formatCurrency(amount)} added to your account.`);
+    speak('Deposit accepted. Thank you.');
+    showSuccessBanner('Deposit successful — ' + formatCurrency(amount));
+    // cleanup UI
+    resetCountingUI();
+    depositInProgress = null;
+    // return to main after short delay
+    setTimeout(()=>{ showPage('main'); }, 1200);
+  }
+
+  if(startInsertBtn){ startInsertBtn.addEventListener('click', ()=>{
+    const val = depositAmountEl ? parseFloat(depositAmountEl.value) : 0;
+    startDeposit(val);
+  }); }
+
+  // allow deposit tile click
+  document.querySelectorAll('#btnDeposit').forEach(el=> el.addEventListener('click', ()=> showPage('deposit')));
 
   // Speech-to-text
 
@@ -881,4 +1145,6 @@ let lastOtpIdentifier = null;
   logBot(
     'ATM ready.'
   );
+  // visually flash main options so users notice available buttons after ready
+  try{ flashAllOptions(); }catch(e){}
 });
