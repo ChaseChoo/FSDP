@@ -865,7 +865,7 @@ let lastOtpIdentifier = null;
   }
 
   // Init
-
+cachedVoices  
   applyI18n();
   updatePageVisibility();
   if (langSelect) langSelect.value = currentLang;
