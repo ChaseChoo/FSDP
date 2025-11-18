@@ -320,8 +320,15 @@ let lastOtpIdentifier = null;
     target.classList.add("active");
     navHistory.push(name);
     updatePageVisibility();
+    // Reset chat log for neatness when entering a new page
+    try{
+      if(chatlog) chatlog.innerHTML = '';
+      if(window.speechSynthesis && window.speechSynthesis.cancel) window.speechSynthesis.cancel();
+    }catch(e){}
     // Announce numeric options for the page (ATM numeric-pad friendly)
     displayMenuOptions(name);
+    // notify other widgets/pages that page changed
+    try{ document.dispatchEvent(new CustomEvent('atmPageChange',{detail:{page:name}})); }catch(e){}
   }
 
   function goBack() {
