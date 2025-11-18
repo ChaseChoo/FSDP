@@ -1147,4 +1147,6 @@ let lastOtpIdentifier = null;
   );
   // visually flash main options so users notice available buttons after ready
   try{ flashAllOptions(); }catch(e){}
+  // show numbered options for the main menu immediately
+  try{ displayMenuOptions('main'); }catch(e){}
 });
