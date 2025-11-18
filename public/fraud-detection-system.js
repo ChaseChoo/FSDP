@@ -135,11 +135,29 @@ document.addEventListener('DOMContentLoaded', function () {
   const risk = checkHighRiskTransaction(method, recipient, amount, purpose);
 
   if (risk >= 3) {
-    alert("⚠️ Warning: This transaction looks unusual and may be a scam.\nPlease verify the recipient or contact your bank for help.");
-    if (typeof ttsSpeak === "function") {
-      ttsSpeak("Warning. This transaction looks unusual and may be a scam. Please check before sending.");
+    // Auto-enable Safe Mode for protection
+    try { localStorage.setItem('safeMode', 'true'); } catch (e) {}
+    const safeToggle = document.getElementById('safemode');
+    if (safeToggle) {
+      safeToggle.checked = true;
+      // trigger change handlers in other scripts
+      try { safeToggle.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
     }
-    // allow user to decide; don't auto-cancel here (keeps previous behavior)
+
+    alert("⚠️ Warning: This transaction looks unusual and may be a scam. Safe Mode has been enabled to protect your account. Please verify the recipient or contact your bank for help.");
+    if (typeof ttsSpeak === "function") {
+      ttsSpeak("Warning. This transaction looks unusual and may be a scam. Safe mode is now enabled.");
+    }
+
+    // If Safe Mode is enabled, only allow transactions to approved recipients
+    const normalizedRecipient = normalizeNumber(recipient);
+    const isApproved = approvedRecipients.some(r => String(r.value) === normalizedRecipient);
+    if (!isApproved) {
+      alert("Safe Mode is active — this recipient is not in your approved recipients list. Add the recipient to your approved list or cancel the transaction.");
+      try { e.preventDefault(); e.stopImmediatePropagation(); } catch (err) { /* ignore */ }
+      try { recipientEl.focus(); } catch (err) {}
+      return;
+    }
   }
 
   // Save and redirect as before; persist normalized recipient (digits only)
