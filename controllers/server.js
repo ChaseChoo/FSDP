@@ -79,6 +79,29 @@ app.delete('/api/approved-recipients/:id', async (req, res) => {
   }
 });
 
+// Update an existing approved recipient (digits-only value)
+app.put('/api/approved-recipients/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
+    const { value } = req.body;
+    if (!value || !/^\d+$/.test(String(value))) return res.status(400).json({ error: 'value is required and must be digits only' });
+
+    const pool = poolPromise || await sql.connect(dbConfig);
+    const request = pool.request();
+    request.input('id', sql.Int, id);
+    request.input('value', sql.NVarChar(50), String(value));
+    // Update and return the updated row
+    const upd = await request.query("UPDATE approved_recipients SET value = @value WHERE id = @id; SELECT id, value, created_at FROM approved_recipients WHERE id = @id;");
+    const updated = (upd.recordset && upd.recordset[0]) || null;
+    if (!updated) return res.status(404).json({ error: 'Not found' });
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update approved recipient' });
+  }
+});
+
 const port = process.env.PORT || 4000;
 connectDb().catch(() => {
   console.warn('Continuing without DB connection; endpoints will fail until DB is reachable.');

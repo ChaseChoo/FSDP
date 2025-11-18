@@ -1,9 +1,20 @@
-// -------- Mock data for Safe Mode (approved lists) --------
-const approvedRecipients = [
+// -------- Approved recipients source (prefer localStorage, fall back to built-in) --------
+const builtinApprovedRecipients = [
   { label: "Daughter (9123 4567)", value: "91234567" },
   { label: "Son (8765 4321)", value: "87654321" },
   { label: "Helper (S1234567A)", value: "S1234567A" }
 ];
+
+function getApprovedRecipients() {
+  try {
+    const raw = localStorage.getItem('approvedRecipients');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return parsed.map(r => ({ label: r.label || r.value || '', value: String(r.value || r.Value || r).replace(/\D/g, '') }));
+    }
+  } catch (e) {}
+  return builtinApprovedRecipients.map(r => ({ label: r.label || '', value: String(r.value || '').replace(/\D/g, '') }));
+}
 
 const allBillers = [
   "SP Group (Electricity)",
@@ -57,10 +68,11 @@ function populateRecipientsSafeMode(enabled) {
   if (!recipientInput || !recipientSelect) return;
   if (enabled) {
     recipientSelect.innerHTML = "";
-    approvedRecipients.forEach((r) => {
+    const list = getApprovedRecipients();
+    list.forEach((r) => {
       const opt = document.createElement("option");
       opt.value = r.value;
-      opt.textContent = r.label;
+      opt.textContent = r.label || r.value;
       recipientSelect.appendChild(opt);
     });
     recipientInput.hidden = true;
@@ -84,8 +96,17 @@ function populateBillersSafeMode(enabled) {
 }
 
 if (safeToggle) {
+  // initialize from localStorage if present
+  try {
+    const stored = localStorage.getItem('safeMode');
+    if (stored === 'true') safeToggle.checked = true;
+    else if (stored === 'false') safeToggle.checked = false;
+  } catch (e) {}
+
   safeToggle.addEventListener("change", () => {
     const enabled = safeToggle.checked;
+    // persist preference
+    try { localStorage.setItem('safeMode', enabled ? 'true' : 'false'); } catch (e) {}
     populateRecipientsSafeMode(enabled);
     populateBillersSafeMode(enabled);
     ttsSpeak(
@@ -118,7 +139,8 @@ function validNRIC(value) {
   return /^[STFG]\d{7}[A-Z]$/i.test(value); // rough format check
 }
 function isApprovedRecipient(val) {
-  return approvedRecipients.some((r) => r.value === val);
+  const list = getApprovedRecipients();
+  return list.some((r) => String(r.value) === String(val));
 }
 
 // -------- PayNow flow --------
@@ -178,6 +200,25 @@ window.addEventListener("DOMContentLoaded", function () {
     }
   }
 });
+
+// Handle the final Confirm & Send action on confirm-paynow.html
+const sendBtn = $("#send-paynow");
+if (sendBtn) {
+  sendBtn.addEventListener('click', function(e) {
+    // read safe mode from localStorage or checkbox
+    const safeStored = (localStorage.getItem('safeMode') === 'true');
+    const safeUi = safeToggle && safeToggle.checked;
+    const safe = safeStored || safeUi;
+    const recipient = localStorage.getItem('paynow_recipient') || '';
+    const normalized = String(recipient).replace(/\D/g, '');
+    if (safe && !isApprovedRecipient(normalized)) {
+      alert('Safe Mode is enabled — transactions are limited to approved recipients. Add this recipient to your approved list or disable Safe Mode.');
+      return;
+    }
+    // proceed to success
+    window.location.href = 'success.html';
+  });
+}
 
 // -------- Bills flow (unchanged) --------
 const confirmBillDialog = $("#confirm-bill");
