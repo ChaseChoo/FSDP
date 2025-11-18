@@ -400,6 +400,56 @@ body.atm-body {
   transition: all 0.18s ease;
 }
 
+/* Pending and success banners */
+.pending-banner,
+.success-banner {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  top: 8px;
+  min-width: 320px;
+  max-width: calc(100% - 64px);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(15,23,42,0.12);
+  padding: 10px 14px;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.pending-banner.visible, .success-banner.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.pending-banner .pending-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pending-banner .pending-text {
+  font-weight: 600;
+  color: #111827;
+}
+
+.success-banner {
+  background: linear-gradient(90deg,#10b981,#059669);
+  color: white;
+}
+
+.success-banner .success-content {
+  display:flex; align-items:center; gap:10px;
+  font-weight:600;
+}
+
+@media (max-width: 640px) {
+  .pending-banner, .success-banner { left: 50%; top: 6px; min-width: 260px; }
+}
+
 .btn-secondary:hover {
   background-color: #f9fafb;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
@@ -733,4 +783,18 @@ body.atm-body {
 .chat-log::-webkit-scrollbar-thumb {
   background: #e5e7eb;
   border-radius: 999px;
+}
+
+/* Flash highlight used when announcing ATM ready */
+.flash-highlight {
+  position: relative;
+  animation: flash-glow 1.2s ease-in-out 0s 1;
+  z-index: 20;
+}
+
+@keyframes flash-glow {
+  0% { box-shadow: 0 0 0 0 rgba(99,102,241,0.0); transform: translateY(0); }
+  20% { box-shadow: 0 10px 28px rgba(99,102,241,0.12); transform: translateY(-3px); }
+  60% { box-shadow: 0 18px 40px rgba(99,102,241,0.16); transform: translateY(-2px); }
+  100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.0); transform: translateY(0); }
 }

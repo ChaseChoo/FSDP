@@ -91,6 +91,23 @@
 
   function speak(text){ if(!ttsEnabled || !text || !('speechSynthesis' in window)) return; const u = new SpeechSynthesisUtterance(text); u.lang = speechLang(currentLang); const v = pickVoice(currentLang); if(v) u.voice = v; u.rate = 1.0; u.pitch = 1.0; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
 
+  // Reset chat when application/page changes to keep the chat neat
+  document.addEventListener('atmPageChange', (ev)=>{
+    try{
+      // clear visible chat log
+      if(logEl) logEl.innerHTML = '';
+      // reset internal state
+      state = { step: 'idle', identifier: null, tempToken: null };
+      // stop any speaking
+      if(window.speechSynthesis && window.speechSynthesis.cancel) window.speechSynthesis.cancel();
+      // collapse widget for cleanliness
+      if(!chatRoot.classList.contains('collapsed')){
+        chatRoot.classList.add('collapsed');
+        chatRoot.setAttribute('aria-hidden','true');
+      }
+    }catch(e){/* noop */}
+  });
+
   // Numeric menu for ATM numpad-friendly interaction
   let currentMenu = 'main';
   const menuMap = {
