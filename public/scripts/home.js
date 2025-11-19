@@ -1236,20 +1236,128 @@
       "transferNext"
     );
     if (transferNext) {
-      transferNext.addEventListener("click", () =>
-        showPage("transferConfirm")
-      );
+      transferNext.addEventListener("click", () => {
+        console.log('transferNext clicked');
+        const amount = document.getElementById('transferAmount')?.value;
+        const toAccount = document.getElementById('transferToAccount')?.value;
+        const payee = document.getElementById('transferPayee')?.value;
+        
+        console.log('Transfer form values:', { amount, toAccount, payee });
+        
+        if (!amount || parseFloat(amount) <= 0) {
+          logBot('Please enter a valid amount');
+          speak('Please enter a valid amount');
+          return;
+        }
+        
+        if (!toAccount) {
+          logBot('Please enter recipient account number');
+          speak('Please enter recipient account number');
+          return;
+        }
+        
+        // Populate confirmation page
+        const confirmRecipient = document.getElementById('confirmRecipient');
+        const confirmAmount = document.getElementById('confirmAmount');
+        
+        console.log('Confirmation elements:', { confirmRecipient, confirmAmount });
+        
+        if (confirmRecipient) {
+          const recipientText = payee ? `${payee} (${toAccount})` : toAccount;
+          confirmRecipient.textContent = recipientText;
+          console.log('Set confirmRecipient to:', recipientText);
+        }
+        if (confirmAmount) {
+          const amountText = formatCurrency(parseFloat(amount));
+          confirmAmount.textContent = amountText;
+          console.log('Set confirmAmount to:', amountText);
+        }
+        
+        showPage("transferConfirm");
+      });
     }
 
     const transferSend = document.getElementById(
       "transferSend"
     );
     if (transferSend) {
-      transferSend.addEventListener("click", () => {
-        const dict = i18n[currentLang];
-        logBot(dict.transfer_done);
-        speak(dict.transfer_done);
-        showPage("main");
+      transferSend.addEventListener("click", async () => {
+        const amount = parseFloat(document.getElementById('transferAmount')?.value);
+        const toAccountNumber = document.getElementById('transferToAccount')?.value;
+        const payee = document.getElementById('transferPayee')?.value;
+        const description = payee ? `Transfer to ${payee}` : 'Transfer';
+        
+        console.log('Transfer initiated:', { amount, toAccountNumber, description });
+        
+        if (!amount || amount <= 0) {
+          logBot('Please enter a valid amount');
+          speak('Please enter a valid amount');
+          return;
+        }
+        
+        if (!toAccountNumber) {
+          logBot('Please enter recipient account number');
+          speak('Please enter recipient account number');
+          return;
+        }
+        
+        try {
+          const token = localStorage.getItem('token');
+          console.log('Token found:', !!token);
+          
+          if (!token) {
+            logBot('Session expired - please login again');
+            return;
+          }
+          
+          const response = await fetch('/account/transfer', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              amount,
+              toAccountNumber,
+              description
+            })
+          });
+          
+          console.log('Transfer response status:', response.status);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Transfer successful:', data);
+            balance = data.newBalance;
+            updateBalanceUI();
+            
+            const dict = i18n[currentLang];
+            const successMsg = `Transfer successful! ${formatCurrency(amount)} sent to ${toAccountNumber}`;
+            logBot(successMsg);
+            speak(dict.transfer_done || 'Transfer completed');
+            showSuccessBanner(successMsg);
+            
+            // Clear form
+            document.getElementById('transferAmount').value = '';
+            document.getElementById('transferToAccount').value = '';
+            document.getElementById('transferPayee').value = '';
+            if (document.getElementById('transferBank')) {
+              document.getElementById('transferBank').value = '';
+            }
+            
+            showPage("main");
+          } else {
+            const error = await response.json();
+            console.error('Transfer failed:', error);
+            logBot(error.error || 'Transfer failed');
+            speak(error.error || 'Transfer failed');
+          }
+        } catch (error) {
+          console.error('Transfer error:', error);
+          logBot('Transfer failed - please try again');
+          speak('Transfer failed');
+        }
       });
     }
 
@@ -1273,6 +1381,9 @@
     try{ displayMenuOptions('main'); }catch(e){}
   });
 
-document.getElementById("btnTransactions").addEventListener("click", () => {
-  window.location.href = "transactions.html";
-});
+const btnTransactions = document.getElementById("btnTransactions");
+if (btnTransactions) {
+  btnTransactions.addEventListener("click", () => {
+    window.location.href = "transactions.html";
+  });
+}

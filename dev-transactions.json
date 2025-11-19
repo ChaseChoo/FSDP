@@ -1,4 +1,15 @@
 {
+  "91234567": [
+    {
+      "Id": "dev-1763570002862-0.45593319670074095",
+      "AccountId": "dev-91234567",
+      "Type": "TRANSFER_IN",
+      "Amount": 100,
+      "BalanceAfter": 100,
+      "Description": "PayNow to 91234567 via Mobile Number",
+      "CreatedAt": "2025-11-19T16:33:22.862Z"
+    }
+  ],
   "FAKE_USER": [
     {
       "Id": "dev-1763471946763-0.5602280635964667",
@@ -74,6 +85,15 @@
     }
   ],
   "user-6": [
+    {
+      "Id": "dev-1763570002833-0.2899685905865965",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER_OUT",
+      "Amount": 100,
+      "BalanceAfter": 1146,
+      "Description": "PayNow to 91234567 via Mobile Number",
+      "CreatedAt": "2025-11-19T16:33:22.833Z"
+    },
     {
       "Id": "dev-1763473871581-0.604026790672721",
       "AccountId": "dev-user-6",

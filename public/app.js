@@ -184,19 +184,21 @@ window.addEventListener("DOMContentLoaded", function () {
   const amountEl = document.getElementById("confirm-amount");
   const purposeEl = document.getElementById("confirm-purpose");
 
-  if (methodEl && recipientEl && amountEl && purposeEl) {
+  if (methodEl && recipientEl && amountEl) {
     const method = localStorage.getItem("paynow_method");
     const recipient = localStorage.getItem("paynow_recipient");
     const amount = localStorage.getItem("paynow_amount");
     const purpose = localStorage.getItem("paynow_purpose");
 
-    if (method || recipient || amount || purpose) {
+    if (method || recipient || amount) {
       methodEl.textContent = method || "(none)";
       recipientEl.textContent = recipient || "(none)";
       amountEl.textContent = isNaN(amount)
         ? amount
         : `SGD ${parseFloat(amount).toFixed(2)}`;
-      purposeEl.textContent = purpose || "—";
+      if (purposeEl) {
+        purposeEl.textContent = purpose || "—";
+      }
     }
   }
 });
@@ -204,7 +206,7 @@ window.addEventListener("DOMContentLoaded", function () {
 // Handle the final Confirm & Send action on confirm-paynow.html
 const sendBtn = $("#send-paynow");
 if (sendBtn) {
-  sendBtn.addEventListener('click', function(e) {
+  sendBtn.addEventListener('click', async function(e) {
     // read safe mode from localStorage or checkbox
     const safeStored = (localStorage.getItem('safeMode') === 'true');
     const safeUi = safeToggle && safeToggle.checked;
@@ -215,8 +217,67 @@ if (sendBtn) {
       alert('Safe Mode is enabled — transactions are limited to approved recipients. Add this recipient to your approved list or disable Safe Mode.');
       return;
     }
-    // proceed to success
-    window.location.href = 'success.html';
+    
+    // Get transfer details from localStorage
+    const amount = parseFloat(localStorage.getItem('paynow_amount'));
+    const method = localStorage.getItem('paynow_method');
+    const description = `PayNow to ${recipient} via ${method}`;
+    
+    // Validate
+    if (!amount || amount <= 0) {
+      alert('Invalid transfer amount');
+      return;
+    }
+    
+    if (!recipient) {
+      alert('Invalid recipient');
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        alert('Session expired - please login again');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Call the transfer API
+      const response = await fetch('/account/transfer', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          amount,
+          toAccountNumber: recipient,
+          description
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Transfer successful:', data);
+        
+        // Clear localStorage items
+        localStorage.removeItem('paynow_method');
+        localStorage.removeItem('paynow_recipient');
+        localStorage.removeItem('paynow_amount');
+        localStorage.removeItem('paynow_purpose');
+        
+        // Proceed to success page
+        window.location.href = 'success.html';
+      } else {
+        const error = await response.json();
+        alert(`Transfer failed: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Transfer error:', error);
+      alert('Transfer failed. Please try again.');
+    }
   });
 }
 

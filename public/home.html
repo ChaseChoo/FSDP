@@ -649,6 +649,7 @@
                       >Amount</label
                     >
                     <input
+                      id="transferAmount"
                       type="number"
                       class="field-input"
                       placeholder="S$0.00"
@@ -661,6 +662,7 @@
                       >To Account</label
                     >
                     <input
+                      id="transferToAccount"
                       type="text"
                       class="field-input"
                       placeholder="123-456-789"
@@ -673,6 +675,7 @@
                       >Bank</label
                     >
                     <input
+                      id="transferBank"
                       type="text"
                       class="field-input"
                       placeholder="Bank name"
@@ -685,6 +688,7 @@
                       >Payee Name</label
                     >
                     <input
+                      id="transferPayee"
                       type="text"
                       class="field-input"
                       placeholder="Name"
@@ -752,6 +756,11 @@
                   <p class="confirm-text">
                     Review details and send.
                   </p>
+                  <div style="margin-top: 20px; text-align: left;">
+                    <p><strong>Method:</strong> <span id="confirmMethod">Bank Transfer</span></p>
+                    <p><strong>Recipient:</strong> <span id="confirmRecipient">(loading)</span></p>
+                    <p><strong>Amount (SGD):</strong> <span id="confirmAmount">(loading)</span></p>
+                  </div>
                 </div>
                 <div class="page-actions">
                   <button
