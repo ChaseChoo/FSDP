@@ -75,6 +75,42 @@
   ],
   "user-6": [
     {
+      "Id": "dev-1763473871581-0.604026790672721",
+      "AccountId": "dev-user-6",
+      "Type": "DEPOSIT",
+      "Amount": 2,
+      "BalanceAfter": 1246,
+      "Description": "ATM deposit",
+      "CreatedAt": "2025-11-18T13:51:11.581Z"
+    },
+    {
+      "Id": "dev-1763473710949-0.10579177929523054",
+      "AccountId": "dev-user-6",
+      "Type": "DEPOSIT",
+      "Amount": 15,
+      "BalanceAfter": 1244,
+      "Description": "ATM deposit",
+      "CreatedAt": "2025-11-18T13:48:30.949Z"
+    },
+    {
+      "Id": "dev-1763473619808-0.758399539622133",
+      "AccountId": "dev-user-6",
+      "Type": "DEPOSIT",
+      "Amount": 129,
+      "BalanceAfter": 1229,
+      "Description": "ATM deposit",
+      "CreatedAt": "2025-11-18T13:46:59.808Z"
+    },
+    {
+      "Id": "dev-1763473456759-0.9306135765822998",
+      "AccountId": "dev-user-6",
+      "Type": "DEPOSIT",
+      "Amount": 100,
+      "BalanceAfter": 1100,
+      "Description": "ATM deposit",
+      "CreatedAt": "2025-11-18T13:44:16.759Z"
+    },
+    {
       "Id": "dev-1763472045422-0.5149466152942155",
       "AccountId": "dev-user-6",
       "Type": "DEPOSIT",
@@ -85,6 +121,42 @@
     }
   ],
   "user-9": [
+    {
+      "Id": "dev-1763473897162-0.7298400803408069",
+      "AccountId": "dev-user-9",
+      "Type": "DEPOSIT",
+      "Amount": 2000,
+      "BalanceAfter": 4131,
+      "Description": "ATM deposit",
+      "CreatedAt": "2025-11-18T13:51:37.163Z"
+    },
+    {
+      "Id": "dev-1763473737856-0.4622813986481831",
+      "AccountId": "dev-user-9",
+      "Type": "DEPOSIT",
+      "Amount": 59,
+      "BalanceAfter": 2131,
+      "Description": "ATM deposit",
+      "CreatedAt": "2025-11-18T13:48:57.856Z"
+    },
+    {
+      "Id": "dev-1763473647820-0.11355823410077726",
+      "AccountId": "dev-user-9",
+      "Type": "DEPOSIT",
+      "Amount": 56,
+      "BalanceAfter": 2072,
+      "Description": "ATM deposit",
+      "CreatedAt": "2025-11-18T13:47:27.820Z"
+    },
+    {
+      "Id": "dev-1763473488916-0.3668185448586829",
+      "AccountId": "dev-user-9",
+      "Type": "DEPOSIT",
+      "Amount": 17,
+      "BalanceAfter": 2016,
+      "Description": "ATM deposit",
+      "CreatedAt": "2025-11-18T13:44:48.916Z"
+    },
     {
       "Id": "dev-1763472206713-0.5638671494246665",
       "AccountId": "dev-user-9",

@@ -424,3 +424,77 @@ async function logCardTransaction(userId, cardNumber, transactionType, amount, s
 }
 
 export { logCardTransaction };
+
+/**
+ * Get user and account by card number (for QR login without PIN)
+ */
+export async function getUserByCardNumber(cardNumber) {
+    try {
+        const pool = await poolPromise;
+        
+        if (!pool) {
+            throw new Error("Database connection not available");
+        }
+        
+        // Validate card number format (16 digits)
+        if (!/^\d{16}$/.test(cardNumber)) {
+            throw new Error("Invalid card number format");
+        }
+        
+        const request = pool.request();
+        request.input("cardNumber", mssql.NVarChar(16), cardNumber);
+        
+        const result = await request.query(`
+            SELECT 
+                u.Id,
+                u.ExternalId,
+                u.FullName,
+                u.Email,
+                u.Phone,
+                u.CardNumber,
+                u.CardStatus,
+                u.CardExpiryDate,
+                u.CardBlocked,
+                u.IsActive,
+                a.Id AS AccountId,
+                a.Balance,
+                a.Currency,
+                a.AccountNumber,
+                a.AccountType,
+                a.Status AS AccountStatus
+            FROM Users u
+            LEFT JOIN Accounts a ON u.Id = a.UserId
+            WHERE u.CardNumber = @cardNumber
+            AND u.IsActive = 1
+            AND u.CardStatus = 'ACTIVE'
+            AND u.CardBlocked = 0
+        `);
+        
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        
+        const row = result.recordset[0];
+        return {
+            user: {
+                id: row.Id,
+                externalId: row.ExternalId,
+                fullName: row.FullName,
+                email: row.Email,
+                phone: row.Phone,
+                cardNumber: row.CardNumber
+            },
+            account: {
+                id: row.AccountId,
+                balance: parseFloat(row.Balance || 0),
+                currency: row.Currency || 'SGD',
+                accountNumber: row.AccountNumber,
+                accountType: row.AccountType,
+                status: row.AccountStatus
+            }
+        };
+    } catch (error) {
+        console.error("Get user by card number error:", error);
+        throw error;
+    }
+}

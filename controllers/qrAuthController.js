@@ -2,6 +2,7 @@
 import jwt from "jsonwebtoken";
 import { findUserByExternalId, createUser } from "../models/userModel.js";
 import { findAccountByUserId, createAccountForUser } from "../models/accountModel.js";
+import { getUserByCardNumber } from "../models/cardModel.js";
 import { createSession } from "../services/sessionStore.js";
 
 // Store for QR authentication sessions (in production, use Redis or database)
@@ -18,20 +19,34 @@ export async function getQRAuthStatus(req, res) {
   const { sessionId } = req.params;
   
   try {
-    const session = qrSessions.get(sessionId);
+    let session = qrSessions.get(sessionId);
     
+    // If session doesn't exist yet, create it (ATM is polling before mobile scans)
     if (!session) {
-      return res.json({ status: 'invalid' });
+      session = {
+        id: sessionId,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + QR_SESSION_TIMEOUT,
+        authenticated: false
+      };
+      qrSessions.set(sessionId, session);
+      console.log(`[QR Auth] Created new session ${sessionId}, expires at ${new Date(session.expiresAt).toISOString()}`);
+      return res.json({ status: 'waiting' });
     }
     
     // Check if session expired
-    if (Date.now() > session.expiresAt) {
+    const now = Date.now();
+    const timeRemaining = session.expiresAt - now;
+    
+    if (timeRemaining <= 0) {
+      console.log(`[QR Auth] Session ${sessionId} expired`);
       qrSessions.delete(sessionId);
       return res.json({ status: 'expired' });
     }
     
     if (session.authenticated) {
       // Session was authenticated, return user data and clean up
+      console.log(`[QR Auth] Session ${sessionId} authenticated successfully`);
       const sessionData = {
         status: 'authenticated',
         token: session.token,
@@ -62,22 +77,31 @@ export async function verifyQRSession(req, res) {
   try {
     // Create session if it doesn't exist (first time scanning)
     if (!qrSessions.has(sessionId)) {
-      qrSessions.set(sessionId, {
+      const session = {
         id: sessionId,
         createdAt: Date.now(),
         expiresAt: Date.now() + QR_SESSION_TIMEOUT,
         authenticated: false
-      });
+      };
+      qrSessions.set(sessionId, session);
+      console.log(`[QR Auth] Mobile verify: Created session ${sessionId}, expires at ${new Date(session.expiresAt).toISOString()}`);
+    } else {
+      console.log(`[QR Auth] Mobile verify: Session ${sessionId} already exists`);
     }
     
     const session = qrSessions.get(sessionId);
     
     // Check if session expired
-    if (Date.now() > session.expiresAt) {
+    const now = Date.now();
+    const timeRemaining = session.expiresAt - now;
+    
+    if (timeRemaining <= 0) {
+      console.log(`[QR Auth] Mobile verify: Session ${sessionId} expired`);
       qrSessions.delete(sessionId);
       return res.status(400).json({ valid: false, error: 'Session expired' });
     }
     
+    console.log(`[QR Auth] Mobile verify: Session ${sessionId} valid, ${Math.floor(timeRemaining / 1000)}s remaining`);
     return res.json({ valid: true });
   } catch (error) {
     console.error('QR session verification error:', error);
@@ -90,7 +114,7 @@ export async function verifyQRSession(req, res) {
  * Approve or deny QR authentication from mobile device
  */
 export async function approveQRAuth(req, res) {
-  const { sessionId, approved } = req.body;
+  const { sessionId, approved, cardNumber } = req.body;
   
   try {
     const session = qrSessions.get(sessionId);
@@ -111,46 +135,35 @@ export async function approveQRAuth(req, res) {
       return res.json({ message: 'Authentication denied' });
     }
     
-    // For demo purposes, create a fake user account
-    // In a real application, you would authenticate the mobile user first
-    const fakeExternalId = 'mobile_user_' + Date.now();
-    
-    // Create or find user
-    let user = await findUserByExternalId(fakeExternalId);
-    if (!user) {
-      const created = await createUser(fakeExternalId, 'Mobile User', 'mobile@example.com');
-      user = { 
-        Id: created.Id, 
-        ExternalId: fakeExternalId, 
-        FullName: 'Mobile User', 
-        Email: 'mobile@example.com' 
-      };
+    if (!cardNumber) {
+      return res.status(400).json({ error: 'Card number required' });
     }
     
-    // Create or find account
-    let account = await findAccountByUserId(user.Id);
-    if (!account) {
-      const acc = await createAccountForUser(user.Id, 1000.00, 'USD'); // Start with $1000
-      account = { 
-        Id: acc.Id, 
-        Balance: parseFloat(acc.Balance), 
-        Currency: acc.Currency 
-      };
+    // Get user and account by card number
+    const result = await getUserByCardNumber(cardNumber);
+    
+    if (!result) {
+      return res.status(404).json({ error: 'Card not found or inactive' });
     }
+    
+    const { user, account } = result;
     
     // Create session
-    const authSession = createSession(fakeExternalId, { 
-      id: fakeExternalId,
-      name: 'Mobile User',
-      email: 'mobile@example.com'
+    const authSession = createSession(user.externalId, { 
+      id: user.externalId,
+      name: user.fullName,
+      email: user.email,
+      cardNumber: user.cardNumber
     });
     
     // Generate JWT token
     const token = jwt.sign(
       { 
-        sub: fakeExternalId,
-        email: 'mobile@example.com',
-        name: 'Mobile User'
+        sub: user.externalId,
+        email: user.email,
+        name: user.fullName,
+        cardNumber: user.cardNumber,
+        sessionType: 'QR_LOGIN'
       },
       process.env.JWT_VERIFY_SECRET || 'fallback_secret',
       { expiresIn: '24h' }
@@ -160,16 +173,21 @@ export async function approveQRAuth(req, res) {
     session.authenticated = true;
     session.token = token;
     session.user = {
-      id: user.Id,
-      externalId: user.ExternalId,
-      fullName: user.FullName,
-      email: user.Email
+      id: user.id,
+      externalId: user.externalId,
+      fullName: user.fullName,
+      email: user.email,
+      cardNumber: user.cardNumber
     };
     session.account = {
-      id: account.Id,
-      balance: parseFloat(account.Balance),
-      currency: account.Currency
+      id: account.id,
+      balance: account.balance,
+      currency: account.currency,
+      accountNumber: account.accountNumber,
+      accountType: account.accountType
     };
+    
+    console.log(`[QR Auth] Approved login for ${user.fullName} (${user.cardNumber})`);
     
     return res.json({ 
       message: 'Authentication approved successfully',

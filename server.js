@@ -85,6 +85,9 @@ app.get("/health", (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const HOST = '0.0.0.0'; // Listen on all network interfaces
+app.listen(PORT, HOST, () => {
   console.log(`Server listening on port ${PORT}`);
+  console.log(`Local: http://localhost:${PORT}`);
+  console.log(`Network: http://172.20.10.7:${PORT}`);
 });
