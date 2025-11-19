@@ -1,49 +1,116 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EasyATM — Start</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>EasyATM — Transfers</title>
+
+  <link rel="stylesheet" href="styles/home.css">
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
-<div class="container">
-  <header class="header">
-    <div class="brand">
-      <div class="logo" aria-hidden="true"><span>EA</span></div>
-      <div class="title">
-        <h1>EasyATM</h1>
-        <div class="subtitle">Accessible Transactions for Everyone</div>
-      </div>
-    </div>
-    <div class="safe" role="group" aria-label="Safe Mode">
-      <input id="safemode" type="checkbox" aria-label="Enable Safe Mode" />
-      <label for="safemode">Safe Mode</label>
-    </div>
-  </header>
 
-  <div class="banner card" role="alert">
-    <div>⚠️</div>
+<body class="atm-body">
+
+<main class="atm-shell">
+  <section class="atm-card">
+    <div class="atm-layout">
+
+      <!-- ========== LEFT ========== -->
+      <div class="atm-left">
+
+        <div class="atm-header">
+  <div class="header-content">
+    
+    <!-- LEFT: TITLE -->
     <div>
-      <strong>Scam Warning:</strong> Never transfer money on instruction from a caller or stranger.
-      <div class="tip">If unsure, stop and call your bank’s hotline.</div>
+      <h1 class="atm-title">Transfer Services</h1>
     </div>
+
+    <!-- RIGHT: BACK BUTTON (same style as PayNow) -->
+    <button onclick="location.href='home.html'" class="logout-btn">
+      <i data-lucide="arrow-left"></i> Back
+    </button>
+
   </div>
-
-  <main class="card">
-    <h2 style="margin-top:0">Choose a transaction</h2>
-    <div class="grid-2">
-      <div class="card">
-        <h3>PayNow</h3>
-        <p>Send money using Mobile, NRIC/FIN, UEN, VPA or Scan QR.</p>
-        <a class="btn btn-primary btn-lg" href="paynow.html">Continue to PayNow</a>
-      </div>
-    </div>
-  </main>
-
-  <p class="footnotes">Large fonts • High contrast • Keyboard friendly (<span class="kbd">Tab</span> to move, <span class="kbd">Enter</span> to select)</p>
 </div>
+
+        <!-- Scam banner -->
+        <div class="banner card" style="margin-bottom:20px;">
+          <div>⚠️</div>
+          <div>
+            <strong>Scam Warning:</strong> Never transfer money on instruction from a caller or stranger.
+            <div class="tip">If unsure, stop and call your bank’s hotline.</div>
+          </div>
+        </div>
+
+        <!-- Main options -->
+        <div class="quick-grid">
+
+          <button onclick="location.href='paynow.html'" class="tile-card hover-tts">
+            <div class="tile-row">
+              <div class="tile-icon"><i data-lucide="send" class="icon"></i></div>
+              <div>
+                <p class="tile-title">PayNow</p>
+                <p class="tile-sub">Mobile, NRIC, UEN, QR</p>
+              </div>
+            </div>
+          </button>
+
+          <button onclick="location.href='bills.html'" class="tile-card hover-tts">
+            <div class="tile-row">
+              <div class="tile-icon"><i data-lucide="file-text" class="icon"></i></div>
+              <div>
+                <p class="tile-title">Bill Payment</p>
+                <p class="tile-sub">Utilities, Town Council etc.</p>
+              </div>
+            </div>
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- ========== RIGHT ========== -->
+      <aside class="atm-right">
+
+        <div class="topbar">
+          <div class="top-right-controls">
+            <select class="lang-select">
+              <option>English</option>
+            </select>
+            <div class="divider"></div>
+            <button class="exit-btn hover-tts">
+              <i data-lucide="log-out" class="icon"></i>
+              <span>Exit</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-shell">
+          <div class="chat-log"></div>
+          <div class="chat-input-row">
+            <input class="chat-input" placeholder="How can I assist?" />
+            <button class="chat-send hover-tts">
+              <i data-lucide="send" class="icon-xs"></i>
+            </button>
+          </div>
+          <div class="chat-footer">
+            <div class="chat-tip">Tip: “PayNow 50 to 91234567”</div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+  </section>
+</main>
+
+<script>lucide.createIcons();</script>
+
 <script src="app.js"></script>
 <script src="fraud-detection-system.js"></script>
+
 </body>
 </html>

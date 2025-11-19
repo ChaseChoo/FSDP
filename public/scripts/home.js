@@ -459,7 +459,7 @@
           logBot(el.textContent.trim() + " – (demo) coming soon.");
         })
       );
-    });
+    });         
 
     // Balance
 

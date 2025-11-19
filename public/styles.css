@@ -311,3 +311,11 @@ input:focus, select:focus, textarea:focus {
 
 /* === Animations === */
 @keyframes fade {from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+/* Compact Safe Mode for PayNow topbar */
+.safe-compact {
+  transform: scale(0.75);
+  transform-origin: right center;
+  margin-left: -40px;
+   /* tighten spacing */
+}

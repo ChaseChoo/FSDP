@@ -4,26 +4,117 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>EasyATM — Successful</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-<div class="container">
-  <header class="header">
-    <div class="brand"><div class="logo" aria-hidden="true"><span>EA</span></div><div class="title"><h1>Transaction Successful</h1></div></div>
-    <div class="safe"><input id="safemode" type="checkbox" aria-label="Enable Safe Mode" /><label for="safemode">Safe Mode</label></div>
-  </header>
 
-  <main class="card center">
-    <div class="success">✅ Your transaction has been sent.</div>
-    <hr class="divider" />
-    <div class="actions">
-      <a class="btn btn-primary" href="index.html">New Transaction</a>
-      <a class="btn btn-secondary" href="help.html">Get Help</a>
+  <!-- ATM UI -->
+  <link rel="stylesheet" href="styles/home.css">
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="atm-body">
+
+<main class="atm-shell">
+  <section class="atm-card">
+    <div class="atm-layout">
+
+      <!-- ================================ -->
+      <!-- LEFT PANEL: SUCCESS MESSAGE      -->
+      <!-- ================================ -->
+      <div class="atm-left">
+
+        <!-- Header -->
+        <div class="atm-header">
+          <div class="header-content">
+            <h1 class="atm-title">Transaction Successful</h1>
+
+            <button onclick="location.href='index.html'" class="logout-btn">
+              <i data-lucide="arrow-left"></i> Back
+            </button>
+          </div>
+        </div>
+
+        <!-- Success Box -->
+        <div class="card" style="margin-top:20px;">
+          <div class="summary" style="text-align:center; font-size:1rem;">
+            <strong>✅ Success!</strong>  
+            <br>Your transaction has been sent.
+          </div>
+
+          <hr class="divider">
+
+          <div class="actions" style="justify-content:center;">
+            <a class="btn btn-primary btn-lg" href="index.html">New Transaction</a>
+            <a class="btn btn-secondary btn-lg" href="help.html">Get Help</a>
+          </div>
+
+          <p class="footnotes" style="margin-top:20px; text-align:center;">
+            A receipt can be printed or emailed (coming soon).
+          </p>
+        </div>
+
+      </div>
+
+      <!-- ================================ -->
+      <!-- RIGHT PANEL: CHATBOT            -->
+      <!-- ================================ -->
+      <aside class="atm-right">
+
+        <div class="topbar">
+
+          <div class="top-right-controls">
+
+            <select class="lang-select">
+              <option>English</option>
+            </select>
+
+            <div class="divider"></div>
+
+            <!-- COMPACT SAFE MODE -->
+            <div class="safe safe-compact">
+              <input id="safemode" type="checkbox">
+              <label for="safemode">Safe Mode</label>
+            </div>
+
+            <div class="divider"></div>
+
+            <button onclick="location.href='home.html'" class="exit-btn hover-tts">
+              <i data-lucide="log-out" class="icon"></i>
+              <span>Exit</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Chat Shell -->
+        <div class="chat-shell">
+          <div id="chatlog" class="chat-log"></div>
+
+          <div class="chat-input-row">
+            <input id="userInput" class="chat-input" placeholder="How can I assist?" />
+            <button id="sendBtn" class="chat-send">
+              <i data-lucide="send" class="icon-xs"></i>
+            </button>
+          </div>
+
+          <div class="chat-footer">
+            <div class="chat-tip">Tip: “How do I print my receipt?”</div>
+          </div>
+        </div>
+
+      </aside>
     </div>
-    <p class="footnotes">A receipt can be printed or emailed (add later).</p>
-  </main>
-</div>
+  </section>
+</main>
+
+<script>lucide.createIcons();</script>
+
+<!-- Homepage systems -->
+<script src="scripts/home.js"></script>
+
+<!-- Your original logic -->
 <script src="app.js"></script>
 <script src="fraud-detection-system.js"></script>
+
 </body>
 </html>

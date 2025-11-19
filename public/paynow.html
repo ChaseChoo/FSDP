@@ -3,115 +3,169 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EasyATM — Online Transactions</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>EasyATM — PayNow</title>
+
+  <!-- ATM Homepage UI Styles -->
+  <link rel="stylesheet" href="styles/home.css">
+
+  <!-- PayNow form styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
-<div class="container">
-  <header class="header">
-    <div class="brand">
-      <div class="logo" aria-hidden="true"><span>EA</span></div>
-      <div class="title"><h1>Online Transactions</h1><div class="subtitle">Large text • Voice-friendly</div></div>
-    </div>
-    <div class="safe" role="group" aria-label="Safe Mode">
+
+<body class="atm-body">
+
+<main class="atm-shell">
+  <section class="atm-card">
+    <div class="atm-layout">
+
+      <!-- ========================================= -->
+      <!-- LEFT SIDE: PayNow Form                    -->
+      <!-- ========================================= -->
+      <div class="atm-left">
+
+        <!-- Header -->
+        <div class="atm-header">
+          <div class="header-content">
+            <div>
+              <h1 class="atm-title">PayNow Transfer</h1>
+            </div>
+            <button onclick="location.href='index.html'" class="logout-btn">
+              <i data-lucide="arrow-left"></i> Back
+            </button>
+          </div>
+        </div>
+        <!-- PayNow Form (Your EXACT functionality preserved) -->
+        <div class="card">
+          <form action="confirm-paynow.html" method="get" aria-describedby="before-send">
+
+            <div class="grid-2">
+              <div class="row">
+                <label for="method">PayNow Method</label>
+                <select id="method" name="method">
+                  <option>Mobile Number</option>
+                </select>
+              </div>
+
+              <div class="row">
+                <label for="recipient">Recipient</label>
+                <input id="recipient" name="recipient" type="tel" 
+                       inputmode="numeric" pattern="\d*" 
+                       class="numeric-only" required
+                       placeholder="e.g., 91234567" />
+                <div class="hint">Digits only. Safe Mode limits to approved contacts.</div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="row">
+                <label for="amount">Amount (SGD)</label>
+                <input id="amount" name="amount" type="number" 
+                       inputmode="numeric" min="1" class="numeric-only"
+                       placeholder="Enter amount" required />
+
+                <div class="chips">
+                  <span class="chip" data-amt="10">$10</span>
+                  <span class="chip" data-amt="20">$20</span>
+                  <span class="chip" data-amt="50">$50</span>
+                  <span class="chip" data-amt="100">$100</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="before-send" class="summary">
+              <strong>Before you send:</strong> You will confirm the recipient on the next screen.
+            </div>
+
+            <div class="actions">
+              <button type="reset" class="btn btn-ghost">Clear</button>
+              <button type="submit" class="btn btn-primary btn-lg">Continue</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- ========================================= -->
+      <!-- RIGHT SIDE: Chatbot                       -->
+      <!-- ========================================= -->
+      <aside class="atm-right">
+
+        <div class="topbar">
+  <div class="top-right-controls">
+
+    <select class="lang-select">
+      <option>English</option>
+    </select>
+
+    <div class="divider"></div>
+
+    <!-- ✅ COMPACT SAFE MODE -->
+    <div class="safe safe-compact" role="group" aria-label="Safe Mode">
       <input id="safemode" type="checkbox" aria-label="Enable Safe Mode" />
       <label for="safemode">Safe Mode</label>
     </div>
-  </header>
 
-  <div class="banner card" role="alert">
-    <div>⚠️</div>
-    <div>
-      <strong>Important:</strong> Only pay people you know or official billers. If someone told you to “secure your funds”, it is likely a scam.
-    </div>
+    <div class="divider"></div>
+
+    <button onclick="location.href='home.html'" class="exit-btn hover-tts">
+      <i data-lucide="log-out" class="icon"></i>
+      <span>Exit</span>
+    </button>
+
   </div>
+</div>
 
-  <main class="card">
-    <!-- In production, post to your backend to render confirm page with real values -->
-    <form action="confirm-paynow.html" method="get" aria-describedby="before-send">
-      <div class="grid-2">
-        <div class="row">
-          <label for="method">PayNow Method</label>
-          <select id="method" name="method" aria-label="Select method">
-            <option>Mobile Number</option>
-          </select>
-          <div class="hint">Choose how to identify the recipient.</div>
-        </div>
 
-        <div class="row">
-          <label for="recipient">Recipient</label>
-          <!-- This is an ATM-focused page: only allow digits for recipient (e.g., mobile number). -->
-          <input id="recipient" name="recipient" type="tel" inputmode="numeric" pattern="\d*" class="numeric-only" placeholder="e.g., 91234567" required aria-describedby="recipient-hint" />
-          <div id="recipient-hint" class="hint">Enter digits only (mobile/NRIC numeric identifier). In Safe Mode, limit to your approved list.</div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="row">
-          <label for="amount">Amount (SGD)</label>
-          <!-- Numeric-only: keep type=number but add explicit inputmode and class for JS enforcement -->
-          <input id="amount" name="amount" type="number" inputmode="numeric" pattern="\d+" min="1" step="1" placeholder="Enter amount" class="numeric-only" required />
-          <div class="chips" aria-label="Quick amounts">
-            <span class="chip" aria-hidden="true">$10</span>
-            <span class="chip" aria-hidden="true">$20</span>
-            <span class="chip" aria-hidden="true">$50</span>
-            <span class="chip" aria-hidden="true">$100</span>
+        <div class="chat-shell">
+          <div id="chatlog" class="chat-log"></div>
+          <div class="chat-input-row">
+            <input id="userInput" class="chat-input" placeholder="How can I assist?" />
+            <button id="sendBtn" class="chat-send hover-tts">
+              <i data-lucide="send" class="icon-xs"></i>
+            </button>
+          </div>
+          <div class="chat-footer">
+            <div class="chat-tip">Tip: “PayNow 50 to 91234567”</div>
           </div>
         </div>
-      </div>
 
-      <div id="before-send" class="summary">
-        <strong>Before you send:</strong> You’ll see the recipient name on the next screen. Double-check it is correct.
-      </div>
+      </aside>
 
-      <div class="actions">
-        <a href="index.html" class="btn btn-ghost">Back</a>
-        <button type="reset" class="btn btn-ghost">Clear</button>
-        <button type="submit" class="btn btn-primary btn-lg">Continue</button>
-      </div>
-    </form>
-  </main>
+    </div>
+  </section>
+</main>
+<script>
+  lucide.createIcons();
+</script>
 
-  
-</div>
-  <script src="app.js"></script>
-  <script src="fraud-detection-system.js"></script>
-  <script>
-    // Enforce numeric-only input for fields marked with .numeric-only
-    (function () {
-      function enforceDigits(el) {
-        if (!el) return;
-        // On input, strip non-digit characters
-        el.addEventListener('input', function (e) {
-          var start = el.selectionStart;
-          var cleaned = el.value.replace(/\D+/g, '');
-          if (el.value !== cleaned) {
-            el.value = cleaned;
-            try { el.setSelectionRange(start - 1, start - 1); } catch (err) { /* ignore */ }
-          }
-        });
 
-        // On paste, only insert digits
-        el.addEventListener('paste', function (e) {
-          e.preventDefault();
-          var text = '';
-          try { text = (e.clipboardData || window.clipboardData).getData('text'); } catch (err) { }
-          text = (text || '').replace(/\D+/g, '');
-          if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
-            document.execCommand('insertText', false, text);
-          } else {
-            // Fallback: append
-            el.value = (el.value + text).replace(/\D+/g, '');
-          }
-        });
-      }
+<script src="scripts/home.js"></script>
+<script src="app.js"></script>
+<script src="fraud-detection-system.js"></script>
 
-      document.addEventListener('DOMContentLoaded', function () {
-        Array.prototype.slice.call(document.querySelectorAll('.numeric-only')).forEach(function (el) {
-          enforceDigits(el);
-        });
-      });
-    })();
-  </script>
+
+<script>
+(function () {
+  function enforceDigits(el) {
+    if (!el) return;
+    el.addEventListener('input', function () {
+      el.value = el.value.replace(/\D+/g, '');
+    });
+    el.addEventListener('paste', function (e) {
+      e.preventDefault();
+      let txt = (e.clipboardData || window.clipboardData).getData('text') || '';
+      el.value = (el.value + txt.replace(/\D+/g, ''));
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.numeric-only').forEach(enforceDigits);
+  });
+})();
+</script>
+
 </body>
 </html>
