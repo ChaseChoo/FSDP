@@ -164,7 +164,24 @@ body.atm-body {
   gap: 8px;
 }
 
-/* .page-title, .ghost-btn already styled in home.css */
+/* Move the Instructions tab UP */
+#instructions-tab {
+  margin-top: -35px !important;   /* pull closer to banner */
+  padding-top: 4px;
+}
+/* Smaller balance cards only inside Instructions tab */
+#instructions-tab .balance-card {
+  margin-top: -55px !important;     /* reduce padding */
+  border-radius: 14px !important;
+  transform: scale(0.98);       /* shrink card size visually */
+  transform-origin: top center; /* keep alignment clean */
+}
+
+#instructions-tab .balance-card .confirm-box {
+  margin-top: -5px !important;   
+  padding: 12px !important;        
+}
+
 
 /* ============================================
    INSTRUCTIONS CARDS (REUSE BALANCE CARD STYLE)
@@ -174,8 +191,9 @@ body.atm-body {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 18px;
-  padding: 24px;
+  padding: 50px;
   box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
+  max-height: 175px;
 }
 
 .balance-label {
@@ -201,7 +219,7 @@ body.atm-body {
 .confirm-box {
   background-color: #f9fafb;
   border-radius: 12px;
-  padding: 16px;
+  padding-bottom: 10px;
   border: 1px solid #e5e7eb;
 }
 

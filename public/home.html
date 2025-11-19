@@ -75,172 +75,116 @@
             <!-- Pages Wrapper -->
             <div class="atm-pages">
               <!-- MAIN MENU -->
-              <section
-                id="mainMenu"
-                class="atm-page active"
-              >
-                <div class="atm-main-grid">
-                  <button
-                    id="btnCash"
-                    class="cta-card cta-primary hover-tts"
-                  >
-                    <div class="cta-row">
-                      <div>
-                        <p
-                          class="cta-title atm-i18n"
-                          data-i18n="get_cash"
-                        >
-                          Get Cash
-                        </p>
-                        <p class="cta-sub">
-                          Quick amounts + custom
-                        </p>
-                      </div>
-                      <div class="cta-icon-pill">
-                        <i
-                          data-lucide="wallet"
-                          class="icon"
-                        ></i>
-                      </div>
-                    </div>
-                  </button>
+              <!-- =========================================================
+     MAIN MENU (Homepage – now only 3 big buttons)
+========================================================= -->
+<section id="mainMenu" class="atm-page active">
+  <div class="homepage-grid">
 
-                  <button
-                    id="btnNonCash"
-                    class="cta-card cta-outline hover-tts"
-                  >
-                    <div class="cta-row">
-                      <div>
-                        <p
-                          class="cta-title atm-i18n"
-                          data-i18n="non_cash"
-                        >
-                          Non Cash Services
-                        </p>
-                        <p class="cta-sub">
-                          Balance, transfer, more
-                        </p>
-                      </div>
-                      <div class="cta-icon-pill light">
-                        <i
-                          data-lucide="grid"
-                          class="icon"
-                        ></i>
-                      </div>
-                    </div>
-                  </button>
-                </div>
+    <!-- LEFT COLUMN (Get Cash + Deposit) -->
+    <div class="left-stack">
+      <button id="btnCash" class="cta-card cta-primary hover-tts big-btn">
+        <div class="cta-row">
+          <div>
+            <p class="cta-title">Get Cash</p>
+            <p class="cta-sub">Quick amounts + custom</p>
+          </div>
+          <div class="cta-icon-pill">
+            <i data-lucide="wallet" class="icon"></i>
+          </div>
+        </div>
+      </button>
 
-                <!-- Quick services -->
-                <div class="quick-services">
-                  <div class="quick-grid">
-                    <button
-                      id="btnBalance"
-                      class="tile-card hover-tts"
-                    >
-                      <div class="tile-corner">
-                        <i
-                          data-lucide="badge-check"
-                          class="icon-xs"
-                        ></i>
-                      </div>
-                      <div class="tile-row">
-                        <div class="tile-icon">
-                          <i
-                            data-lucide="receipt-text"
-                            class="icon"
-                          ></i>
-                        </div>
-                        <div>
-                          <p
-                            class="tile-title atm-i18n"
-                            data-i18n="balance_enquiry"
-                          >
-                            Balance enquiry
-                          </p>
-                          <p
-                            class="tile-sub atm-i18n"
-                            data-i18n="current_balance"
-                          >
-                            Current balance
-                          </p>
-                        </div>
-                      </div>
-                    </button>
+      <button id="btnDeposit" class="cta-card cta-outline hover-tts big-btn">
+        <div class="cta-row">
+          <div>
+            <p class="cta-title">Deposit Cash</p>
+            <p class="cta-sub">Insert cash to top-up balance</p>
+          </div>
+          <div class="cta-icon-pill light">
+            <i data-lucide="package" class="icon"></i>
+          </div>
+        </div>
+      </button>
+    </div>
 
-                    <button
-                      id="btnActivateCard"
-                      class="tile-card hover-tts"
-                    >
-                      <div class="tile-corner">
-                        <i
-                          data-lucide="circle-dollar-sign"
-                          class="icon-xs"
-                        ></i>
-                      </div>
-                      <div class="tile-row">
-                        <div class="tile-icon">
-                          <i
-                            data-lucide="credit-card"
-                            class="icon"
-                          ></i>
-                        </div>
-                        <div>
-                          <p
-                            class="tile-title atm-i18n"
-                            data-i18n="activate_card"
-                          >
-                            Activate card
-                          </p>
-                          <p class="tile-sub">
-                            Set PIN and enable usage
-                          </p>
-                        </div>
-                      </div>
-                    </button>
+    <!-- RIGHT COLUMN (Non Cash Services) -->
+    <button id="btnNonCash" class="cta-card cta-outline hover-tts side-btn">
+      <div class="cta-row">
+        <div>
+          <p class="cta-title">Non Cash Services</p>
+          <p class="cta-sub">Balance, transfers, activate card & more</p>
+        </div>
+        <div class="cta-icon-pill light">
+          <i data-lucide="grid" class="icon"></i>
+        </div>
+      </div>
+    </button>
 
-                  <button
-                    id="btnTransfer"
-                    class="tile-card hover-tts"
-                    type="button"
-                  >
-                    <div class="tile-corner">
-                      <i data-lucide="arrow-left-right" class="icon-xs"></i>
-                    </div>
-                    <div class="tile-row">
-                      <div class="tile-icon">
-                        <i data-lucide="send" class="icon"></i>
-                      </div>
-                      <div>
-                        <p class="tile-title atm-i18n" data-i18n="transfer_funds">
-                          Transfer Funds
-                        </p>
-                        <p class="tile-sub">Immediate or non-immediate</p>
-                      </div>
-                    </div>
-                  </button>
+  </div>
+</section>
 
 
-                    <button
-                      id="btnDeposit"
-                      class="tile-card hover-tts"
-                    >
-                      <div class="tile-corner">
-                        <i data-lucide="package" class="icon-xs"></i>
-                      </div>
-                      <div class="tile-row">
-                        <div class="tile-icon">
-                          <i data-lucide="credit-card" class="icon"></i>
-                        </div>
-                        <div>
-                          <p class="tile-title">Deposit Cash</p>
-                          <p class="tile-sub">Insert cash to top-up balance</p>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              </section>
+<!-- =========================================================
+     NEW: NON-CASH SERVICES SUBPAGE
+========================================================= -->
+<section id="nonCashMenuPage" class="atm-page">
+  <div class="page-header">
+    <h2 class="page-title">Non-Cash Services</h2>
+    <button class="ghost-btn backBtn hover-tts" type="button"
+            onclick="goHomeMenu()">
+      <i data-lucide="arrow-left" class="icon-xs"></i>
+      <span>Back</span>
+    </button>
+  </div>
+
+  <div class="quick-grid">
+
+    <!-- Balance Enquiry -->
+    <button id="btnBalance" class="tile-card hover-tts">
+      <div class="tile-corner"><i data-lucide="badge-check" class="icon-xs"></i></div>
+      <div class="tile-row">
+        <div class="tile-icon">
+          <i data-lucide="receipt-text" class="icon"></i>
+        </div>
+        <div>
+          <p class="tile-title">Balance Enquiry</p>
+          <p class="tile-sub">Current Balance</p>
+        </div>
+      </div>
+    </button>
+
+    <!-- Activate Card -->
+    <button id="btnActivateCard" class="tile-card hover-tts">
+      <div class="tile-corner"><i data-lucide="circle-dollar-sign" class="icon-xs"></i></div>
+      <div class="tile-row">
+        <div class="tile-icon">
+          <i data-lucide="credit-card" class="icon"></i>
+        </div>
+        <div>
+          <p class="tile-title">Activate Card</p>
+          <p class="tile-sub">Set PIN and enable usage</p>
+        </div>
+      </div>
+    </button>
+
+    <!-- Transfer Funds -->
+    <button id="btnTransfer" class="tile-card hover-tts">
+      <div class="tile-corner"><i data-lucide="arrow-left-right" class="icon-xs"></i></div>
+      <div class="tile-row">
+        <div class="tile-icon">
+          <i data-lucide="send" class="icon"></i>
+        </div>
+        <div>
+          <p class="tile-title">Transfer Funds</p>
+          <p class="tile-sub">Immediate or non-immediate</p>
+        </div>
+      </div>
+    </button>
+
+  </div>
+</section>
+
 
               <!-- CASH PAGE -->
               <section
@@ -942,3 +886,61 @@
     <script src="scripts/home.js"></script>
   </body>
 </html>
+
+<style>
+/* Outer row: 2 columns */
+/* ==== HOMEPAGE GRID LAYOUT ==== */
+
+/* ==== HOMEPAGE GRID LAYOUT ==== */
+
+.homepage-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 3fr 2fr;   /* left 3/5, right 2/5 */
+  gap: 20px;
+  margin-top: 20px;
+  align-items: flex-start;
+}
+
+/* Left column (stacked buttons) */
+.left-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Big vertical buttons */
+.big-btn {
+  height: 115px;
+  display: flex;
+  padding: 22px 20px;
+}
+
+/* Right-side button (non-cash) */
+.side-btn {
+  height: 248px;              /* same height as 2 stacked buttons */
+  padding: 25px 20px;
+}
+
+/* Make Get Cash & Deposit slightly wider visually */
+.big-btn .cta-title {
+  font-size: 1.15rem;
+}
+
+/* Make side button less wide-looking */
+.side-btn {
+  max-width: 360px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .homepage-grid {
+    grid-template-columns: 1fr;
+  }
+  .side-btn {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+
