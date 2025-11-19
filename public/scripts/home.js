@@ -64,18 +64,36 @@
           credentials: 'include'
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          balance = parseFloat(data.balance) || 0.0;
-          console.log('Balance loaded:', balance);
-          updateBalanceUI();
-        } else {
-          console.error('Failed to fetch balance:', response.status);
-        }
-      } catch (error) {
-        console.error('Error loading balance:', error);
+      if (response.ok) {
+        const data = await response.json();
+        balance = parseFloat(data.balance) || 0.0;
+        console.log('Balance loaded:', balance);
+        updateBalanceUI();
+      } else {
+        console.error('Failed to fetch balance:', response.status);
       }
+    } catch (error) {
+      console.error('Error loading balance:', error);
     }
+  }
+
+  // Load user name and display in greeting
+  function loadUserName() {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        const greeting = document.getElementById('greeting');
+        if (greeting && user.fullName) {
+          // Extract first name from full name
+          const firstName = user.fullName.split(' ')[0];
+          greeting.textContent = `Hello, ${firstName}!`;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user name:', error);
+    }
+  }
 
     // I18N dictionaries
     const i18n = {
@@ -1242,8 +1260,9 @@
     if (langSelect) langSelect.value = currentLang;
     if (langSelectTop) langSelectTop.value = currentLang;
 
-    // Load balance from API on page load
-    loadBalance();
+  // Load user name and balance from API on page load
+  loadUserName();
+  loadBalance();
 
     logBot(
       'ATM ready.'
