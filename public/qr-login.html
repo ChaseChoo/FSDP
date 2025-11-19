@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyATM - QR Login</title>
+    <title>OCBC ATM - QR Login</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link rel="stylesheet" href="styles/home.css">
@@ -204,7 +204,7 @@
                 <div class="logo-icon">
                     <i data-lucide="landmark"></i>
                 </div>
-                <span class="logo-text">EasyATM</span>
+                <span class="logo-text">OCBC</span>
             </div>
             
             <h1 class="title">QR Code Login</h1>
@@ -341,9 +341,9 @@
                 statusDiv.className = 'status status-success';
                 statusDiv.innerHTML = '<span>✅ Authentication successful!</span>';
                 
-                // Store token
+                // Store token (use 'token' key to match card login)
                 if (data.token) {
-                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     localStorage.setItem('account', JSON.stringify(data.account));
                 }
