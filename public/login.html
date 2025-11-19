@@ -1,227 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyATM - Login</title>
-    <link rel="stylesheet" href="styles/home.css">
-    <link rel="stylesheet" href="login.css">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATM Login</title>
+
+  <!-- Fonts -->
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Base ATM styles (your main design system) -->
+  <link rel="stylesheet" href="styles/home.css" />
+
+  <!-- Login-specific tweaks -->
+  <link rel="stylesheet" href="styles/login.css" />
+
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
-<body>
-    <div class="container">
-        <header class="header">
-            <div class="logo">
-                <i data-lucide="landmark"></i>
-                <span>EasyATM</span>
-            </div>
-        </header>
 
-        <main class="main-content">
-            <section class="balance-section">
-                <div class="balance-overview">
-                    <h1 class="atm-title">EasyATM Login</h1>
-                    <p class="atm-subtitle">Choose your authentication method</p>
-                </div>
-            </section>
+<body class="atm-body">
+  <main class="atm-shell">
+    <section class="atm-card">
+      <!-- FULL-WIDTH BANNER ACROSS THE WHOLE CARD -->
+      <div class="atm-banner">
+        <img src="/public/sources/index photo.jpg" alt="ATM Banner" />
 
-            <div class="transaction-section">
-                <div class="atm-pages">
-                    <!-- Main Login Menu -->
-                    <section id="loginMenu" class="atm-page active">
-                        <div class="atm-main-grid">
-                            <button id="btnCardLogin" class="cta-card cta-primary hover-tts" onclick="window.location.href='/card-login'">
-                                <div class="cta-row">
-                                    <div>
-                                        <p class="cta-title">Insert Card</p>
-                                        <p class="cta-sub">ATM Card + PIN</p>
-                                    </div>
-                                    <div class="cta-icon-pill">
-                                        <i data-lucide="credit-card" class="icon"></i>
-                                    </div>
-                                </div>
-                            </button>
-
-                            <button id="btnMobileAuth" class="cta-card cta-outline hover-tts" onclick="window.location.href='/mobile-auth'">
-                                <div class="cta-row">
-                                    <div>
-                                        <p class="cta-title">Mobile Banking</p>
-                                        <p class="cta-sub">Scan QR Code</p>
-                                    </div>
-                                    <div class="cta-icon-pill light">
-                                        <i data-lucide="smartphone" class="icon"></i>
-                                    </div>
-                                </div>
-                            </button>
-                        </div>
-
-                        <!-- ATM Help Options -->
-                        <div class="quick-services">
-                            <div class="quick-grid">
-                                <button id="btnHelp" class="tile-card hover-tts" onclick="showInstructions()">
-                                    <div class="tile-corner">
-                                        <i data-lucide="help-circle" class="icon-xs"></i>
-                                    </div>
-                                    <div class="tile-row">
-                                        <div class="tile-icon">
-                                            <i data-lucide="phone" class="icon"></i>
-                                        </div>
-                                        <div>
-                                            <p class="tile-title">Need Help?</p>
-                                            <p class="tile-sub">Call 1800-EASYATM</p>
-                                        </div>
-                                    </div>
-                                </button>
-
-                                <button id="btnAccessibility" class="tile-card hover-tts" onclick="toggleAccessibility()">
-                                    <div class="tile-corner">
-                                        <i data-lucide="volume-2" class="icon-xs"></i>
-                                    </div>
-                                    <div class="tile-row">
-                                        <div class="tile-icon">
-                                            <i data-lucide="accessibility" class="icon"></i>
-                                        </div>
-                                        <div>
-                                            <p class="tile-title">Audio Assistance</p>
-                                            <p class="tile-sub">Voice guidance</p>
-                                        </div>
-                                    </div>
-                                </button>
-
-                                <button id="btnLanguage" class="tile-card hover-tts" onclick="cycleLanguage()">
-                                    <div class="tile-corner">
-                                        <i data-lucide="globe" class="icon-xs"></i>
-                                    </div>
-                                    <div class="tile-row">
-                                        <div class="tile-icon">
-                                            <i data-lucide="languages" class="icon"></i>
-                                        </div>
-                                        <div>
-                                            <p class="tile-title">Language</p>
-                                            <p class="tile-sub">English | 中文 | Melayu</p>
-                                        </div>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Instructions Page -->
-                    <section id="instructions-tab" class="atm-page">
-                        <div class="page-header">
-                            <h2 class="page-title">How to Use This ATM</h2>
-                            <button class="ghost-btn backBtn hover-tts" type="button" onclick="showLoginMenu()">
-                                <i data-lucide="arrow-left" class="icon-xs"></i>
-                                <span>Back</span>
-                            </button>
-                        </div>
-
-                        <div class="quick-grid">
-                            <div class="balance-card" style="flex-direction: column; text-align: center; padding: 20px;">
-                                <div class="balance-label" style="margin-bottom: 16px;">
-                                    <div class="balance-icon">
-                                        <i data-lucide="credit-card" class="icon"></i>
-                                    </div>
-                                    <span>Card Authentication</span>
-                                </div>
-                                <div class="confirm-box">
-                                    <p class="confirm-text">
-                                        <strong>Step 1:</strong> Insert your ATM card<br>
-                                        <strong>Step 2:</strong> Enter your 4-digit PIN<br>
-                                        <strong>Step 3:</strong> Select your transaction
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="balance-card" style="flex-direction: column; text-align: center; padding: 20px;">
-                                <div class="balance-label" style="margin-bottom: 16px;">
-                                    <div class="balance-icon">
-                                        <i data-lucide="smartphone" class="icon"></i>
-                                    </div>
-                                    <span>Mobile Banking</span>
-                                </div>
-                                <div class="confirm-box">
-                                    <p class="confirm-text">
-                                        <strong>Step 1:</strong> Open mobile banking app<br>
-                                        <strong>Step 2:</strong> Scan QR code displayed<br>
-                                        <strong>Step 3:</strong> Approve on your device
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="page-actions">
-                            <button class="btn-primary hover-tts" onclick="window.location.href='/card-login'">
-                                <i data-lucide="arrow-right" style="width: 16px; height: 16px; margin-right: 6px;"></i>
-                                Start ATM Session
-                            </button>
-                        </div>
-                    </section>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Chatbot Assistant -->
-    <link rel="stylesheet" href="login-chat.css">
-    <div id="login-chat" class="chat-widget collapsed" aria-hidden="true">
-        <button id="chatToggle" class="chat-toggle" aria-label="Open help chat">Help</button>
-        <div class="chat-window">
-            <div class="chat-header">
-                <span>Help Assistant</span>
-                <div class="chat-controls-top">
-                    <select id="chatLang" title="Language">
-                        <option value="en">English</option>
-                        <option value="zh">中文</option>
-                        <option value="ms">Bahasa</option>
-                        <option value="ta">தமிழ்</option>
-                    </select>
-                    <button id="chatTTS" class="tts-btn" title="Toggle speech">🔊</button>
-                </div>
-            </div>
-            <div id="loginChatLog" class="chat-log"></div>
-            <div class="chat-controls">
-                <input id="loginChatInput" class="chat-input" placeholder="Type 'forgot pin' or ask for access code" />
-                <button id="loginChatSend" class="chat-send">Send</button>
-            </div>
+        <div class="banner-text">
+          <p class="atm-hello">Welcome to OCBC </p>
+          <h1 class="atm-title">What would you like to do today?</h1>
         </div>
-    </div>
-    <script src="login-chat.js"></script>
+      </div>
 
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
 
-        // Navigation functions
-        function showLoginMenu() {
-            document.querySelectorAll('.atm-page').forEach(page => page.classList.remove('active'));
-            document.getElementById('loginMenu').classList.add('active');
-            lucide.createIcons();
-        }
+      <!-- SINGLE-COLUMN CONTENT (uses same spacing style as atm-left) -->
+      <div class="atm-main">
+        <div class="atm-pages">
+          <!-- LOGIN MENU PAGE -->
+          <section id="loginMenu" class="atm-page active">
+            <div class="atm-main-grid">
+              <!-- Card Login -->
+              <button class="cta-card cta-primary hover-tts"
+                onclick="window.location.href='card-login.html'">
+                <div class="cta-row">
+                  <div>
+                    <p class="cta-title">Insert Card</p>
+                    <p class="cta-sub">ATM Card + PIN</p>
+                  </div>
+                  <div class="cta-icon-pill">
+                    <i data-lucide="credit-card" class="icon"></i>
+                  </div>
+                </div>
+              </button>
 
-        function showInstructions() {
-            document.querySelectorAll('.atm-page').forEach(page => page.classList.remove('active'));
-            document.getElementById('instructions-tab').classList.add('active');
-            lucide.createIcons();
-        }
+              <!-- Mobile Banking -->
+              <button class="cta-card cta-outline hover-tts"
+                onclick="window.location.href='mobile-auth.html'">
+                <div class="cta-row">
+                  <div>
+                    <p class="cta-title">Mobile Banking</p>
+                    <p class="cta-sub">Scan QR Code</p>
+                  </div>
+                  <div class="cta-icon-pill light">
+                    <i data-lucide="smartphone" class="icon"></i>
+                  </div>
+                </div>
+              </button>
+            </div>
 
-        function toggleAccessibility() {
-            alert('Audio assistance feature coming soon!');
-        }
+            <!-- QUICK SERVICES -->
+            <div class="quick-services">
+              <div class="quick-grid">
 
-        function cycleLanguage() {
-            alert('Language selection feature coming soon!');
-        }
+                <button class="tile-card hover-tts" onclick="showInstructions()">
+                  <div class="tile-corner">
+                    <i data-lucide="help-circle" class="icon-xs"></i>
+                  </div>
+                  <div class="tile-row">
+                    <div class="tile-icon">
+                      <i data-lucide="phone" class="icon"></i>
+                    </div>
+                    <div>
+                      <p class="tile-title">Need Help?</p>
+                      <p class="tile-sub">Call 1800-EASYATM</p>
+                    </div>
+                  </div>
+                </button>
 
-        // Check if user is already logged in
-        const token = localStorage.getItem('token');
-        const user = localStorage.getItem('user');
-        
-        if (token && user) {
-            console.log('User already logged in, but staying on login page for demo purposes');
-            // Uncomment to enable auto-redirect:
-            // window.location.href = '/home.html';
-        }
-    </script>
+                <button class="tile-card hover-tts" onclick="toggleAccessibility()">
+                  <div class="tile-corner">
+                    <i data-lucide="volume-2" class="icon-xs"></i>
+                  </div>
+                  <div class="tile-row">
+                    <div class="tile-icon">
+                      <i data-lucide="accessibility" class="icon"></i>
+                    </div>
+                    <div>
+                      <p class="tile-title">Audio Assistance</p>
+                      <p class="tile-sub">Voice Guidance</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button class="tile-card hover-tts" onclick="cycleLanguage()">
+                  <div class="tile-corner">
+                    <i data-lucide="globe" class="icon-xs"></i>
+                  </div>
+                  <div class="tile-row">
+                    <div class="tile-icon">
+                      <i data-lucide="languages" class="icon"></i>
+                    </div>
+                    <div>
+                      <p class="tile-title">Language</p>
+                      <p class="tile-sub">English | 中文 | Melayu</p>
+                    </div>
+                  </div>
+                </button>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- INSTRUCTIONS PAGE -->
+          <section id="instructions-tab" class="atm-page">
+            <div class="page-header">
+              <h2 class="page-title">How to Use This ATM</h2>
+              <button class="ghost-btn backBtn hover-tts" type="button" onclick="showLoginMenu()">
+                <i data-lucide="arrow-left" class="icon-xs"></i>
+                <span>Back</span>
+              </button>
+            </div>
+
+            <div class="quick-grid">
+              <div class="balance-card" style="flex-direction: column; text-align: center; padding: 20px;">
+                <div class="balance-label" style="margin-bottom: 16px;">
+                  <div class="balance-icon">
+                    <i data-lucide="credit-card" class="icon"></i>
+                  </div>
+                  <span>Card Authentication</span>
+                </div>
+                <div class="confirm-box">
+                  <p class="confirm-text">
+                    <strong>Step 1:</strong> Insert your ATM card<br>
+                    <strong>Step 2:</strong> Enter your 4-digit PIN<br>
+                    <strong>Step 3:</strong> Select your transaction
+                  </p>
+                </div>
+              </div>
+
+              <div class="balance-card" style="flex-direction: column; text-align: center; padding: 20px;">
+                <div class="balance-label" style="margin-bottom: 16px;">
+                  <div class="balance-icon">
+                    <i data-lucide="smartphone" class="icon"></i>
+                  </div>
+                  <span>Mobile Banking</span>
+                </div>
+                <div class="confirm-box">
+                  <p class="confirm-text">
+                    <strong>Step 1:</strong> Open mobile banking app<br>
+                    <strong>Step 2:</strong> Scan QR code displayed<br>
+                    <strong>Step 3:</strong> Approve on your device
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="page-actions">
+              <button class="btn-primary hover-tts"
+                onclick="window.location.href='card-login.html'">
+                <i data-lucide="arrow-right" style="width: 16px; height: 16px; margin-right: 6px;"></i>
+                Start ATM Session
+              </button>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+    }
+
+    function showLoginMenu() {
+      document.querySelectorAll(".atm-page").forEach(p => p.classList.remove("active"));
+      document.getElementById("loginMenu").classList.add("active");
+      if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+    }
+
+    function showInstructions() {
+      document.querySelectorAll(".atm-page").forEach(p => p.classList.remove("active"));
+      document.getElementById("instructions-tab").classList.add("active");
+      if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+    }
+
+    function toggleAccessibility() {
+      alert("Audio assistance coming soon!");
+    }
+
+    function cycleLanguage() {
+      alert("Language selection coming soon!");
+    }
+  </script>
 </body>
 </html>
