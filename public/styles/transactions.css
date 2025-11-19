@@ -1,0 +1,31 @@
+/* White panel */
+.history-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+/* Table */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+
+.history-table thead tr {
+  background: #bbbbbb;
+  border-bottom: 2px solid var(--border);
+}
+
+.history-table th,
+.history-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.history-table tbody tr:hover {
+  background: #fff4f4;
+}

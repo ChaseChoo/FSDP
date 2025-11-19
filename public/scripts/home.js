@@ -1272,3 +1272,7 @@
     // show numbered options for the main menu immediately
     try{ displayMenuOptions('main'); }catch(e){}
   });
+
+document.getElementById("btnTransactions").addEventListener("click", () => {
+  window.location.href = "transactions.html";
+});
