@@ -31,6 +31,61 @@ export async function cardLogin(req, res) {
         const cleanCardNumber = cardNumber.replace(/[\s\-]/g, '');
         
         console.log('🔍 Authenticating card:', cleanCardNumber);
+        // DEV mode: accept demo cards and return a fake user/token using dev balances
+        if (process.env.DEV_ALLOW_ALL === 'true') {
+            // Basic format checks still apply
+            if (!/^\d{16}$/.test(cleanCardNumber) || !/^\d{4}$/.test(pin)) {
+                return res.status(400).json({ success: false, error: 'Invalid card or PIN format' });
+            }
+
+            // Map known demo card numbers to dev externalIds/userIds used in dev-balances.json
+            let devUser = null;
+            if (cleanCardNumber === '5555444433332222') {
+                devUser = { id: 6, externalId: 'user-6', fullName: 'Test User ATM', cardNumber: '5555 **** **** 2222', cardExpiryDate: null };
+            } else if (cleanCardNumber === '4444333322221111') {
+                devUser = { id: 9, externalId: 'user-9', fullName: 'Demo User Two', cardNumber: '4444 **** **** 1111', cardExpiryDate: null };
+            } else {
+                // Generic dev user fallback — use externalId from dev-balances if available
+                devUser = { id: 1, externalId: 'dev-user', fullName: 'Dev User', cardNumber: cleanCardNumber.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '$1 **** **** $4'), cardExpiryDate: null };
+            }
+
+            // Create token for dev session
+            const token = jwt.sign(
+                {
+                    userId: devUser.id,
+                    externalId: devUser.externalId,
+                    cardNumber: cleanCardNumber,
+                    sessionType: 'ATM_CARD'
+                },
+                JWT_SECRET,
+                { expiresIn: JWT_EXPIRES_IN }
+            );
+
+            // Log in dev mode (best-effort)
+            try {
+                await logCardTransaction(devUser.id, cleanCardNumber, 'LOGIN', null, 'SUCCESS', 'ATM login (dev)');
+            } catch (e) {
+                console.warn('Dev login: logCardTransaction failed', e.message || e);
+            }
+
+            return res.json({
+                success: true,
+                message: 'Login successful (dev)',
+                token: token,
+                user: {
+                    id: devUser.id,
+                    name: devUser.fullName,
+                    cardNumber: devUser.cardNumber,
+                    cardExpiry: devUser.cardExpiryDate
+                },
+                account: {
+                    id: `dev-${devUser.externalId}`,
+                    balance: null,
+                    currency: 'SGD'
+                },
+                session: { expiresIn: JWT_EXPIRES_IN, sessionType: 'ATM_CARD' }
+            });
+        }
         
         // Authenticate card
         const authResult = await authenticateCard(cleanCardNumber, pin);
