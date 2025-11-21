@@ -836,6 +836,58 @@ body.atm-body {
   100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.0); transform: translateY(0); }
 }
 
+/* Virtual teller overlay */
+.virtual-teller-overlay {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 760px;
+  max-width: calc(100% - 48px);
+  height: 520px;
+  max-height: calc(100% - 48px);
+  z-index: 9999;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+  padding: 12px;
+}
+.vt-panel {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg,#ffffff,#f8fafc);
+  border-radius: 16px;
+  box-shadow: 0 30px 80px rgba(2,6,23,0.45);
+  overflow: hidden;
+  border: 1px solid #e6eef8;
+  display: flex;
+  flex-direction: column;
+}
+.vt-header {
+  display:flex; align-items:center; justify-content:space-between; gap:8px; padding:14px 16px; background:#0b3b6f; color:#fff;
+}
+.vt-title { font-weight:800; font-size:1.15rem; }
+.vt-close { background:transparent; border:none; color:#fff; font-size:1.25rem; cursor:pointer }
+.vt-body { padding:14px; flex:1; overflow:auto; background:linear-gradient(180deg,#f9fbff,#fff); }
+.vt-status { font-size:0.85rem; color:#374151; margin-bottom:8px }
+.vt-messages { display:flex; flex-direction:column; gap:8px }
+.vt-messages .vt-row { display:flex; gap:8px; align-items:flex-end }
+.vt-messages .vt-row.agent { justify-content:flex-start }
+.vt-messages .vt-row.user { justify-content:flex-end }
+.vt-avatar { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; font-size:1.15rem }
+.vt-avatar.agent { background:linear-gradient(180deg,#2563eb,#0b3b6f); }
+.vt-avatar.user { background:linear-gradient(180deg,#111827,#374151); }
+.vt-bubble { padding:14px 16px; border-radius:14px; max-width:82%; font-size:1.05rem }
+.vt-row.agent .vt-bubble { background:#eef2ff; color:#0b2546; border-top-left-radius:6px }
+.vt-row.user .vt-bubble { background:#111827; color:#fff; border-top-right-radius:6px }
+.vt-controls { display:flex; gap:8px; padding:10px; border-top:1px solid #e6eef8; background:#fff; align-items:center; justify-content:space-between }
+.vt-call-info { display:flex; gap:10px; align-items:center }
+.vt-call-text { font-size:1.05rem; color:#374151; font-weight:600 }
+.vt-actions { display:flex; gap:12px }
+.vt-actions .btn-secondary { padding:10px 12px; border-radius:10px; font-size:1rem }
+
 .atm-layout {
   height: 100%;
 }

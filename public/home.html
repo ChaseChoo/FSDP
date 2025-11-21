@@ -33,6 +33,29 @@
                   <p
                     class="atm-hello atm-i18n"
                     data-i18n="hello"
+            <!-- Virtual Teller Overlay (hidden by default) -->
+            <div id="virtualTellerOverlay" class="virtual-teller-overlay" aria-hidden="true" style="display:none;">
+              <div class="vt-panel">
+                <div class="vt-header">
+                  <div class="vt-title">Virtual Teller</div>
+                  <button id="vtClose" class="vt-close" aria-label="End call">✕</button>
+                </div>
+                <div id="vtBody" class="vt-body">
+                  <div id="vtStatus" class="vt-status">Connecting to your virtual teller...</div>
+                  <div id="vtMessages" class="vt-messages" role="log" aria-live="polite"></div>
+                </div>
+                <div class="vt-controls">
+                  <div class="vt-call-info">
+                    <div class="vt-avatar agent" aria-hidden="true">A</div>
+                    <div class="vt-call-text">Call with <strong>Alex (Virtual Teller)</strong></div>
+                  </div>
+                  <div class="vt-actions">
+                    <button id="vtMic" class="btn-secondary" aria-pressed="false">🎤 Speak</button>
+                    <button id="vtCloseBtn" class="btn-secondary">End</button>
+                  </div>
+                </div>
+              </div>
+            </div>
                     id="greeting"
                   >
                     Hello!
