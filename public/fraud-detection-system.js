@@ -22,7 +22,13 @@ function normalizeNumber(input) {
 
 async function loadApprovedRecipientsFromApi() {
   try {
-    const resp = await fetch('/api/approved-recipients');
+    const token = localStorage.getItem('token');
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const resp = await fetch('/api/approved-recipients', { headers });
     if (!resp.ok) throw new Error('api error');
     const data = await resp.json();
     return (Array.isArray(data) ? data : []).map(r => {

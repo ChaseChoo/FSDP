@@ -268,10 +268,11 @@
             }
             
             generateQRCode() {
-                // Get local IP from current window location or use default
-                const hostname = window.location.hostname === 'localhost' ? '172.20.10.7' : window.location.hostname;
+                // Use the current page's hostname and port (works for any device accessing the page)
+                const hostname = window.location.hostname;
                 const port = window.location.port || '3000';
-                const baseUrl = `http://${hostname}:${port}`;
+                const protocol = window.location.protocol; // http: or https:
+                const baseUrl = `${protocol}//${hostname}:${port}`;
                 const qrData = `${baseUrl}/mobile-auth.html?sessionId=${this.sessionId}`;
                 
                 console.log('Generating QR code with URL:', qrData);

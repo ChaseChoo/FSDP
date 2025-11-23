@@ -96,11 +96,18 @@ function populateBillersSafeMode(enabled) {
 }
 
 if (safeToggle) {
-  // initialize from localStorage if present
+  // Initialize Safe Mode as ON by default
   try {
     const stored = localStorage.getItem('safeMode');
-    if (stored === 'true') safeToggle.checked = true;
-    else if (stored === 'false') safeToggle.checked = false;
+    if (stored === null) {
+      // First time - enable Safe Mode by default
+      localStorage.setItem('safeMode', 'true');
+      safeToggle.checked = true;
+    } else if (stored === 'true') {
+      safeToggle.checked = true;
+    } else if (stored === 'false') {
+      safeToggle.checked = false;
+    }
   } catch (e) {}
 
   safeToggle.addEventListener("change", () => {
