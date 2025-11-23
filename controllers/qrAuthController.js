@@ -139,14 +139,57 @@ export async function approveQRAuth(req, res) {
       return res.status(400).json({ error: 'Card number required' });
     }
     
-    // Get user and account by card number
-    const result = await getUserByCardNumber(cardNumber);
-    
-    if (!result) {
-      return res.status(404).json({ error: 'Card not found or inactive' });
+    // DEV mode: use demo card data instead of database
+    let user, account;
+    if (process.env.DEV_ALLOW_ALL === 'true') {
+      // Map demo card numbers to user data
+      const cleanCardNumber = cardNumber.replace(/[\s\-]/g, '');
+      
+      if (cleanCardNumber === '5555444433332222') {
+        user = { 
+          id: 6, 
+          externalId: 'user-6', 
+          fullName: 'Fresh Test User', 
+          email: 'test@example.com',
+          cardNumber: '5555 **** **** 2222'
+        };
+        account = { 
+          id: 6005, 
+          balance: 1146, 
+          currency: 'SGD',
+          accountNumber: 'ACC6005',
+          accountType: 'SAVINGS'
+        };
+      } else if (cleanCardNumber === '4444333322221111') {
+        user = { 
+          id: 9, 
+          externalId: 'user-9', 
+          fullName: 'Demo User Two', 
+          email: 'demo2@example.com',
+          cardNumber: '4444 **** **** 1111'
+        };
+        account = { 
+          id: 9002, 
+          balance: 4131, 
+          currency: 'SGD',
+          accountNumber: 'ACC9002',
+          accountType: 'SAVINGS'
+        };
+      } else {
+        return res.status(404).json({ error: 'Card not found (dev mode)' });
+      }
+      console.log(`[QR Auth] DEV mode: Using demo data for card ${cleanCardNumber}`);
+    } else {
+      // Production: Get user and account by card number from database
+      const result = await getUserByCardNumber(cardNumber);
+      
+      if (!result) {
+        return res.status(404).json({ error: 'Card not found or inactive' });
+      }
+      
+      user = result.user;
+      account = result.account;
     }
-    
-    const { user, account } = result;
     
     // Create session
     const authSession = createSession(user.externalId, { 

@@ -124,7 +124,6 @@
   ],
   "user-6": [
     {
-<<<<<<< HEAD
       "Id": "dev-1763601837753-0.3721080675010917",
       "AccountId": "dev-user-6",
       "Type": "DEPOSIT",
@@ -159,7 +158,8 @@
       "BalanceAfter": 146,
       "Description": "PayNow to 12345676 via Mobile Number",
       "CreatedAt": "2025-11-20T01:22:33.136Z"
-=======
+    },
+    {
       "Id": "dev-1763601219590-0.3810830921043844",
       "AccountId": "dev-user-6",
       "Type": "DEPOSIT",
@@ -212,7 +212,6 @@
       "BalanceAfter": 1046,
       "Description": "PayNow to 91234567 via Mobile Number",
       "CreatedAt": "2025-11-20T00:56:23.915Z"
->>>>>>> 094dc6c9d6d1939fed18b279cd623e84bc188cbe
     },
     {
       "Id": "dev-1763570002833-0.2899685905865965",
