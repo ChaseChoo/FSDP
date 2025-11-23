@@ -41,9 +41,15 @@ export async function cardLogin(req, res) {
             // Map known demo card numbers to dev externalIds/userIds used in dev-balances.json
             let devUser = null;
             if (cleanCardNumber === '5555444433332222') {
-                devUser = { id: 6, externalId: 'user-6', fullName: 'Test User ATM', cardNumber: '5555 **** **** 2222', cardExpiryDate: null };
+                devUser = { id: 6, externalId: 'user-6', fullName: 'Lee Jia Jun', cardNumber: '5555 **** **** 2222', cardExpiryDate: null };
             } else if (cleanCardNumber === '4444333322221111') {
-                devUser = { id: 9, externalId: 'user-9', fullName: 'Demo User Two', cardNumber: '4444 **** **** 1111', cardExpiryDate: null };
+                devUser = { id: 9, externalId: 'user-9', fullName: 'Chase Choo', cardNumber: '4444 **** **** 1111', cardExpiryDate: null };
+            } else if (cleanCardNumber === '3333222211110000') {
+                devUser = { id: 7, externalId: 'user-7', fullName: 'Fang Yu Xuan', cardNumber: '3333 **** **** 0000', cardExpiryDate: null };
+            } else if (cleanCardNumber === '2222111100009999') {
+                devUser = { id: 8, externalId: 'user-8', fullName: 'David Chong', cardNumber: '2222 **** **** 9999', cardExpiryDate: null };
+            } else if (cleanCardNumber === '1111000099998888') {
+                devUser = { id: 10, externalId: 'user-10', fullName: 'Luo Tian Rui', cardNumber: '1111 **** **** 8888', cardExpiryDate: null };
             } else {
                 // Generic dev user fallback — use externalId from dev-balances if available
                 devUser = { id: 1, externalId: 'dev-user', fullName: 'Dev User', cardNumber: cleanCardNumber.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '$1 **** **** $4'), cardExpiryDate: null };
@@ -431,14 +437,14 @@ export async function getDemoBalances(req, res) {
             // Card 5555444433332222 is userId 6, Card 4444333322221111 is userId 9
             const accounts = [
                 {
-                    fullName: 'Test User ATM',
+                    fullName: 'Lee Jia Jun',
                     cardNumber: '5555444433332222',
                     accountNumber: 'ACC-5555444433332222',
                     balance: getDevBalance('user-6'),
                     currency: 'SGD'
                 },
                 {
-                    fullName: 'Demo User Two',
+                    fullName: 'Chase Choo',
                     cardNumber: '4444333322221111',
                     accountNumber: 'ACC-4444333322221111',
                     balance: getDevBalance('user-9'),

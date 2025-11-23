@@ -84,9 +84,10 @@
       if (userStr) {
         const user = JSON.parse(userStr);
         const greeting = document.getElementById('greeting');
-        if (greeting && user.fullName) {
+        const fullName = user.fullName || user.name;
+        if (greeting && fullName) {
           // Extract first name from full name
-          const firstName = user.fullName.split(' ')[0];
+          const firstName = fullName.split(' ')[0];
           greeting.textContent = `Hello, ${firstName}!`;
         }
       }
