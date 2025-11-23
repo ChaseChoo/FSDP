@@ -737,6 +737,21 @@
         messages.innerHTML = '';
         overlay.style.display = 'block'; overlay.setAttribute('aria-hidden','false');
         status.textContent = 'Connecting to your virtual teller...';
+        // Try to autoplay a pre-recorded video (muted) for the virtual teller
+        try{
+          const vtVideo = document.getElementById('vtVideo');
+          if(vtVideo){
+            vtVideo.style.display = 'block';
+            vtVideo.muted = true;
+            vtVideo.playsInline = true;
+            // Ensure src is set; developer can place file at public/media/virtual-teller.mp4
+            const src = vtVideo.getAttribute('data-src') || vtVideo.getAttribute('src') || 'media/virtual-teller.mp4';
+            if(!vtVideo.src || !vtVideo.src.includes(src)) vtVideo.src = src;
+            try{ vtVideo.load(); }catch(e){}
+            const p = vtVideo.play();
+            if(p && p.catch) p.catch(()=>{/* autoplay likely blocked by browser until user interacts */});
+          }
+        }catch(e){console.error('VT video play error', e);} 
         // simulate connection
         setTimeout(()=>{
           status.textContent = 'Connected — Virtual Teller (Alex)';
@@ -754,7 +769,13 @@
     }
 
     function closeVirtualTeller(){
-      try{ const overlay = document.getElementById('virtualTellerOverlay'); if(!overlay) return; overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); stopVTListening(); }catch(e){}
+      try{ 
+        const overlay = document.getElementById('virtualTellerOverlay'); 
+        if(!overlay) return; 
+        // pause and hide video when closing
+        try{ const vtVideo = document.getElementById('vtVideo'); if(vtVideo){ vtVideo.pause(); vtVideo.currentTime = 0; vtVideo.style.display = 'none'; } }catch(e){}
+        overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); stopVTListening(); 
+      }catch(e){}
     }
 
     // VT-specific SpeechRecognition (independent from main recognition)
@@ -910,27 +931,55 @@
 
       // PayNow quick intent: recognize 'pay now', 'paynow', 'scan qr', or 'send to <phone>' phrases
       const paynowRegex = /(pay\s?now|paynow|scan qr|scan code|pay to|send to phone|pay via phone)/i;
-      // Complex requests that require specialist assistance -> virtual teller
-      const complexRequests = /(change (of )?particulars|change giro|giro payment limit|delete giro|delete giro arrangement|additional cheque book|request additional cheque book|replacement of passbook|replacement passbook|change mobile|change my mobile)/i;
+      // Complex requests: use language-aware regexes for better coverage (change particulars, GIRO, cheque-book, passbook, etc.)
+      const complexRequestsEn = /(?:change(?:\s+(?:of|my|the))?\s+particulars|update(?:\s+(?:my|the))?\s+(?:details|contact|mobile|phone|address|personal information)|change(?:\s+(?:my|the))?\s+mobile(?:\s+number)?|update(?:\s+(?:my|the))?\s+mobile|change\s+contact(?:\s+number)?|update\s+contact|change\s+phone|update\s+phone|change\s+address|update\s+address|change\s+of\s+details|change\s+giro(?:\s+(?:payment\s+)?limit)?|update\s+giro(?:\s+limit)?|giro\s+limit|increase\s+giro\s+limit|decrease\s+giro\s+limit|cancel\s+giro|delete\s+giro(?:\s+arrangement)?|terminate\s+giro|stop\s+giro|close\s+giro(?:\s+arrangement)?|request(?:\s+an?)?\s+(?:additional|extra|new)?\s*(?:cheque|check)\s*(?:book|books)?|order(?:\s+an?)?\s*(?:cheque|check)\s*(?:book|books)?|apply(?:\s+for)?\s+(?:additional|extra)\s*(?:cheque|check)\s*book|replacement\s+of\s+passbook|replace\s+passbook|lost\s+passbook|new\s+passbook|request\s+passbook|order\s+passbook|replacement\s+passbook|request\s+an?\s+additional\s+cheque\s+book)/i;
+      const complexRequestsZh = /(更改(?:\s*资料|\s*資料|\s*信息)?|更新(?:\s*资料|\s*信息)?|更换(?:\s*手机|\s*号码)?|更改手机号|更新手机号码|更改地址|更改收款资料|更改GIRO|修改GIRO|取消GIRO|终止GIRO|删除GIRO|申请支票簿|订购支票簿|补发支票簿|补发存折|更换存折|遗失存折)/i;
+      const complexRequestsMs = /(kemas\s*?kini|kemasukan|ubah|tukar\s*(?:nombor|telefon|telefon\s*?bimbit)?|tukar\s*alamat|tukar\s*giro|batalkan\s*giro|hentikan\s*arahan\s*tetap|minta\s*buku\s*cek|pesan\s*buku\s*cek|gantikan\s*buku\s*simpanan)/i;
+      const complexRequestsTa = /(விவரங்களைக்\s*கொடுக்க|மொபைல்\s*மாற்று|முகவரி\s*மாற்று|GIRO\s*கட்டுப்பாடு\s*மாற்று|GIRO\s*ரத்து|பேச்சு\s*புத்தகம்\s*கோரிக்கை|பாஸ்புக்\s*மாற்று)/i;
 
-      if (complexRequests.test(lower)) {
-        logBot("I can't assist with this request directly. I'll connect you to a virtual teller.");
-        speak("I can't assist with this. I'll connect you to a virtual teller.");
-        // open virtual teller UI and pass the original request for the agent
-        try{ showVirtualTeller('User requested: ' + text); }catch(e){}
-        return;
-      }
+      // language-aware matching for complex requests -> open Virtual Teller
+      try {
+        const isComplex = (currentLang === 'zh' && complexRequestsZh.test(lower)) ||
+                          (currentLang === 'ms' && complexRequestsMs.test(lower)) ||
+                          (currentLang === 'ta' && complexRequestsTa.test(lower)) ||
+                          complexRequestsEn.test(lower);
+        if (isComplex) {
+          logBot("I can't assist with this request directly. I'll connect you to a virtual teller.");
+          speak("I can't assist with this. I'll connect you to a virtual teller.");
+          try{ showVirtualTeller('User requested: ' + text); }catch(e){}
+          return;
+        }
+      } catch(e) { console.error('complex request matching error', e); }
 
       if (paynowRegex.test(lower)) {
-        // try extract amount and an 8-digit phone/account number
-        let amt = amount;
-        if (!amt) { const words = wordsToNumber(text); if (words) amt = words; }
-        const phoneMatch = text.match(/(\b\d{8}\b)/) || text.match(/(\+?\d{7,15})/);
-        const recipient = phoneMatch ? phoneMatch[0] : null;
-        if (amt && recipient) {
+        // Robust PayNow parsing: accept "paynow <phone> <amount>", "paynow <amount> <phone>", or partials.
+        // Normalize digits (allow +65, spaces)
+        const phoneMatch = text.match(/(\+?\d[\d\s-]{6,20}\d)/g) || [];
+        // prefer an 8-digit match if present
+        let recipient = null;
+        if (phoneMatch && phoneMatch.length) {
+          // find first token that has 7-15 digits when non-digits removed
+          for (const pm of phoneMatch) {
+            const digits = pm.replace(/\D/g, '');
+            if (digits.length >= 7 && digits.length <= 15) { recipient = digits; break; }
+          }
+        }
+
+        // extract amount (digits or words)
+        let amt = null;
+        // match explicit SGD like '50' or '50.00' near the phone or anywhere
+        const amtNumMatch = text.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/);
+        if (amtNumMatch) amt = parseFloat(amtNumMatch[1]);
+        if (!amt) {
+          const byWords = wordsToNumber(text);
+          if (byWords) amt = byWords;
+        }
+
+        // If both recipient and amount present -> go to confirm page
+        if (recipient && amt) {
           try{
-            localStorage.setItem('paynow_method','Phone');
-            localStorage.setItem('paynow_recipient', recipient);
+            localStorage.setItem('paynow_method', 'Phone');
+            localStorage.setItem('paynow_recipient', String(recipient));
             localStorage.setItem('paynow_amount', String(amt));
           }catch(e){}
           logBot(`Preparing PayNow to ${recipient} for ${formatCurrency(amt)}. Redirecting to confirmation.`);
@@ -938,10 +987,30 @@
           setTimeout(()=> { window.location.href = 'confirm-paynow.html'; }, 700);
           return;
         }
-        // otherwise prompt user to use PayNow form
-        showPage('noncash');
-        logBot('To use PayNow, open Non Cash Services and choose Transfer / PayNow.');
-        speak('To use PayNow, open Non Cash Services and choose Transfer or PayNow.');
+
+        // If only recipient or only amount present, prefill PayNow form and open PayNow page
+        try{
+          if (recipient) {
+            localStorage.setItem('paynow_method', 'Phone');
+            localStorage.setItem('paynow_recipient', String(recipient));
+            logBot(`Opening PayNow form with recipient ${recipient}.`);
+            speak(`Opening PayNow form for ${recipient}.`);
+            setTimeout(()=> { window.location.href = 'paynow.html'; }, 600);
+            return;
+          }
+          if (amt) {
+            localStorage.setItem('paynow_amount', String(amt));
+            logBot(`Opening PayNow form with amount ${formatCurrency(amt)}.`);
+            speak(`Opening PayNow form for ${amt} dollars.`);
+            setTimeout(()=> { window.location.href = 'paynow.html'; }, 600);
+            return;
+          }
+        }catch(e){/* ignore */}
+
+        // default: open PayNow page so user can enter details
+        logBot('Opening PayNow form. Please enter recipient and amount.');
+        speak('Opening PayNow form. Please enter recipient and amount.');
+        setTimeout(()=> { window.location.href = 'paynow.html'; }, 600);
         return;
       }
 

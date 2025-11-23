@@ -64,6 +64,8 @@
                 </div>
                 <div id="vtBody" class="vt-body">
                   <div id="vtStatus" class="vt-status">Connecting to your virtual teller...</div>
+                  <!-- Pre-recorded video (muted for autoplay). Place your file at `public/media/virtual-teller.mp4` -->
+                  <video id="vtVideo" class="vt-video" src="media/virtual-teller.mp4" playsinline muted loop preload="auto" style="width:100%; max-height:320px; object-fit:cover; display:none; border-radius:8px; margin-top:10px;"></video>
                   <div id="vtMessages" class="vt-messages" role="log" aria-live="polite"></div>
                 </div>
                 <div class="vt-controls">
