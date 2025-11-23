@@ -702,6 +702,85 @@
       }catch(e){}
     }
 
+    // Virtual teller simulation: show/close helpers
+    // Virtual teller message renderer (with avatar + bubble)
+    function appendVTMessage(kind, text){
+      try{
+        const box = document.getElementById('vtMessages');
+        if(!box) return;
+        const row = document.createElement('div'); row.className = 'vt-row ' + (kind==='user' ? 'user' : 'agent');
+        const avatar = document.createElement('div'); avatar.className = 'vt-avatar ' + (kind==='user' ? 'user' : 'agent');
+        avatar.setAttribute('aria-hidden','true');
+        avatar.textContent = (kind==='user' ? 'G' : 'A');
+        const bubble = document.createElement('div'); bubble.className = 'vt-bubble';
+        bubble.textContent = text;
+        if(kind === 'user') { row.appendChild(bubble); row.appendChild(avatar); }
+        else { row.appendChild(avatar); row.appendChild(bubble); }
+        box.appendChild(row);
+        box.scrollTop = box.scrollHeight;
+        try{ if(kind !== 'user') speak(text); }catch(e){}
+      }catch(e){ console.error(e); }
+    }
+
+    function showVirtualTeller(initialAgentText){
+      try{
+        const overlay = document.getElementById('virtualTellerOverlay');
+        const status = document.getElementById('vtStatus');
+        const messages = document.getElementById('vtMessages');
+        const input = document.getElementById('vtInput');
+        const send = document.getElementById('vtSend');
+        const close = document.getElementById('vtClose');
+        const vtMicBtn = document.getElementById('vtMic');
+        const vtCloseBtn = document.getElementById('vtCloseBtn');
+        if(!overlay) return;
+        messages.innerHTML = '';
+        overlay.style.display = 'block'; overlay.setAttribute('aria-hidden','false');
+        status.textContent = 'Connecting to your virtual teller...';
+        // simulate connection
+        setTimeout(()=>{
+          status.textContent = 'Connected — Virtual Teller (Alex)';
+          appendVTMessage('agent', 'Hello, I am Alex, your virtual teller. How may I assist you today?');
+          if(initialAgentText) appendVTMessage('agent', initialAgentText);
+          // start VT mic auto-listen if supported
+          try{ startVTListening(); if(vtMicBtn) vtMicBtn.setAttribute('aria-pressed','true'); }catch(e){}
+        }, 1100);
+
+        if(send) send.onclick = ()=>{ const v = (input.value||'').trim(); if(!v) return; appendVTMessage('user', v); input.value=''; setTimeout(()=> appendVTMessage('agent', 'Thanks — I will process that and get back to you.'), 700); };
+        if(vtMicBtn) vtMicBtn.onclick = ()=>{ const pressed = vtMicBtn.getAttribute('aria-pressed') === 'true'; if(pressed) stopVTListening(); else startVTListening(); vtMicBtn.setAttribute('aria-pressed', (!pressed).toString()); };
+        if(vtCloseBtn) vtCloseBtn.onclick = ()=> closeVirtualTeller();
+        if(close) close.onclick = ()=> closeVirtualTeller();
+      }catch(e){ console.error(e); }
+    }
+
+    function closeVirtualTeller(){
+      try{ const overlay = document.getElementById('virtualTellerOverlay'); if(!overlay) return; overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); stopVTListening(); }catch(e){}
+    }
+
+    // VT-specific SpeechRecognition (independent from main recognition)
+    let vtRecognition = null;
+    let vtListening = false;
+    function startVTListening(){
+      if(vtListening) return;
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if(!SR) { appendVTMessage('agent','Voice input not supported in this browser.'); return; }
+      vtRecognition = new SR();
+      vtRecognition.lang = speechLang(currentLang);
+      vtRecognition.interimResults = false;
+      vtRecognition.continuous = true;
+      vtRecognition.onresult = (e)=>{
+        const txt = e.results[e.results.length-1][0].transcript.trim();
+        appendVTMessage('user', txt);
+        // simulate processing and agent reply
+        setTimeout(()=>{ appendVTMessage('agent', 'Thanks — I have noted your request: ' + txt); }, 700);
+      };
+      vtRecognition.onend = ()=>{ if(vtListening){ try{ vtRecognition.start(); }catch(e){} } };
+      try{ vtRecognition.start(); vtListening = true; }catch(e){ console.error(e); vtListening=false; }
+    }
+
+    function stopVTListening(){
+      try{ if(vtRecognition){ vtRecognition.onend = null; vtRecognition.stop(); vtRecognition = null; } vtListening = false; const btn = document.getElementById('vtMic'); if(btn) btn.setAttribute('aria-pressed','false'); }catch(e){}
+    }
+
     // Handle commands from input / voice
 
     function handleCommand(raw) {
@@ -825,6 +904,43 @@
         showPage('deposit');
         logBot('Please enter the amount to deposit then press Insert Cash.');
         speak('Please enter the amount to deposit then press Insert Cash.');
+        return;
+      }
+
+      // PayNow quick intent: recognize 'pay now', 'paynow', 'scan qr', or 'send to <phone>' phrases
+      const paynowRegex = /(pay\s?now|paynow|scan qr|scan code|pay to|send to phone|pay via phone)/i;
+      // Complex requests that require specialist assistance -> virtual teller
+      const complexRequests = /(change (of )?particulars|change giro|giro payment limit|delete giro|delete giro arrangement|additional cheque book|request additional cheque book|replacement of passbook|replacement passbook|change mobile|change my mobile)/i;
+
+      if (complexRequests.test(lower)) {
+        logBot("I can't assist with this request directly. I'll connect you to a virtual teller.");
+        speak("I can't assist with this. I'll connect you to a virtual teller.");
+        // open virtual teller UI and pass the original request for the agent
+        try{ showVirtualTeller('User requested: ' + text); }catch(e){}
+        return;
+      }
+
+      if (paynowRegex.test(lower)) {
+        // try extract amount and an 8-digit phone/account number
+        let amt = amount;
+        if (!amt) { const words = wordsToNumber(text); if (words) amt = words; }
+        const phoneMatch = text.match(/(\b\d{8}\b)/) || text.match(/(\+?\d{7,15})/);
+        const recipient = phoneMatch ? phoneMatch[0] : null;
+        if (amt && recipient) {
+          try{
+            localStorage.setItem('paynow_method','Phone');
+            localStorage.setItem('paynow_recipient', recipient);
+            localStorage.setItem('paynow_amount', String(amt));
+          }catch(e){}
+          logBot(`Preparing PayNow to ${recipient} for ${formatCurrency(amt)}. Redirecting to confirmation.`);
+          speak(`Preparing PayNow to ${amt} dollars. Redirecting to confirmation.`);
+          setTimeout(()=> { window.location.href = 'confirm-paynow.html'; }, 700);
+          return;
+        }
+        // otherwise prompt user to use PayNow form
+        showPage('noncash');
+        logBot('To use PayNow, open Non Cash Services and choose Transfer / PayNow.');
+        speak('To use PayNow, open Non Cash Services and choose Transfer or PayNow.');
         return;
       }
 
