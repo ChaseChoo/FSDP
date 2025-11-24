@@ -5,14 +5,17 @@ import { getDevTransactions } from "./accountController.js";
 export async function getTransactionHistory(req, res) {
   console.log("getTransactionHistory: START, externalId =", req.user?.externalId);
   const externalId = req.user.externalId;
+  const userId = req.user.userId; // For card-based auth
   try {
     // DEV shortcut: return actual dev transactions
     if (process.env.DEV_ALLOW_ALL === "true") {
       const limit = Math.min(parseInt(req.query.limit || "50", 10), 200);
       const page = Math.max(parseInt(req.query.page || "1", 10), 1);
       const offset = (page - 1) * limit;
-      const txs = getDevTransactions(externalId, limit, offset);
-      console.log("getTransactionHistory: returning", txs.length, "dev transactions");
+      // Use the same key logic as deposit/withdraw: userId takes precedence
+      const key = userId ? `user-${userId}` : externalId;
+      const txs = getDevTransactions(key, limit, offset);
+      console.log("getTransactionHistory: returning", txs.length, "dev transactions for key:", key);
       return res.json({ transactions: txs, page, limit });
     }
 

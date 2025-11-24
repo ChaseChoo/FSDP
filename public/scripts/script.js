@@ -1,8 +1,10 @@
 const API_URL = "/account";
 
-// Simulate JWT login
+// Simulate JWT login - only set if no token exists
 const fakeToken = "FAKE_JWT_TOKEN";
-localStorage.setItem("token", fakeToken);
+if (!localStorage.getItem("token")) {
+  localStorage.setItem("token", fakeToken);
+}
 
 async function getBalance() {
   const res = await fetch(`${API_URL}/balance`, {
@@ -74,5 +76,5 @@ async function getTransactions() {
 }
 
 // Initialize page
-if (window.location.pathname === "/account") getBalance();
-if (window.location.pathname === "/transactions") getTransactions();
+if (window.location.pathname === "/account" || window.location.pathname === "/account.html") getBalance();
+if (window.location.pathname === "/transactions" || window.location.pathname === "/transactions.html") getTransactions();
