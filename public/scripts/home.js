@@ -793,9 +793,14 @@
             fetch('/atm-videos/list').then(r=>r.json()).then(list=>{
               try{
                 if(!Array.isArray(list) || !list.length) return;
-                // prefer first file as main, second as sign-language (if present)
-                const mainFile = list[0];
-                const signFile = list[1] || null;
+                // Choose main and sign files by pattern when possible
+                // prefer filenames like 'video_*' for main and files containing 'sign' for sign-language
+                const mainFileByPattern = list.find(f => /(^video[_-]|main|vt|virtual)/i.test(f));
+                const signFileByPattern = list.find(f => /(sign|sign[- ]?language|asl|signlang)/i.test(f));
+                const mainFile = mainFileByPattern || list[0];
+                let signFile = signFileByPattern || null;
+                // if no explicit sign file but there is a second file, use that
+                if(!signFile && list.length > 1) signFile = list[1];
                 const vtVideo = document.getElementById('vtVideo');
                 const vtSign = document.getElementById('vtSignVideo');
                 if(vtVideo && mainFile){
