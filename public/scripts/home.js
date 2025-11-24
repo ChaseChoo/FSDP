@@ -749,24 +749,9 @@
       }catch(e){}
     }
 
-    // Virtual teller simulation: show/close helpers
-    // Virtual teller message renderer (with avatar + bubble)
+    // Virtual teller simulation: we no longer render chat bubbles — keep a no-op
     function appendVTMessage(kind, text){
-      try{
-        const box = document.getElementById('vtMessages');
-        if(!box) return;
-        const row = document.createElement('div'); row.className = 'vt-row ' + (kind==='user' ? 'user' : 'agent');
-        const avatar = document.createElement('div'); avatar.className = 'vt-avatar ' + (kind==='user' ? 'user' : 'agent');
-        avatar.setAttribute('aria-hidden','true');
-        avatar.textContent = (kind==='user' ? 'G' : 'A');
-        const bubble = document.createElement('div'); bubble.className = 'vt-bubble';
-        bubble.textContent = text;
-        if(kind === 'user') { row.appendChild(bubble); row.appendChild(avatar); }
-        else { row.appendChild(avatar); row.appendChild(bubble); }
-        box.appendChild(row);
-        box.scrollTop = box.scrollHeight;
-        try{ if(kind !== 'user') speak(text); }catch(e){}
-      }catch(e){ console.error(e); }
+      // Intentionally left blank: Virtual Teller acts as a pure video call.
     }
 
     function showVirtualTeller(initialAgentText){
@@ -785,9 +770,9 @@
         status.textContent = 'Connecting to your virtual teller...';
         // simulate connection then show video and messages once connected
         setTimeout(()=>{
-          status.textContent = 'Connected — Virtual Teller (Alex)';
-          appendVTMessage('agent', 'Hello, I am Alex, your virtual teller. How may I assist you today?');
-          if(initialAgentText) appendVTMessage('agent', initialAgentText);
+          status.textContent = 'Connected — Virtual Teller';
+          // No chat messages; show video-only experience. Optionally use TTS to greet.
+          try{ if(initialAgentText) speak('Connecting you to a virtual teller.'); }catch(e){}
           // After connecting, ask the server for available videos and load the main + sign-language clips if present
           try{
             fetch('/atm-videos/list').then(r=>r.json()).then(list=>{
@@ -832,23 +817,27 @@
 
         if(send) send.onclick = ()=>{ const v = (input.value||'').trim(); if(!v) return; appendVTMessage('user', v); input.value=''; setTimeout(()=> appendVTMessage('agent', 'Thanks — I will process that and get back to you.'), 700); };
         if(vtMicBtn) vtMicBtn.onclick = ()=>{ const pressed = vtMicBtn.getAttribute('aria-pressed') === 'true'; if(pressed) stopVTListening(); else startVTListening(); vtMicBtn.setAttribute('aria-pressed', (!pressed).toString()); };
-        // Unmute / Join Call button: enables audio on the pre-recorded video (user gesture required)
-        const vtUnmuteBtn = document.getElementById('vtUnmute');
-        if(vtUnmuteBtn) {
-          vtUnmuteBtn.onclick = ()=>{
-            try{
-              const vtVideo = document.getElementById('vtVideo');
-              if(!vtVideo) return;
-              vtVideo.muted = false;
-              const p = vtVideo.play();
-              if(p && p.catch) p.catch(()=>{});
-              vtUnmuteBtn.textContent = '🔈 Joined';
-              vtUnmuteBtn.setAttribute('aria-pressed','true');
-              // Announce join via TTS as fallback
-              try{ speak('You have joined the call and enabled audio.'); }catch(e){}
-            }catch(e){ console.error('vtUnmute error', e); }
-          };
-        }
+          // Unmute / Join Call button: enables audio on the pre-recorded video (user gesture required)
+          const vtUnmuteBtn = document.getElementById('vtUnmute');
+          if(vtUnmuteBtn) {
+            vtUnmuteBtn.onclick = ()=>{
+              try{
+                const vtVideo = document.getElementById('vtVideo');
+                const vtSign = document.getElementById('vtSignVideo');
+                if(!vtVideo) return;
+                // Unmute both video tracks (sign video may have no audio but unmuting is safe)
+                vtVideo.muted = false;
+                if(vtSign) vtSign.muted = false;
+                const p = vtVideo.play(); if(p && p.catch) p.catch(()=>{});
+                try{ if(vtSign) { const p2 = vtSign.play(); if(p2 && p2.catch) p2.catch(()=>{}); } }catch(e){}
+                vtUnmuteBtn.textContent = '🔈 Joined';
+                vtUnmuteBtn.setAttribute('aria-pressed','true');
+                vtUnmuteBtn.disabled = true;
+                // Announce join via TTS as fallback
+                try{ speak('You have joined the call and enabled audio.'); }catch(e){}
+              }catch(e){ console.error('vtUnmute error', e); }
+            };
+          }
         if(vtCloseBtn) vtCloseBtn.onclick = ()=> closeVirtualTeller();
         if(close) close.onclick = ()=> closeVirtualTeller();
       }catch(e){ console.error(e); }
@@ -859,7 +848,7 @@
         const overlay = document.getElementById('virtualTellerOverlay'); 
         if(!overlay) return; 
         // pause and hide video when closing
-        try{ const vtVideo = document.getElementById('vtVideo'); if(vtVideo){ vtVideo.pause(); vtVideo.currentTime = 0; vtVideo.style.display = 'none'; } }catch(e){}
+        try{ const vtVideo = document.getElementById('vtVideo'); const vtSign = document.getElementById('vtSignVideo'); if(vtVideo){ vtVideo.pause(); vtVideo.currentTime = 0; vtVideo.style.display = 'none'; } if(vtSign){ vtSign.pause(); vtSign.currentTime = 0; vtSign.style.display = 'none'; } }catch(e){}
         overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); stopVTListening(); 
       }catch(e){}
     }

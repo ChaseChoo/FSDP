@@ -870,9 +870,10 @@ body.atm-body {
 }
 .vt-title { font-weight:800; font-size:1.15rem; }
 .vt-close { background:transparent; border:none; color:#fff; font-size:1.25rem; cursor:pointer }
-.vt-body { padding:14px; flex:1; overflow:auto; background:linear-gradient(180deg,#f9fbff,#fff); }
-.vt-status { font-size:0.85rem; color:#374151; margin-bottom:8px }
-.vt-messages { display:flex; flex-direction:column; gap:8px }
+.vt-body { padding:0; flex:1; overflow:hidden; background:transparent; display:flex; flex-direction:column }
+.vt-status { font-size:0.95rem; color:#ffffff; background:transparent; margin:0; padding:8px 16px }
+.vt-video { width:100%; height:100%; object-fit:cover; display:block }
+.vt-sign-video { position:absolute; right:12px; bottom:72px; width:160px; max-height:140px; object-fit:cover; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.18); z-index:60 }
 .vt-messages .vt-row { display:flex; gap:8px; align-items:flex-end }
 .vt-messages .vt-row.agent { justify-content:flex-start }
 .vt-messages .vt-row.user { justify-content:flex-end }
@@ -882,11 +883,9 @@ body.atm-body {
 .vt-bubble { padding:14px 16px; border-radius:14px; max-width:82%; font-size:1.05rem }
 .vt-row.agent .vt-bubble { background:#eef2ff; color:#0b2546; border-top-left-radius:6px }
 .vt-row.user .vt-bubble { background:#111827; color:#fff; border-top-right-radius:6px }
-.vt-controls { display:flex; gap:8px; padding:10px; border-top:1px solid #e6eef8; background:#fff; align-items:center; justify-content:space-between }
-.vt-call-info { display:flex; gap:10px; align-items:center }
-.vt-call-text { font-size:1.05rem; color:#374151; font-weight:600 }
+.vt-controls { display:flex; gap:8px; padding:10px; background:linear-gradient(180deg, rgba(5, 43, 80, 0.85), rgba(3, 25, 44, 0.9)); align-items:center; justify-content:center }
 .vt-actions { display:flex; gap:12px }
-.vt-actions .btn-secondary { padding:10px 12px; border-radius:10px; font-size:1rem }
+.vt-actions .btn-secondary { padding:10px 12px; border-radius:10px; font-size:1rem; background:#fff; border:none; cursor:pointer }
 
 .atm-layout {
   height: 100%;
