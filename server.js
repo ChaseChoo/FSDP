@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs/promises";
 
 import authRoutes from "./routes/authRoutes.js";
 import accountRoutes from "./routes/accountRoutes.js";
@@ -37,6 +38,22 @@ app.use((req, res, next) => {
 
 // Serve static files from 'public' folder
 app.use(express.static("public"));
+
+// Serve atm videos folder at /atm-videos (so files in `atm videos/` are web-accessible)
+app.use('/atm-videos', express.static(path.resolve('atm videos')));
+
+// Return list of mp4 files in the atm videos folder for client-side discovery
+app.get('/atm-videos/list', async (req, res) => {
+  try {
+    const dir = path.resolve('atm videos');
+    const files = await fs.readdir(dir);
+    const mp4s = files.filter(f => f.toLowerCase().endsWith('.mp4'));
+    res.json(mp4s);
+  } catch (err) {
+    console.error('Failed to read atm videos folder', err);
+    res.status(500).json({ error: 'Failed to list atm videos' });
+  }
+});
 
 // Apply fakeLogin middleware to /account routes (mount once)
 app.use("/account", fakeLogin, accountRoutes);

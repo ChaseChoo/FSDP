@@ -742,24 +742,39 @@
           status.textContent = 'Connected — Virtual Teller (Alex)';
           appendVTMessage('agent', 'Hello, I am Alex, your virtual teller. How may I assist you today?');
           if(initialAgentText) appendVTMessage('agent', initialAgentText);
-          // After connecting, try to load the pre-recorded video from the atm videos folder
+          // After connecting, ask the server for available videos and load the main + sign-language clips if present
           try{
-            const vtVideo = document.getElementById('vtVideo');
-            if(vtVideo){
-              // path to the video inside the repo. Replace filename if different.
-              const videoPath = 'atm videos/video_2025-11-24_14-05-19.mp4';
-              vtVideo.style.display = 'block';
-              vtVideo.muted = true; // keep muted so autoplay works; user can press Join to unmute
-              vtVideo.playsInline = true;
-              vtVideo.loop = true;
-              // set or update src
-              const encoded = encodeURI(videoPath);
-              if(!vtVideo.src || !vtVideo.src.includes(encoded)) vtVideo.src = encoded;
-              try{ vtVideo.load(); }catch(e){}
-              const p = vtVideo.play();
-              if(p && p.catch) p.catch(()=>{/* autoplay may be blocked until user interacts */});
-            }
-          }catch(e){ console.error('VT video load error', e); }
+            fetch('/atm-videos/list').then(r=>r.json()).then(list=>{
+              try{
+                if(!Array.isArray(list) || !list.length) return;
+                // prefer first file as main, second as sign-language (if present)
+                const mainFile = list[0];
+                const signFile = list[1] || null;
+                const vtVideo = document.getElementById('vtVideo');
+                const vtSign = document.getElementById('vtSignVideo');
+                if(vtVideo && mainFile){
+                  const url = '/atm-videos/' + encodeURIComponent(mainFile);
+                  vtVideo.src = url;
+                  vtVideo.style.display = 'block';
+                  vtVideo.muted = true;
+                  vtVideo.playsInline = true;
+                  vtVideo.loop = true;
+                  try{ vtVideo.load(); }catch(e){}
+                  const p = vtVideo.play(); if(p && p.catch) p.catch(()=>{});
+                }
+                if(vtSign && signFile){
+                  const url2 = '/atm-videos/' + encodeURIComponent(signFile);
+                  vtSign.src = url2;
+                  vtSign.style.display = 'block';
+                  vtSign.muted = true;
+                  vtSign.playsInline = true;
+                  vtSign.loop = true;
+                  try{ vtSign.load(); }catch(e){}
+                  const p2 = vtSign.play(); if(p2 && p2.catch) p2.catch(()=>{});
+                }
+              }catch(err){ console.error('vt load inner error', err); }
+            }).catch(err=>{ console.error('Failed to fetch /atm-videos/list', err); });
+          }catch(e){ console.error('VT video list error', e); }
           // start VT mic auto-listen if supported
           try{ startVTListening(); if(vtMicBtn) vtMicBtn.setAttribute('aria-pressed','true'); }catch(e){}
         }, 1100);
