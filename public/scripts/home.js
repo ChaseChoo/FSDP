@@ -758,14 +758,10 @@
       try{
         const overlay = document.getElementById('virtualTellerOverlay');
         const status = document.getElementById('vtStatus');
-        const messages = document.getElementById('vtMessages');
-        const input = document.getElementById('vtInput');
-        const send = document.getElementById('vtSend');
-        const close = document.getElementById('vtClose');
         const vtMicBtn = document.getElementById('vtMic');
         const vtCloseBtn = document.getElementById('vtCloseBtn');
+        const vtClose = document.getElementById('vtClose');
         if(!overlay) return;
-        messages.innerHTML = '';
         overlay.style.display = 'block'; overlay.setAttribute('aria-hidden','false');
         status.textContent = 'Connecting to your virtual teller...';
         // simulate connection then show video and messages once connected
@@ -815,7 +811,6 @@
           try{ startVTListening(); if(vtMicBtn) vtMicBtn.setAttribute('aria-pressed','true'); }catch(e){}
         }, 1100);
 
-        if(send) send.onclick = ()=>{ const v = (input.value||'').trim(); if(!v) return; appendVTMessage('user', v); input.value=''; setTimeout(()=> appendVTMessage('agent', 'Thanks — I will process that and get back to you.'), 700); };
         if(vtMicBtn) vtMicBtn.onclick = ()=>{ const pressed = vtMicBtn.getAttribute('aria-pressed') === 'true'; if(pressed) stopVTListening(); else startVTListening(); vtMicBtn.setAttribute('aria-pressed', (!pressed).toString()); };
           // Unmute / Join Call button: enables audio on the pre-recorded video (user gesture required)
           const vtUnmuteBtn = document.getElementById('vtUnmute');
@@ -838,7 +833,7 @@
             };
           }
         if(vtCloseBtn) vtCloseBtn.onclick = ()=> closeVirtualTeller();
-        if(close) close.onclick = ()=> closeVirtualTeller();
+        if(vtClose) vtClose.onclick = ()=> closeVirtualTeller();
       }catch(e){ console.error(e); }
     }
 
