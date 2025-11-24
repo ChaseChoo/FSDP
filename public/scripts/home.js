@@ -825,11 +825,10 @@
                 const vtVideo = document.getElementById('vtVideo');
                 const vtSign = document.getElementById('vtSignVideo');
                 if(!vtVideo) return;
-                // Unmute both video tracks (sign video may have no audio but unmuting is safe)
+                // Unmute only the main video. Keep sign-language overlay muted (it usually has no audio).
                 vtVideo.muted = false;
-                if(vtSign) vtSign.muted = false;
                 const p = vtVideo.play(); if(p && p.catch) p.catch(()=>{});
-                try{ if(vtSign) { const p2 = vtSign.play(); if(p2 && p2.catch) p2.catch(()=>{}); } }catch(e){}
+                try{ if(vtSign) { vtSign.muted = true; const p2 = vtSign.play(); if(p2 && p2.catch) p2.catch(()=>{}); } }catch(e){}
                 vtUnmuteBtn.textContent = '🔈 Joined';
                 vtUnmuteBtn.setAttribute('aria-pressed','true');
                 vtUnmuteBtn.disabled = true;
