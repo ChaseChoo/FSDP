@@ -693,6 +693,52 @@
       return total || null;
     }
 
+    // Fetch and announce recent transactions (reads from /api/transactions)
+    async function fetchAndAnnounceTransactions(limit = 5) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/transactions', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          logBot('Unable to fetch transactions.');
+          speak('Unable to fetch transactions. Please try again later.');
+          return;
+        }
+        const data = await res.json();
+        const txns = Array.isArray(data.transactions) ? data.transactions : (data || []).slice(0, limit);
+        if (!txns || !txns.length) {
+          logBot('No transactions found.');
+          speak('You have no recent transactions.');
+          return;
+        }
+        const count = Math.min(limit, txns.length);
+        logBot(`Showing your ${count} most recent transactions:`);
+        speak(`Here are your ${count} most recent transactions.`);
+        for (let i = 0; i < count; i++) {
+          const t = txns[i];
+          const when = t.CreatedAt ? new Date(t.CreatedAt).toLocaleString() : (t.date || '');
+          const type = t.Type || t.type || t.description || 'Transaction';
+          const amt = (t.Amount !== undefined && t.Amount !== null) ? formatCurrency(t.Amount) : (t.amount ? formatCurrency(t.amount) : '');
+          const line = `${when} — ${type} — ${amt}`;
+          logBot(line);
+          // speak a short summary for first 1-2 transactions only to avoid long TTS
+          if (i < 2) speak(`${type} ${amt} on ${when}`);
+        }
+        // Offer to open full transactions page
+        logBot('Tap or say "Open transactions" to view full history.');
+      } catch (err) {
+        console.error('fetch transactions error', err);
+        logBot('Failed to load transactions.');
+        speak('Failed to load transactions.');
+      }
+    }
+
     // Flash/highlight all major options briefly (used when ATM announces ready)
     function flashAllOptions(duration = 1200) {
       try{
@@ -910,6 +956,8 @@
           /(balance|余额|baki|இருப்பு|semakan baki|check balance)/i,
         transfer:
           /(transfer|转账|汇款|pindah|pindahan|பரிமாற்றம்)/i,
+        history:
+          /(history|transactions|transaction history|recent transactions|recent activity|交易记录|最近交易|交易历史|transaksi|sejarah transaksi)/i,
         activate:
           /(activate|激活|aktif|aktifkan|செயற்படுத்து)/i,
         menu: /(menu|home|主菜单|首页|utama|முகப்பு)/i,
@@ -937,6 +985,18 @@
         showPage("cash");
         logBot(i18n[currentLang].need_amount);
         speak(i18n[currentLang].need_amount);
+        return;
+      }
+
+      if (intents.history.test(lower)) {
+        try{
+          // If user explicitly asked to open or view transactions, navigate to the transactions page
+          if (/\b(open|view|show)\b/.test(lower) && /transaction/.test(lower)){
+            window.location.href = 'transactions.html';
+            return;
+          }
+          fetchAndAnnounceTransactions();
+        }catch(e){ console.error(e); }
         return;
       }
 
