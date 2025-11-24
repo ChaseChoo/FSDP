@@ -737,32 +737,52 @@
         messages.innerHTML = '';
         overlay.style.display = 'block'; overlay.setAttribute('aria-hidden','false');
         status.textContent = 'Connecting to your virtual teller...';
-        // Try to autoplay a pre-recorded video (muted) for the virtual teller
-        try{
-          const vtVideo = document.getElementById('vtVideo');
-          if(vtVideo){
-            vtVideo.style.display = 'block';
-            vtVideo.muted = true;
-            vtVideo.playsInline = true;
-            // Ensure src is set; developer can place file at public/media/virtual-teller.mp4
-            const src = vtVideo.getAttribute('data-src') || vtVideo.getAttribute('src') || 'media/virtual-teller.mp4';
-            if(!vtVideo.src || !vtVideo.src.includes(src)) vtVideo.src = src;
-            try{ vtVideo.load(); }catch(e){}
-            const p = vtVideo.play();
-            if(p && p.catch) p.catch(()=>{/* autoplay likely blocked by browser until user interacts */});
-          }
-        }catch(e){console.error('VT video play error', e);} 
-        // simulate connection
+        // simulate connection then show video and messages once connected
         setTimeout(()=>{
           status.textContent = 'Connected — Virtual Teller (Alex)';
           appendVTMessage('agent', 'Hello, I am Alex, your virtual teller. How may I assist you today?');
           if(initialAgentText) appendVTMessage('agent', initialAgentText);
+          // After connecting, try to load the pre-recorded video from the atm videos folder
+          try{
+            const vtVideo = document.getElementById('vtVideo');
+            if(vtVideo){
+              // path to the video inside the repo. Replace filename if different.
+              const videoPath = 'atm videos/video_2025-11-24_14-05-19.mp4';
+              vtVideo.style.display = 'block';
+              vtVideo.muted = true; // keep muted so autoplay works; user can press Join to unmute
+              vtVideo.playsInline = true;
+              vtVideo.loop = true;
+              // set or update src
+              const encoded = encodeURI(videoPath);
+              if(!vtVideo.src || !vtVideo.src.includes(encoded)) vtVideo.src = encoded;
+              try{ vtVideo.load(); }catch(e){}
+              const p = vtVideo.play();
+              if(p && p.catch) p.catch(()=>{/* autoplay may be blocked until user interacts */});
+            }
+          }catch(e){ console.error('VT video load error', e); }
           // start VT mic auto-listen if supported
           try{ startVTListening(); if(vtMicBtn) vtMicBtn.setAttribute('aria-pressed','true'); }catch(e){}
         }, 1100);
 
         if(send) send.onclick = ()=>{ const v = (input.value||'').trim(); if(!v) return; appendVTMessage('user', v); input.value=''; setTimeout(()=> appendVTMessage('agent', 'Thanks — I will process that and get back to you.'), 700); };
         if(vtMicBtn) vtMicBtn.onclick = ()=>{ const pressed = vtMicBtn.getAttribute('aria-pressed') === 'true'; if(pressed) stopVTListening(); else startVTListening(); vtMicBtn.setAttribute('aria-pressed', (!pressed).toString()); };
+        // Unmute / Join Call button: enables audio on the pre-recorded video (user gesture required)
+        const vtUnmuteBtn = document.getElementById('vtUnmute');
+        if(vtUnmuteBtn) {
+          vtUnmuteBtn.onclick = ()=>{
+            try{
+              const vtVideo = document.getElementById('vtVideo');
+              if(!vtVideo) return;
+              vtVideo.muted = false;
+              const p = vtVideo.play();
+              if(p && p.catch) p.catch(()=>{});
+              vtUnmuteBtn.textContent = '🔈 Joined';
+              vtUnmuteBtn.setAttribute('aria-pressed','true');
+              // Announce join via TTS as fallback
+              try{ speak('You have joined the call and enabled audio.'); }catch(e){}
+            }catch(e){ console.error('vtUnmute error', e); }
+          };
+        }
         if(vtCloseBtn) vtCloseBtn.onclick = ()=> closeVirtualTeller();
         if(close) close.onclick = ()=> closeVirtualTeller();
       }catch(e){ console.error(e); }
