@@ -133,11 +133,17 @@
         items.push(entry);
         valueIn.value=''; valueIn.focus();
         render();
+        // Immediately save to localStorage so it's available for fraud detection
+        try{ localStorage.setItem('approvedRecipients', JSON.stringify(items.map(it => ({ id: it.id, value: it.value, serverId: it.serverId })))); }catch(e){}
       });
 
       async function syncWithServer(){
         // Try to synchronize deletions and upserts to server. If any network/error occurs, fallback to saving locally.
         try{
+          // Check if server is available first
+          const healthCheck = await fetch('/api/approved-recipients', { method: 'GET' });
+          if (!healthCheck.ok) throw new Error('Server unavailable');
+
           // delete first
           for(const sid of deletedServerIds){
             const dResp = await fetch('/api/approved-recipients/' + sid, { method: 'DELETE' });
@@ -161,12 +167,16 @@
 
           // persist local cache with server ids
           localStorage.setItem('approvedRecipients', JSON.stringify(items.map(it => ({ id: it.id, value: it.value, serverId: it.serverId }))));
-          alert('Synced with server successfully.');
+          // Dispatch event to notify fraud detection system to reload
+          window.dispatchEvent(new CustomEvent('approvedRecipientsUpdated'));
+          alert('✓ Saved successfully! Safe Mode will now recognize these numbers.');
         }catch(err){
-          console.error('Sync failed', err);
+          console.log('Working in offline mode:', err.message);
           // fallback: save local only
           try{ localStorage.setItem('approvedRecipients', JSON.stringify(items.map(it => ({ id: it.id, value: it.value, serverId: it.serverId })))); }catch(e){}
-          alert('Failed to sync to server; saved locally instead.');
+          // Dispatch event to notify fraud detection system to reload
+          window.dispatchEvent(new CustomEvent('approvedRecipientsUpdated'));
+          alert('✓ Saved locally (offline mode). Safe Mode will now recognize these numbers.');
         }
       }
 

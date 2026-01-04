@@ -42,22 +42,25 @@ async function loadApprovedRecipientsFromApi() {
   }
 }
 
-(async function loadApprovedRecipients() {
+async function loadApprovedRecipients() {
   try {
     const apiList = await loadApprovedRecipientsFromApi();
     if (apiList && apiList.length) {
       approvedRecipients = apiList;
       // Optionally persist a copy in localStorage
       localStorage.setItem('approvedRecipients', JSON.stringify(approvedRecipients));
+      console.log('[fraud] Loaded', approvedRecipients.length, 'approved recipients from API');
       return;
     }
 
     const raw = localStorage.getItem('approvedRecipients');
     if (raw) {
       approvedRecipients = JSON.parse(raw);
+      console.log('[fraud] Loaded', approvedRecipients.length, 'approved recipients from localStorage');
     } else {
       approvedRecipients = defaultApprovedRecipients;
       localStorage.setItem('approvedRecipients', JSON.stringify(approvedRecipients));
+      console.log('[fraud] Using default approved recipients');
     }
 
     approvedRecipients = approvedRecipients.map(r => {
@@ -69,7 +72,16 @@ async function loadApprovedRecipientsFromApi() {
     console.error('Failed to load approvedRecipients:', err);
     approvedRecipients = defaultApprovedRecipients.map(r => ({ value: normalizeNumber(r.value) }));
   }
-})();
+}
+
+// Initial load
+loadApprovedRecipients();
+
+// Listen for updates to approved recipients list
+window.addEventListener('approvedRecipientsUpdated', function() {
+  console.log('[fraud] Approved recipients updated, reloading...');
+  loadApprovedRecipients();
+});
 
 
 function checkHighRiskTransaction(method, recipient, amount, purpose) {
