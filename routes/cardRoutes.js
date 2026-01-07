@@ -7,7 +7,8 @@ import {
     cardBlock, 
     verifyCardSession,
     authenticateCardToken,
-    getDemoBalances
+    getDemoBalances,
+    verifyCardPIN
 } from '../controllers/cardController.js';
 
 const router = express.Router();
@@ -23,5 +24,6 @@ router.post('/block', cardBlock);
 
 // Protected routes (require card authentication)
 router.get('/verify-session', authenticateCardToken, verifyCardSession);
+router.post('/verify-pin', authenticateCardToken, verifyCardPIN); // Impersonation Guard PIN verification
 
 export default router;

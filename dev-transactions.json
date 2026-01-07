@@ -783,6 +783,15 @@
   ],
   "user-9": [
     {
+      "Id": "dev-1767773368205-0.7103229810478315",
+      "AccountId": "dev-user-9",
+      "Type": "WITHDRAW",
+      "Amount": 50,
+      "BalanceAfter": 4081,
+      "Description": "ATM withdrawal",
+      "CreatedAt": "2026-01-07T08:09:28.205Z"
+    },
+    {
       "Id": "dev-1763473897162-0.7298400803408069",
       "AccountId": "dev-user-9",
       "Type": "DEPOSIT",

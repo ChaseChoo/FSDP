@@ -494,3 +494,132 @@ export async function getDemoBalances(req, res) {
         res.status(500).json({ success: false, error: 'Failed to fetch demo balances' });
     }
 }
+
+/**
+ * POST /api/card/verify-pin
+ * Verify card PIN for Impersonation Guard transaction unlock
+ * This endpoint validates the user's PIN without full re-authentication
+ */
+export async function verifyCardPIN(req, res) {
+    try {
+        const { pin } = req.body;
+        
+        console.log('🔐 PIN Verification Request');
+        
+        // Input validation
+        if (!pin) {
+            return res.status(400).json({
+                valid: false,
+                error: 'PIN is required'
+            });
+        }
+        
+        // Validate PIN format (6 digits)
+        if (!/^\d{6}$/.test(pin)) {
+            return res.status(400).json({
+                valid: false,
+                error: 'PIN must be exactly 6 digits'
+            });
+        }
+        
+        // Get user info from token/session
+        const userId = req.user?.userId;
+        const cardNumber = req.user?.cardNumber;
+        
+        if (!userId && !cardNumber) {
+            console.log('❌ No user session found');
+            return res.status(401).json({
+                valid: false,
+                error: 'Authentication required'
+            });
+        }
+        
+        console.log('🔍 Verifying PIN for user:', userId);
+        
+        // DEV mode: accept any 6-digit PIN for demo purposes
+        if (process.env.DEV_ALLOW_ALL === 'true') {
+            console.log('✅ PIN verification successful (dev mode)');
+            
+            // Log the verification attempt
+            try {
+                await logCardTransaction(
+                    userId,
+                    cardNumber || 'unknown',
+                    'PIN_VERIFY',
+                    null,
+                    'SUCCESS',
+                    'Impersonation Guard PIN verification (dev)'
+                );
+            } catch (e) {
+                console.warn('Dev PIN verify: logCardTransaction failed', e.message);
+            }
+            
+            return res.json({
+                valid: true,
+                message: 'PIN verified successfully'
+            });
+        }
+        
+        // Production: verify against database
+        if (!cardNumber) {
+            return res.status(400).json({
+                valid: false,
+                error: 'Card number not found in session'
+            });
+        }
+        
+        // Use the authenticateCard function to verify PIN
+        const authResult = await authenticateCard(cardNumber, pin);
+        
+        if (!authResult.success) {
+            console.log('❌ Invalid PIN');
+            
+            // Log failed attempt
+            try {
+                await logCardTransaction(
+                    userId,
+                    cardNumber,
+                    'PIN_VERIFY',
+                    null,
+                    'FAILED',
+                    'Invalid PIN for Impersonation Guard'
+                );
+            } catch (e) {
+                console.warn('Failed to log PIN verification failure:', e.message);
+            }
+            
+            return res.json({
+                valid: false,
+                error: 'Invalid PIN'
+            });
+        }
+        
+        console.log('✅ PIN verified successfully');
+        
+        // Log successful verification
+        try {
+            await logCardTransaction(
+                authResult.user.id,
+                cardNumber,
+                'PIN_VERIFY',
+                null,
+                'SUCCESS',
+                'Impersonation Guard PIN verification'
+            );
+        } catch (e) {
+            console.warn('Failed to log PIN verification:', e.message);
+        }
+        
+        res.json({
+            valid: true,
+            message: 'PIN verified successfully'
+        });
+        
+    } catch (error) {
+        console.error('❌ verifyCardPIN error:', error);
+        res.status(500).json({
+            valid: false,
+            error: 'PIN verification failed'
+        });
+    }
+}

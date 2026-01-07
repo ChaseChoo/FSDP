@@ -11,6 +11,9 @@
   <!-- App form style -->
   <link rel="stylesheet" href="styles.css">
 
+  <!-- Impersonation Guard Styles -->
+  <link rel="stylesheet" href="impersonation-guard.css">
+
   <!-- Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -118,6 +121,18 @@
 <!-- Your original logic -->
 <script src="app.js"></script>
 <script src="fraud-detection-system.js"></script>
+<script src="impersonation-guard.js"></script>
+
+<script>
+// Continue monitoring on confirmation page if it was enabled
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.ImpersonationGuard) {
+    const status = window.ImpersonationGuard.getStatus();
+    // Auto-start if was previously enabled (user came from paynow.html with it on)
+    // For now, just let user manually enable if needed on previous page
+  }
+});
+</script>
 
 </body>
 </html>
