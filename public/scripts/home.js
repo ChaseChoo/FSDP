@@ -411,17 +411,22 @@
       .querySelectorAll(".backBtn")
       .forEach((btn) => btn.addEventListener("click", goBack));
 
-    // Exit: reset to main
+    // Exit: end session (use logout behavior)
     if (exitBtn) {
       exitBtn.addEventListener("click", () => {
-        selectedCashAmount = null;
-        const cashOther = document.getElementById("cashOther");
-        if (cashOther) cashOther.value = "";
-        document
-          .querySelectorAll(".denom-btn")
-          .forEach((b) => b.classList.remove("selected"));
-        navHistory = ["main"];
-        showPage("main");
+        if (typeof window.handleLogout === "function") {
+          window.handleLogout();
+        } else {
+          // Fallback: soft reset to main menu if logout handler is unavailable
+          selectedCashAmount = null;
+          const cashOther = document.getElementById("cashOther");
+          if (cashOther) cashOther.value = "";
+          document
+            .querySelectorAll(".denom-btn")
+            .forEach((b) => b.classList.remove("selected"));
+          navHistory = ["main"];
+          showPage("main");
+        }
       });
     }
 
