@@ -44,14 +44,6 @@
                     What would you like to do today?
                   </h1>
                 </div>
-                <button id="logoutBtn" class="logout-btn" onclick="handleLogout()">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                  </svg>
-                  End Session
-                </button>
               </div>
             </div>
 
@@ -62,19 +54,16 @@
                   <div class="vt-title">Virtual Teller</div>
                   <button id="vtClose" class="vt-close" aria-label="End call">✕</button>
                 </div>
-                <div id="vtBody" class="vt-body">
-                  <div id="vtStatus" class="vt-status">Connecting to your virtual teller...</div>
-                  <!-- Pre-recorded video (muted for autoplay). Place your file at `public/media/virtual-teller.mp4` -->
-                  <video id="vtVideo" class="vt-video" src="media/virtual-teller.mp4" playsinline muted loop preload="auto" style="width:100%; max-height:320px; object-fit:cover; display:none; border-radius:8px; margin-top:10px;"></video>
-                  <div id="vtMessages" class="vt-messages" role="log" aria-live="polite"></div>
+                <div id="vtBody" class="vt-body" style="position:relative; padding:0;">
+                  <div id="vtStatus" class="vt-status" style="padding:12px 16px;">Connecting to your virtual teller...</div>
+                  <!-- Pre-recorded video (muted for autoplay). Will be loaded from /atm-videos via the server. -->
+                  <video id="vtVideo" class="vt-video" playsinline muted loop preload="auto" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:0; background:#000;"></video>
+                  <!-- Sign-language video: smaller, bottom-right overlay inside VT panel. Will be loaded from /atm-videos if available. -->
+                  <video id="vtSignVideo" class="vt-sign-video" playsinline muted loop preload="auto" style="position:absolute; right:12px; bottom:72px; width:160px; max-height:140px; object-fit:cover; display:block; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.18); z-index:60;"></video>
                 </div>
-                <div class="vt-controls">
-                  <div class="vt-call-info">
-                    <div class="vt-avatar agent" aria-hidden="true">A</div>
-                    <div class="vt-call-text">Call with <strong>Alex (Virtual Teller)</strong></div>
-                  </div>
+                <div class="vt-controls" style="align-items:center; justify-content:center; gap:12px;">
                   <div class="vt-actions">
-                    <button id="vtMic" class="btn-secondary" aria-pressed="false">🎤 Speak</button>
+                    <button id="vtMic" class="btn-secondary" aria-pressed="false">🎤</button>
                     <button id="vtUnmute" class="btn-secondary">🔊 Join Call</button>
                     <button id="vtCloseBtn" class="btn-secondary">End</button>
                   </div>

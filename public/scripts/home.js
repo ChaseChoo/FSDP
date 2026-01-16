@@ -411,17 +411,22 @@
       .querySelectorAll(".backBtn")
       .forEach((btn) => btn.addEventListener("click", goBack));
 
-    // Exit: reset to main
+    // Exit: end session (use logout behavior)
     if (exitBtn) {
       exitBtn.addEventListener("click", () => {
-        selectedCashAmount = null;
-        const cashOther = document.getElementById("cashOther");
-        if (cashOther) cashOther.value = "";
-        document
-          .querySelectorAll(".denom-btn")
-          .forEach((b) => b.classList.remove("selected"));
-        navHistory = ["main"];
-        showPage("main");
+        if (typeof window.handleLogout === "function") {
+          window.handleLogout();
+        } else {
+          // Fallback: soft reset to main menu if logout handler is unavailable
+          selectedCashAmount = null;
+          const cashOther = document.getElementById("cashOther");
+          if (cashOther) cashOther.value = "";
+          document
+            .querySelectorAll(".denom-btn")
+            .forEach((b) => b.classList.remove("selected"));
+          navHistory = ["main"];
+          showPage("main");
+        }
       });
     }
 
@@ -693,6 +698,52 @@
       return total || null;
     }
 
+    // Fetch and announce recent transactions (reads from /api/transactions)
+    async function fetchAndAnnounceTransactions(limit = 5) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/transactions', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          logBot('Unable to fetch transactions.');
+          speak('Unable to fetch transactions. Please try again later.');
+          return;
+        }
+        const data = await res.json();
+        const txns = Array.isArray(data.transactions) ? data.transactions : (data || []).slice(0, limit);
+        if (!txns || !txns.length) {
+          logBot('No transactions found.');
+          speak('You have no recent transactions.');
+          return;
+        }
+        const count = Math.min(limit, txns.length);
+        logBot(`Showing your ${count} most recent transactions:`);
+        speak(`Here are your ${count} most recent transactions.`);
+        for (let i = 0; i < count; i++) {
+          const t = txns[i];
+          const when = t.CreatedAt ? new Date(t.CreatedAt).toLocaleString() : (t.date || '');
+          const type = t.Type || t.type || t.description || 'Transaction';
+          const amt = (t.Amount !== undefined && t.Amount !== null) ? formatCurrency(t.Amount) : (t.amount ? formatCurrency(t.amount) : '');
+          const line = `${when} — ${type} — ${amt}`;
+          logBot(line);
+          // speak a short summary for first 1-2 transactions only to avoid long TTS
+          if (i < 2) speak(`${type} ${amt} on ${when}`);
+        }
+        // Offer to open full transactions page
+        logBot('Tap or say "Open transactions" to view full history.');
+      } catch (err) {
+        console.error('fetch transactions error', err);
+        logBot('Failed to load transactions.');
+        speak('Failed to load transactions.');
+      }
+    }
+
     // Flash/highlight all major options briefly (used when ATM announces ready)
     function flashAllOptions(duration = 1200) {
       try{
@@ -703,88 +754,91 @@
       }catch(e){}
     }
 
-    // Virtual teller simulation: show/close helpers
-    // Virtual teller message renderer (with avatar + bubble)
+    // Virtual teller simulation: we no longer render chat bubbles — keep a no-op
     function appendVTMessage(kind, text){
-      try{
-        const box = document.getElementById('vtMessages');
-        if(!box) return;
-        const row = document.createElement('div'); row.className = 'vt-row ' + (kind==='user' ? 'user' : 'agent');
-        const avatar = document.createElement('div'); avatar.className = 'vt-avatar ' + (kind==='user' ? 'user' : 'agent');
-        avatar.setAttribute('aria-hidden','true');
-        avatar.textContent = (kind==='user' ? 'G' : 'A');
-        const bubble = document.createElement('div'); bubble.className = 'vt-bubble';
-        bubble.textContent = text;
-        if(kind === 'user') { row.appendChild(bubble); row.appendChild(avatar); }
-        else { row.appendChild(avatar); row.appendChild(bubble); }
-        box.appendChild(row);
-        box.scrollTop = box.scrollHeight;
-        try{ if(kind !== 'user') speak(text); }catch(e){}
-      }catch(e){ console.error(e); }
+      // Intentionally left blank: Virtual Teller acts as a pure video call.
     }
 
     function showVirtualTeller(initialAgentText){
       try{
         const overlay = document.getElementById('virtualTellerOverlay');
         const status = document.getElementById('vtStatus');
-        const messages = document.getElementById('vtMessages');
-        const input = document.getElementById('vtInput');
-        const send = document.getElementById('vtSend');
-        const close = document.getElementById('vtClose');
         const vtMicBtn = document.getElementById('vtMic');
         const vtCloseBtn = document.getElementById('vtCloseBtn');
+        const vtClose = document.getElementById('vtClose');
         if(!overlay) return;
-        messages.innerHTML = '';
         overlay.style.display = 'block'; overlay.setAttribute('aria-hidden','false');
         status.textContent = 'Connecting to your virtual teller...';
         // simulate connection then show video and messages once connected
         setTimeout(()=>{
-          status.textContent = 'Connected — Virtual Teller (Alex)';
-          appendVTMessage('agent', 'Hello, I am Alex, your virtual teller. How may I assist you today?');
-          if(initialAgentText) appendVTMessage('agent', initialAgentText);
-          // After connecting, try to load the pre-recorded video from the atm videos folder
+          status.textContent = 'Connected — Virtual Teller';
+          // No chat messages; show video-only experience. Optionally use TTS to greet.
+          try{ if(initialAgentText) speak('Connecting you to a virtual teller.'); }catch(e){}
+          // After connecting, ask the server for available videos and load the main + sign-language clips if present
           try{
-            const vtVideo = document.getElementById('vtVideo');
-            if(vtVideo){
-              // path to the video inside the repo. Replace filename if different.
-              const videoPath = 'atm videos/video_2025-11-24_14-05-19.mp4';
-              vtVideo.style.display = 'block';
-              vtVideo.muted = true; // keep muted so autoplay works; user can press Join to unmute
-              vtVideo.playsInline = true;
-              vtVideo.loop = true;
-              // set or update src
-              const encoded = encodeURI(videoPath);
-              if(!vtVideo.src || !vtVideo.src.includes(encoded)) vtVideo.src = encoded;
-              try{ vtVideo.load(); }catch(e){}
-              const p = vtVideo.play();
-              if(p && p.catch) p.catch(()=>{/* autoplay may be blocked until user interacts */});
-            }
-          }catch(e){ console.error('VT video load error', e); }
+            fetch('/atm-videos/list').then(r=>r.json()).then(list=>{
+              try{
+                if(!Array.isArray(list) || !list.length) return;
+                // Choose main and sign files by pattern when possible
+                // prefer filenames like 'video_*' for main and files containing 'sign' for sign-language
+                const mainFileByPattern = list.find(f => /(^video[_-]|main|vt|virtual)/i.test(f));
+                const signFileByPattern = list.find(f => /(sign|sign[- ]?language|asl|signlang)/i.test(f));
+                const mainFile = mainFileByPattern || list[0];
+                let signFile = signFileByPattern || null;
+                // if no explicit sign file but there is a second file, use that
+                if(!signFile && list.length > 1) signFile = list[1];
+                const vtVideo = document.getElementById('vtVideo');
+                const vtSign = document.getElementById('vtSignVideo');
+                if(vtVideo && mainFile){
+                  const url = '/atm-videos/' + encodeURIComponent(mainFile);
+                  vtVideo.src = url;
+                  vtVideo.style.display = 'block';
+                  vtVideo.muted = true;
+                  vtVideo.playsInline = true;
+                  vtVideo.loop = true;
+                  try{ vtVideo.load(); }catch(e){}
+                  const p = vtVideo.play(); if(p && p.catch) p.catch(()=>{});
+                }
+                if(vtSign && signFile){
+                  const url2 = '/atm-videos/' + encodeURIComponent(signFile);
+                  vtSign.src = url2;
+                  vtSign.style.display = 'block';
+                  vtSign.muted = true;
+                  vtSign.playsInline = true;
+                  vtSign.loop = true;
+                  try{ vtSign.load(); }catch(e){}
+                  const p2 = vtSign.play(); if(p2 && p2.catch) p2.catch(()=>{});
+                }
+              }catch(err){ console.error('vt load inner error', err); }
+            }).catch(err=>{ console.error('Failed to fetch /atm-videos/list', err); });
+          }catch(e){ console.error('VT video list error', e); }
           // start VT mic auto-listen if supported
           try{ startVTListening(); if(vtMicBtn) vtMicBtn.setAttribute('aria-pressed','true'); }catch(e){}
         }, 1100);
 
-        if(send) send.onclick = ()=>{ const v = (input.value||'').trim(); if(!v) return; appendVTMessage('user', v); input.value=''; setTimeout(()=> appendVTMessage('agent', 'Thanks — I will process that and get back to you.'), 700); };
         if(vtMicBtn) vtMicBtn.onclick = ()=>{ const pressed = vtMicBtn.getAttribute('aria-pressed') === 'true'; if(pressed) stopVTListening(); else startVTListening(); vtMicBtn.setAttribute('aria-pressed', (!pressed).toString()); };
-        // Unmute / Join Call button: enables audio on the pre-recorded video (user gesture required)
-        const vtUnmuteBtn = document.getElementById('vtUnmute');
-        if(vtUnmuteBtn) {
-          vtUnmuteBtn.onclick = ()=>{
-            try{
-              const vtVideo = document.getElementById('vtVideo');
-              if(!vtVideo) return;
-              vtVideo.muted = false;
-              const p = vtVideo.play();
-              if(p && p.catch) p.catch(()=>{});
-              vtUnmuteBtn.textContent = '🔈 Joined';
-              vtUnmuteBtn.setAttribute('aria-pressed','true');
-              // Announce join via TTS as fallback
-              try{ speak('You have joined the call and enabled audio.'); }catch(e){}
-            }catch(e){ console.error('vtUnmute error', e); }
-          };
-        }
+          // Unmute / Join Call button: enables audio on the pre-recorded video (user gesture required)
+          const vtUnmuteBtn = document.getElementById('vtUnmute');
+          if(vtUnmuteBtn) {
+            vtUnmuteBtn.onclick = ()=>{
+              try{
+                const vtVideo = document.getElementById('vtVideo');
+                const vtSign = document.getElementById('vtSignVideo');
+                if(!vtVideo) return;
+                // Unmute only the main video. Keep sign-language overlay muted (it usually has no audio).
+                vtVideo.muted = false;
+                const p = vtVideo.play(); if(p && p.catch) p.catch(()=>{});
+                try{ if(vtSign) { vtSign.muted = true; const p2 = vtSign.play(); if(p2 && p2.catch) p2.catch(()=>{}); } }catch(e){}
+                vtUnmuteBtn.textContent = '🔈 Joined';
+                vtUnmuteBtn.setAttribute('aria-pressed','true');
+                vtUnmuteBtn.disabled = true;
+                // Announce join via TTS as fallback
+                try{ speak('You have joined the call and enabled audio.'); }catch(e){}
+              }catch(e){ console.error('vtUnmute error', e); }
+            };
+          }
         if(vtCloseBtn) vtCloseBtn.onclick = ()=> closeVirtualTeller();
-        if(close) close.onclick = ()=> closeVirtualTeller();
+        if(vtClose) vtClose.onclick = ()=> closeVirtualTeller();
       }catch(e){ console.error(e); }
     }
 
@@ -793,7 +847,7 @@
         const overlay = document.getElementById('virtualTellerOverlay'); 
         if(!overlay) return; 
         // pause and hide video when closing
-        try{ const vtVideo = document.getElementById('vtVideo'); if(vtVideo){ vtVideo.pause(); vtVideo.currentTime = 0; vtVideo.style.display = 'none'; } }catch(e){}
+        try{ const vtVideo = document.getElementById('vtVideo'); const vtSign = document.getElementById('vtSignVideo'); if(vtVideo){ vtVideo.pause(); vtVideo.currentTime = 0; vtVideo.style.display = 'none'; } if(vtSign){ vtSign.pause(); vtSign.currentTime = 0; vtSign.style.display = 'none'; } }catch(e){}
         overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); stopVTListening(); 
       }catch(e){}
     }
@@ -895,6 +949,8 @@
           /(balance|余额|baki|இருப்பு|semakan baki|check balance)/i,
         transfer:
           /(transfer|转账|汇款|pindah|pindahan|பரிமாற்றம்)/i,
+        history:
+          /(history|transactions|transaction history|recent transactions|recent activity|交易记录|最近交易|交易历史|transaksi|sejarah transaksi)/i,
         activate:
           /(activate|激活|aktif|aktifkan|செயற்படுத்து)/i,
         menu: /(menu|home|主菜单|首页|utama|முகப்பு)/i,
@@ -922,6 +978,18 @@
         showPage("cash");
         logBot(i18n[currentLang].need_amount);
         speak(i18n[currentLang].need_amount);
+        return;
+      }
+
+      if (intents.history.test(lower)) {
+        try{
+          // If user explicitly asked to open or view transactions, navigate to the transactions page
+          if (/\b(open|view|show)\b/.test(lower) && /transaction/.test(lower)){
+            window.location.href = 'transactions.html';
+            return;
+          }
+          fetchAndAnnounceTransactions();
+        }catch(e){ console.error(e); }
         return;
       }
 

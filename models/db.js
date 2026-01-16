@@ -15,7 +15,7 @@ const dbConfig = {
     encrypt: process.env.DB_ENCRYPT === "true",
     trustServerCertificate: true,
     enableArithAbort: true,
-    instanceName: ''  // Explicitly set to empty for default instance
+    ...(process.env.DB_INSTANCE ? { instanceName: process.env.DB_INSTANCE } : {})
   },
   pool: { 
     max: 10, 
@@ -33,8 +33,11 @@ console.log("Attempting to connect to MSSQL with config:", {
   server: dbConfig.server,
   port: dbConfig.port,
   database: dbConfig.database,
-  user: dbConfig.user
+  user: dbConfig.user,
+  instance: process.env.DB_INSTANCE || "<default>"
 });
+
+let poolErrorLogged = false;
 
 const poolPromise = new mssql.ConnectionPool(dbConfig)
   .connect()
@@ -43,9 +46,10 @@ const poolPromise = new mssql.ConnectionPool(dbConfig)
     return pool;
   })
   .catch(err => {
-    console.error("❌ MSSQL connection failed:", err.message);
-    console.error("Full error:", err);
-    
+    if (!poolErrorLogged) {
+      console.error("❌ MSSQL connection failed (showing once):", err.message);
+      poolErrorLogged = true;
+    }
     // Don't exit, let the app continue without DB for now
     return null;
   });

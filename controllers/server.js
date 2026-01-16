@@ -20,19 +20,31 @@ const dbConfig = {
   port: Number(process.env.DB_PORT) || 1433,
   options: {
     encrypt: process.env.DB_ENCRYPT === 'true' || false,
-    trustServerCertificate: true
+    trustServerCertificate: true,
+    ...(process.env.DB_INSTANCE ? { instanceName: process.env.DB_INSTANCE } : {})
   },
   pool: { max: 10, min: 0, idleTimeoutMillis: 30000 }
 };
 
-let poolPromise;
-async function connectDb() {
+const DEFAULT_EXTERNAL_ID = process.env.DEFAULT_EXTERNAL_ID || 'PUBLIC';
+
+let cachedPool = null;
+let poolError = null;
+let poolErrorLogged = false;
+
+async function getPool() {
+  if (cachedPool) return cachedPool;
+  if (poolError) throw poolError;
   try {
-    poolPromise = await sql.connect(dbConfig);
+    cachedPool = await sql.connect(dbConfig);
     console.log('MSSQL connected');
+    return cachedPool;
   } catch (err) {
-    console.error('MSSQL connection failed:', err);
-    // rethrow so endpoints know connection failed
+    poolError = err;
+    if (!poolErrorLogged) {
+      console.error('MSSQL connection failed (showing once):', err.message);
+      poolErrorLogged = true;
+    }
     throw err;
   }
 }
@@ -40,8 +52,10 @@ async function connectDb() {
 // Simple endpoints for approved recipients
 app.get('/api/approved-recipients', async (req, res) => {
   try {
-    const pool = poolPromise || await sql.connect(dbConfig);
-    const result = await pool.request().query('SELECT id, value, created_at FROM approved_recipients ORDER BY id');
+    const pool = await getPool();
+    const request = pool.request();
+    request.input('externalId', sql.NVarChar(200), DEFAULT_EXTERNAL_ID);
+    const result = await request.query('SELECT Id AS id, Value AS value, CreatedAt FROM ApprovedRecipients WHERE ExternalId = @externalId ORDER BY Id DESC');
     res.json(result.recordset || []);
   } catch (err) {
     console.error(err);
@@ -54,10 +68,15 @@ app.post('/api/approved-recipients', async (req, res) => {
     const { value } = req.body;
     if (!value || !/^\d+$/.test(String(value))) return res.status(400).json({ error: 'value is required and must be digits only' });
 
-    const pool = poolPromise || await sql.connect(dbConfig);
+    const pool = await getPool();
     const request = pool.request();
-    request.input('value', sql.NVarChar(50), String(value));
-    const insert = await request.query('INSERT INTO approved_recipients (value) OUTPUT INSERTED.id, INSERTED.value, INSERTED.created_at VALUES (@value)');
+    request.input('externalId', sql.NVarChar(200), DEFAULT_EXTERNAL_ID);
+    request.input('value', sql.NVarChar(200), String(value));
+    const insert = await request.query(
+      'INSERT INTO ApprovedRecipients (ExternalId, Label, Value, CreatedAt, UpdatedAt) ' +
+      'OUTPUT INSERTED.Id AS id, INSERTED.Value AS value, INSERTED.CreatedAt ' +
+      'VALUES (@externalId, \'\', @value, SYSUTCDATETIME(), SYSUTCDATETIME())'
+    );
     res.status(201).json(insert.recordset[0]);
   } catch (err) {
     console.error(err);
@@ -69,8 +88,11 @@ app.delete('/api/approved-recipients/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
-    const pool = poolPromise || await sql.connect(dbConfig);
-    const del = await pool.request().input('id', sql.Int, id).query('DELETE FROM approved_recipients WHERE id = @id; SELECT @@ROWCOUNT as affected;');
+    const pool = await getPool();
+    const del = await pool.request()
+      .input('id', sql.Int, id)
+      .input('externalId', sql.NVarChar(200), DEFAULT_EXTERNAL_ID)
+      .query('DELETE FROM ApprovedRecipients WHERE Id = @id AND ExternalId = @externalId; SELECT @@ROWCOUNT as affected;');
     const affected = (del.recordset && del.recordset[0] && del.recordset[0].affected) || 0;
     res.json({ deleted: affected > 0 });
   } catch (err) {
@@ -87,12 +109,15 @@ app.put('/api/approved-recipients/:id', async (req, res) => {
     const { value } = req.body;
     if (!value || !/^\d+$/.test(String(value))) return res.status(400).json({ error: 'value is required and must be digits only' });
 
-    const pool = poolPromise || await sql.connect(dbConfig);
+    const pool = await getPool();
     const request = pool.request();
     request.input('id', sql.Int, id);
-    request.input('value', sql.NVarChar(50), String(value));
-    // Update and return the updated row
-    const upd = await request.query("UPDATE approved_recipients SET value = @value WHERE id = @id; SELECT id, value, created_at FROM approved_recipients WHERE id = @id;");
+    request.input('externalId', sql.NVarChar(200), DEFAULT_EXTERNAL_ID);
+    request.input('value', sql.NVarChar(200), String(value));
+    const upd = await request.query(
+      "UPDATE ApprovedRecipients SET Value = @value, UpdatedAt = SYSUTCDATETIME() WHERE Id = @id AND ExternalId = @externalId; " +
+      "SELECT Id AS id, Value AS value, CreatedAt FROM ApprovedRecipients WHERE Id = @id AND ExternalId = @externalId;"
+    );
     const updated = (upd.recordset && upd.recordset[0]) || null;
     if (!updated) return res.status(404).json({ error: 'Not found' });
     res.json(updated);
@@ -103,7 +128,7 @@ app.put('/api/approved-recipients/:id', async (req, res) => {
 });
 
 const port = process.env.PORT || 4000;
-connectDb().catch(() => {
+getPool().catch(() => {
   console.warn('Continuing without DB connection; endpoints will fail until DB is reachable.');
 });
 app.listen(port, () => console.log(`API listening on http://localhost:${port}`));

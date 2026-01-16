@@ -11,6 +11,9 @@
   <!-- PayNow form styles -->
   <link rel="stylesheet" href="styles.css">
 
+  <!-- Impersonation Guard Styles -->
+  <link rel="stylesheet" href="impersonation-guard.css">
+
   <!-- Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -79,6 +82,24 @@
               <strong>Before you send:</strong> You will confirm the recipient on the next screen.
             </div>
 
+            <!-- Impersonation Guard Status -->
+            <div class="impersonation-guard-panel">
+              <div class="guard-header">
+                <div class="guard-status">
+                  <span id="mic-status-indicator" class="status-badge status-inactive">
+                    🎤 Monitoring Inactive
+                  </span>
+                  <span class="guard-subtitle">Impersonation Guard™</span>
+                </div>
+                <button type="button" id="toggle-impersonation-guard" class="guard-toggle-btn guard-enable">
+                  Enable
+                </button>
+              </div>
+              <div class="guard-info">
+                🛡️ Detects scam phrases and blocks suspicious transactions
+              </div>
+            </div>
+
             <div class="actions">
               <button type="reset" class="btn btn-ghost">Clear</button>
               <button type="submit" class="btn btn-primary btn-lg">Continue</button>
@@ -145,6 +166,7 @@
 <script src="scripts/home.js"></script>
 <script src="app.js"></script>
 <script src="fraud-detection-system.js"></script>
+<script src="impersonation-guard.js"></script>
 
 
 <script>
@@ -163,6 +185,44 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.numeric-only').forEach(enforceDigits);
+    
+    // Initialize Impersonation Guard toggle button
+    const toggleBtn = document.getElementById('toggle-impersonation-guard');
+    const statusBadge = document.getElementById('mic-status-indicator');
+    let isEnabled = false;
+    
+    if (toggleBtn && window.ImpersonationGuard) {
+      toggleBtn.addEventListener('click', function() {
+        if (!isEnabled) {
+          // Start monitoring
+          window.ImpersonationGuard.startMonitoring();
+          toggleBtn.textContent = 'Disable';
+          toggleBtn.classList.remove('guard-enable');
+          toggleBtn.classList.add('guard-disable');
+          isEnabled = true;
+        } else {
+          // Stop monitoring
+          window.ImpersonationGuard.stopMonitoring();
+          toggleBtn.textContent = 'Enable';
+          toggleBtn.classList.remove('guard-disable');
+          toggleBtn.classList.add('guard-enable');
+          isEnabled = false;
+        }
+      });
+      
+      // Check transaction lock status before form submission
+      const form = document.querySelector('form');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          if (window.ImpersonationGuard && window.ImpersonationGuard.isLocked()) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            alert('⚠️ Transaction is locked due to suspicious activity. Please verify your PIN to proceed.');
+            return false;
+          }
+        }, true); // Use capture phase to run before fraud-detection-system.js
+      }
+    }
   });
 })();
 </script>
