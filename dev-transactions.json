@@ -12,6 +12,15 @@
   ],
   "12345678": [
     {
+      "Id": "dev-1768570771826-0.7241081836721894",
+      "AccountId": "dev-12345678",
+      "Type": "TRANSFER_IN",
+      "Amount": 10,
+      "BalanceAfter": 20,
+      "Description": "Test transfer",
+      "CreatedAt": "2026-01-16T13:39:31.826Z"
+    },
+    {
       "Id": "dev-1768568865722-0.9709773935514341",
       "AccountId": "dev-12345678",
       "Type": "TRANSFER_IN",
@@ -296,6 +305,78 @@
     }
   ],
   "user-6": [
+    {
+      "Id": "dev-1768570807359-0.760791214569063",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 50,
+      "BalanceAfter": 976,
+      "Description": "Small transfer test",
+      "CreatedAt": "2026-01-16T13:40:07.359Z"
+    },
+    {
+      "Id": "dev-1768570807344-0.24719355693853418",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 400,
+      "BalanceAfter": 1026,
+      "Description": "Test approved transfer",
+      "CreatedAt": "2026-01-16T13:40:07.344Z"
+    },
+    {
+      "Id": "dev-1768570771825-0.3730141516734462",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER_OUT",
+      "Amount": 10,
+      "BalanceAfter": 1426,
+      "Description": "Test transfer",
+      "CreatedAt": "2026-01-16T13:39:31.825Z"
+    },
+    {
+      "Id": "dev-1768570771818-0.33574406530656886",
+      "AccountId": "dev-user-6",
+      "Type": "WITHDRAW",
+      "Amount": 25,
+      "BalanceAfter": 1436,
+      "Description": "Test withdrawal",
+      "CreatedAt": "2026-01-16T13:39:31.818Z"
+    },
+    {
+      "Id": "dev-1768570771811-0.4599362780969478",
+      "AccountId": "dev-user-6",
+      "Type": "DEPOSIT",
+      "Amount": 50,
+      "BalanceAfter": 1461,
+      "Description": "Test deposit",
+      "CreatedAt": "2026-01-16T13:39:31.811Z"
+    },
+    {
+      "Id": "dev-1768570658254-0.5865987295095259",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 500,
+      "BalanceAfter": 1411,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-16T13:37:38.254Z"
+    },
+    {
+      "Id": "dev-1768570636035-0.30920531459500444",
+      "AccountId": "dev-user-6",
+      "Type": "DEPOSIT",
+      "Amount": 1000,
+      "BalanceAfter": 1911,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-01-16T13:37:16.035Z"
+    },
+    {
+      "Id": "dev-1768570625539-0.07245266970659126",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 100,
+      "BalanceAfter": 911,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-16T13:37:05.539Z"
+    },
     {
       "Id": "dev-1768570144728-0.44268490969293883",
       "AccountId": "dev-user-6",
@@ -901,15 +982,6 @@
     }
   ],
   "user-9": [
-    {
-      "Id": "dev-1767773368205-0.7103229810478315",
-      "AccountId": "dev-user-9",
-      "Type": "WITHDRAW",
-      "Amount": 50,
-      "BalanceAfter": 4081,
-      "Description": "ATM withdrawal",
-      "CreatedAt": "2026-01-07T08:09:28.205Z"
-    },
     {
       "Id": "dev-1763473897162-0.7298400803408069",
       "AccountId": "dev-user-9",
