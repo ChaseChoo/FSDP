@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCBC - Create Guardian QR Code</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="stylesheet" href="styles/home.css">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #111827;
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        
+        .container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .card {
+            width: 100%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #667eea;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(to bottom, rgba(102, 126, 234, 0.85), #667eea);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 8px;
+            color: #111827;
+        }
+        
+        .subtitle {
+            font-size: 1.05rem;
+            color: #6b7280;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background-color: #f9fafb;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: white;
+        }
+        
+        .helper-text {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            margin-top: 12px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .qr-result {
+            display: none;
+            text-align: center;
+            margin-top: 32px;
+            padding: 32px;
+            background: #f9fafb;
+            border-radius: 16px;
+            border: 2px dashed #d1d5db;
+        }
+        
+        .qr-result.show {
+            display: block;
+        }
+        
+        #qr-code {
+            display: flex;
+            justify-content: center;
+            margin: 24px 0;
+        }
+        
+        #qr-code canvas {
+            border-radius: 12px;
+            border: 8px solid white;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+        }
+        
+        .action-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .action-summary h3 {
+            margin: 0 0 16px;
+            font-size: 1.1rem;
+            color: #111827;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .summary-label {
+            color: #6b7280;
+        }
+        
+        .summary-value {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .alert-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <a href="/" class="back-button">
+                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                    <span>Back</span>
+                </a>
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i data-lucide="shield-check" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <div class="logo-text">OCBC Guardian</div>
+                </div>
+                <h1 class="title">Create Assisted QR Code</h1>
+                <p class="subtitle">Generate a QR code for simplified ATM access</p>
+            </div>
+            
+            <div id="alert-container"></div>
+            
+            <form id="qr-form">
+                <div class="form-group">
+                    <label for="action-type">Action Type</label>
+                    <select id="action-type" required>
+                        <option value="">Select an action...</option>
+                        <option value="WITHDRAW">Withdraw Money</option>
+                        <option value="DEPOSIT">Deposit Money</option>
+                        <option value="TRANSFER">Transfer Money</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="amount-group">
+                    <label for="amount">Amount (SGD)</label>
+                    <input type="number" id="amount" step="0.01" min="0" placeholder="100.00">
+                    <div class="helper-text" id="amount-helper">Enter the amount for this transaction</div>
+                    <div class="helper-text" id="fraud-warning" style="display: none; color: #dc2626; font-weight: 600; margin-top: 8px;">
+                        ⚠️ Transfers over $300 will trigger fraud detection review
+                    </div>
+                </div>
+                
+                <div class="form-group" id="recipient-group" style="display: none;">
+                    <label for="recipient">Recipient Account/Phone Number</label>
+                    <input type="text" id="recipient" placeholder="91234567 or ACC12345">
+                    <div class="helper-text">Enter recipient's account number or phone number</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description (Optional)</label>
+                    <input type="text" id="description" placeholder="ATM withdrawal for dad" maxlength="100">
+                    <div class="helper-text">Add a note to identify this transaction</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="max-uses">Maximum Uses</label>
+                    <select id="max-uses" required>
+                        <option value="1">Single Use</option>
+                        <option value="3">Up to 3 uses</option>
+                        <option value="5">Up to 5 uses</option>
+                        <option value="10">Up to 10 uses</option>
+                    </select>
+                    <div class="helper-text">How many times can this QR code be used?</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="expiry-days">Expires In</label>
+                    <select id="expiry-days" required>
+                        <option value="1">1 Day</option>
+                        <option value="3">3 Days</option>
+                        <option value="7" selected>7 Days</option>
+                        <option value="14">14 Days</option>
+                        <option value="30">30 Days</option>
+                    </select>
+                    <div class="helper-text">QR code validity period</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Generate QR Code</button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 12px; color: #6b7280;">Generating QR code...</p>
+            </div>
+            
+            <div class="qr-result" id="qr-result">
+                <div class="action-summary">
+                    <h3>Action Summary</h3>
+                    <div class="summary-item">
+                        <span class="summary-label">Action:</span>
+                        <span class="summary-value" id="summary-action">-</span>
+                    </div>
+                    <div class="summary-item" id="summary-amount-row">
+                        <span class="summary-label">Amount:</span>
+                        <span class="summary-value" id="summary-amount">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Max Uses:</span>
+                        <span class="summary-value" id="summary-uses">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Expires:</span>
+                        <span class="summary-value" id="summary-expiry">-</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Ready to Use!</strong><br>
+                    Save this QR code or have the user scan it directly at the ATM.
+                </div>
+                
+                <div id="qr-code"></div>
+                
+                <button id="use-qr-btn" class="btn btn-primary" style="margin-bottom: 12px;">
+                    Use QR Code Now
+                </button>
+                
+                <button onclick="window.print()" class="btn btn-secondary">
+                    Print QR Code
+                </button>
+                <button onclick="resetForm()" class="btn btn-secondary">
+                    Create Another
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        const form = document.getElementById('qr-form');
+        const actionTypeSelect = document.getElementById('action-type');
+        const amountGroup = document.getElementById('amount-group');
+        const amountInput = document.getElementById('amount');
+        const recipientGroup = document.getElementById('recipient-group');
+        const recipientInput = document.getElementById('recipient');
+        const fraudWarning = document.getElementById('fraud-warning');
+        const qrResult = document.getElementById('qr-result');
+        const loading = document.getElementById('loading');
+        const alertContainer = document.getElementById('alert-container');
+        
+        // Show/hide fields based on action type
+        actionTypeSelect.addEventListener('change', function() {
+            const actionType = this.value;
+            if (actionType === 'TRANSFER') {
+                amountGroup.classList.remove('hidden');
+                amountInput.setAttribute('required', 'required');
+                recipientGroup.style.display = 'block';
+                recipientInput.setAttribute('required', 'required');
+                checkFraudWarning();
+            } else if (actionType) {
+                amountGroup.classList.remove('hidden');
+                amountInput.setAttribute('required', 'required');
+                recipientGroup.style.display = 'none';
+                recipientInput.removeAttribute('required');
+                fraudWarning.style.display = 'none';
+            }
+        });
+        
+        // Show fraud warning for transfers over $300
+        amountInput.addEventListener('input', checkFraudWarning);
+        
+        function checkFraudWarning() {
+            const actionType = actionTypeSelect.value;
+            const amount = parseFloat(amountInput.value) || 0;
+            
+            if (actionType === 'TRANSFER' && amount > 300) {
+                fraudWarning.style.display = 'block';
+            } else {
+                fraudWarning.style.display = 'none';
+            }
+        }
+        
+        // Handle form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const actionType = document.getElementById('action-type').value;
+            const amount = parseFloat(document.getElementById('amount').value) || null;
+            const recipient = document.getElementById('recipient').value || null;
+            const description = document.getElementById('description').value || null;
+            const maxUses = parseInt(document.getElementById('max-uses').value);
+            const expiryDays = parseInt(document.getElementById('expiry-days').value);
+            
+            // Validation
+            if (!actionType) {
+                showAlert('Please select an action type', 'error');
+                return;
+            }
+            
+            if (!amount || amount <= 0) {
+                showAlert('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            if (actionType === 'TRANSFER' && !recipient) {
+                showAlert('Please enter a recipient account number or phone', 'error');
+                return;
+            }
+            
+            // Fraud detection warning for transfers over $300
+            if (actionType === 'TRANSFER' && amount > 300) {
+                const confirmed = confirm(
+                    `⚠️ Fraud Detection Alert\n\n` +
+                    `Transfer amount: $${amount.toFixed(2)}\n` +
+                    `Recipient: ${recipient}\n\n` +
+                    `Transfers over $300 are flagged for fraud review. ` +
+                    `This QR code will require additional verification when used.\n\n` +
+                    `Do you want to continue?`
+                );
+                
+                if (!confirmed) {
+                    return;
+                }
+            }
+            
+            // Show loading
+            form.style.display = 'none';
+            loading.classList.add('show');
+            clearAlert();
+            
+            try {
+                // Get auth token from localStorage (same as other pages)
+                const token = localStorage.getItem('token');
+                
+                // Create the QR code
+                const response = await fetch('/api/guardian/create-action-qr', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        actionType,
+                        amount,
+                        recipientAccountNumber: recipient,
+                        description,
+                        maxUses,
+                        expiryDays
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to create QR code');
+                }
+                
+                // Display the QR code
+                displayQRCode(data, actionType, amount, maxUses, expiryDays);
+                
+            } catch (error) {
+                console.error('Error creating QR code:', error);
+                showAlert(error.message || 'Failed to create QR code. Please make sure you are logged in.', 'error');
+                form.style.display = 'block';
+            } finally {
+                loading.classList.remove('show');
+            }
+        });
+        
+        function displayQRCode(data, actionType, amount, maxUses, expiryDays) {
+            // Store action ID for the "Use QR Code Now" button
+            window.currentActionId = data.actionId;
+            
+            // Update summary
+            document.getElementById('summary-action').textContent = formatActionType(actionType);
+            
+            const amountRow = document.getElementById('summary-amount-row');
+            if (actionType === 'CHECK_BALANCE') {
+                amountRow.style.display = 'none';
+            } else {
+                amountRow.style.display = 'flex';
+                document.getElementById('summary-amount').textContent = `$${amount.toFixed(2)}`;
+            }
+            
+            document.getElementById('summary-uses').textContent = maxUses === 1 ? 'Single use' : `Up to ${maxUses} uses`;
+            
+            const expiryDate = new Date(data.action.expiresAt);
+            document.getElementById('summary-expiry').textContent = expiryDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Generate QR code
+            const qrCodeDiv = document.getElementById('qr-code');
+            qrCodeDiv.innerHTML = ''; // Clear previous QR code
+            
+            // Create URL that can be scanned by phone and redirects to confirmation page
+            const currentDomain = window.location.origin; // e.g., http://localhost:3000
+            const qrUrl = `${currentDomain}/qr-confirm.html?id=${data.actionId}`;
+            
+            new QRCode(qrCodeDiv, {
+                text: qrUrl,
+                width: 280,
+                height: 280,
+                colorDark: '#111827',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Show result
+            qrResult.classList.add('show');
+            showAlert('QR code generated successfully!', 'success');
+        }
+        
+        function formatActionType(type) {
+            const types = {
+                'WITHDRAW': 'Withdraw Money',
+                'DEPOSIT': 'Deposit Money',
+                'CHECK_BALANCE': 'Check Balance',
+                'TRANSFER': 'Transfer Money'
+            };
+            return types[type] || type;
+        }
+        
+        function resetForm() {
+            form.reset();
+            form.style.display = 'block';
+            qrResult.classList.remove('show');
+            clearAlert();
+            window.currentActionId = null;
+        }
+        
+        // Handle "Use QR Code Now" button
+        document.addEventListener('DOMContentLoaded', function() {
+            const useQrBtn = document.getElementById('use-qr-btn');
+            if (useQrBtn) {
+                useQrBtn.addEventListener('click', function() {
+                    if (window.currentActionId) {
+                        window.location.href = `/qr-confirm.html?id=${window.currentActionId}`;
+                    }
+                });
+            }
+        });
+        
+        function showAlert(message, type) {
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+        }
+        
+        function clearAlert() {
+            alertContainer.innerHTML = '';
+        }
+        
+        // Note: Authentication is handled by middleware on the backend
+        // Users accessing this page should already be logged in through the main flow
+    </script>
+</body>
+</html>

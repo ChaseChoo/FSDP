@@ -10,6 +10,17 @@
       "CreatedAt": "2025-11-20T01:22:33.140Z"
     }
   ],
+  "12345678": [
+    {
+      "Id": "dev-1768568865722-0.9709773935514341",
+      "AccountId": "dev-12345678",
+      "Type": "TRANSFER_IN",
+      "Amount": 10,
+      "BalanceAfter": 10,
+      "Description": "Test transfer",
+      "CreatedAt": "2026-01-16T13:07:45.722Z"
+    }
+  ],
   "91234567": [
     {
       "Id": "dev-1763613825507-0.037075047410295214",
@@ -149,6 +160,24 @@
   ],
   "FAKE_USER": [
     {
+      "Id": "dev-1768568451519-0.7088298219140534",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "TRANSFER",
+      "Amount": 100,
+      "BalanceAfter": 11945,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-16T13:00:51.519Z"
+    },
+    {
+      "Id": "dev-1768568312626-0.9251649240811413",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "TRANSFER",
+      "Amount": 100,
+      "BalanceAfter": 12045,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-16T12:58:32.627Z"
+    },
+    {
       "Id": "dev-1763983060450-0.09219552824245847",
       "AccountId": "dev-FAKE_USER",
       "Type": "WITHDRAW",
@@ -267,6 +296,105 @@
     }
   ],
   "user-6": [
+    {
+      "Id": "dev-1768570144728-0.44268490969293883",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 500,
+      "BalanceAfter": 1011,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-16T13:29:04.728Z"
+    },
+    {
+      "Id": "dev-1768570081367-0.40889581956072996",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 100,
+      "BalanceAfter": 1511,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-16T13:28:01.367Z"
+    },
+    {
+      "Id": "dev-1768569452199-0.7112278294678511",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 500,
+      "BalanceAfter": 1611,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-16T13:17:32.199Z"
+    },
+    {
+      "Id": "dev-1768569176179-0.05248469145313672",
+      "AccountId": "dev-user-6",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 2111,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-01-16T13:12:56.179Z"
+    },
+    {
+      "Id": "dev-1768568865721-0.41666894945183364",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER_OUT",
+      "Amount": 10,
+      "BalanceAfter": 2211,
+      "Description": "Test transfer",
+      "CreatedAt": "2026-01-16T13:07:45.721Z"
+    },
+    {
+      "Id": "dev-1768568865717-0.16018295217029288",
+      "AccountId": "dev-user-6",
+      "Type": "WITHDRAW",
+      "Amount": 25,
+      "BalanceAfter": 2221,
+      "Description": "Test withdrawal",
+      "CreatedAt": "2026-01-16T13:07:45.717Z"
+    },
+    {
+      "Id": "dev-1768568865712-0.21961448537714956",
+      "AccountId": "dev-user-6",
+      "Type": "DEPOSIT",
+      "Amount": 50,
+      "BalanceAfter": 2246,
+      "Description": "Test deposit",
+      "CreatedAt": "2026-01-16T13:07:45.713Z"
+    },
+    {
+      "Id": "dev-1768568737529-0.531905491826739",
+      "AccountId": "dev-user-6",
+      "Type": "DEPOSIT",
+      "Amount": 200,
+      "BalanceAfter": 2196,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-01-16T13:05:37.529Z"
+    },
+    {
+      "Id": "dev-1768568717588-0.2269175143779072",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 100,
+      "BalanceAfter": 1996,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-16T13:05:17.588Z"
+    },
+    {
+      "Id": "dev-1768568686781-0.10850650922317406",
+      "AccountId": "dev-user-6",
+      "Type": "WITHDRAWAL",
+      "Amount": 200,
+      "BalanceAfter": 2096,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-01-16T13:04:46.781Z"
+    },
+    {
+      "Id": "dev-1768568536050-0.540815068128156",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 100,
+      "BalanceAfter": 2296,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-16T13:02:16.050Z"
+    },
     {
       "Id": "dev-1763982878237-0.8678208965617222",
       "AccountId": "dev-user-6",

@@ -10,6 +10,7 @@ import loginRoutes from "./routes/loginRoutes.js";
 import cardRoutes from "./routes/cardRoutes.js";
 import supportRoutes from "./routes/supportRoutes.js";
 import approvedRecipientRoutes from "./routes/approvedRecipientRoutes.js";
+import guardianQRRoutes from "./routes/guardianQRRoutes.js";
 import { sessionCount } from "./services/sessionStore.js";
 import fakeLogin from "./middleware/fakeLogin.js";
 import requireSession from "./middleware/requireSession.js";
@@ -49,6 +50,8 @@ app.use("/api/card", cardRoutes); // Card-based authentication
 app.use("/support", supportRoutes); // Support live agent demo
 // Approved recipients API (list/create/update/delete)
 app.use("/api", approvedRecipientRoutes);
+// Guardian QR code API (assisted transactions)
+app.use("/api/guardian", fakeLogin, guardianQRRoutes);
 
 // Transaction history API endpoint (JSON)
 app.get("/api/transactions", fakeLogin, requireSession, getTransactionHistory);

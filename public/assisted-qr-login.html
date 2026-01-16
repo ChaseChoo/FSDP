@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCBC ATM - Assisted QR Login</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="stylesheet" href="styles/home.css">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        
+        .container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .atm-screen {
+            width: 100%;
+            max-width: 900px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 32px;
+            border: 3px solid #334155;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+            padding: 48px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: linear-gradient(to bottom, #ef4444, #dc2626);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .logo-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 0 12px;
+            color: #f1f5f9;
+        }
+        
+        .subtitle {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+        
+        .scanner-section {
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 2px solid #334155;
+        }
+        
+        #qr-reader {
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        
+        .scan-btn {
+            width: 100%;
+            padding: 16px 32px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(to right, #3b82f6, #2563eb);
+            color: white;
+        }
+        
+        .scan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
+        }
+        
+        .scan-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .action-preview {
+            display: none;
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 2px solid #334155;
+        }
+        
+        .action-preview.show {
+            display: block;
+        }
+        
+        .action-preview h2 {
+            margin: 0 0 24px;
+            font-size: 1.5rem;
+            color: #f1f5f9;
+        }
+        
+        .preview-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: #0f172a;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+        
+        .preview-label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .preview-value {
+            color: #f1f5f9;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .preview-value.amount {
+            color: #10b981;
+            font-size: 1.5rem;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-confirm {
+            background: linear-gradient(to right, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-cancel {
+            background: #374151;
+            color: #f1f5f9;
+        }
+        
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+        
+        .result-section {
+            display: none;
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            border: 2px solid #334155;
+        }
+        
+        .result-section.show {
+            display: block;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(to bottom, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(to bottom, #ef4444, #dc2626);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .result-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 12px;
+            color: #f1f5f9;
+        }
+        
+        .result-message {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            margin-bottom: 32px;
+        }
+        
+        .balance-display {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+        }
+        
+        .balance-label {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+        
+        .balance-amount {
+            color: #10b981;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+        
+        .alert-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid #3b82f6;
+        }
+        
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid #ef4444;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #334155;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="atm-screen">
+            <div class="header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i data-lucide="landmark" style="width: 36px; height: 36px;"></i>
+                    </div>
+                    <div class="logo-text">OCBC ATM</div>
+                </div>
+                <h1 class="title">Assisted Transaction</h1>
+                <p class="subtitle">Scan your guardian QR code to continue</p>
+            </div>
+            
+            <div id="alert-container"></div>
+            
+            <div class="scanner-section" id="scanner-section">
+                <div class="alert alert-info">
+                    <strong>Instructions:</strong> Click "Start Scanning" and point your camera at the QR code provided by your guardian.
+                </div>
+                
+                <div id="qr-reader"></div>
+                
+                <button id="scan-btn" class="scan-btn" onclick="toggleScanner()">
+                    Start Scanning
+                </button>
+            </div>
+            
+            <div class="action-preview" id="action-preview">
+                <h2>Confirm Action</h2>
+                
+                <div class="preview-item">
+                    <span class="preview-label">Guardian:</span>
+                    <span class="preview-value" id="preview-guardian">-</span>
+                </div>
+                
+                <div class="preview-item">
+                    <span class="preview-label">Action:</span>
+                    <span class="preview-value" id="preview-action">-</span>
+                </div>
+                
+                <div class="preview-item" id="preview-amount-row">
+                    <span class="preview-label">Amount:</span>
+                    <span class="preview-value amount" id="preview-amount">-</span>
+                </div>
+                
+                <div class="preview-item" id="preview-recipient-row" style="display: none;">
+                    <span class="preview-label">Recipient:</span>
+                    <span class="preview-value" id="preview-recipient">-</span>
+                </div>
+                
+                <div class="preview-item">
+                    <span class="preview-label">Description:</span>
+                    <span class="preview-value" id="preview-description">-</span>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-cancel" onclick="cancelAction()">Cancel</button>
+                    <button class="btn btn-confirm" onclick="confirmAction()">Confirm</button>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="color: #94a3b8; font-size: 1.1rem;">Processing transaction...</p>
+            </div>
+            
+            <div class="result-section" id="result-section">
+                <div id="result-icon"></div>
+                <h2 class="result-title" id="result-title">Success!</h2>
+                <p class="result-message" id="result-message">Transaction completed successfully</p>
+                
+                <div class="balance-display" id="balance-display" style="display: none;">
+                    <div class="balance-label">New Balance</div>
+                    <div class="balance-amount" id="balance-amount">$0.00</div>
+                </div>
+                
+                <button class="btn scan-btn" onclick="resetATM()">Start New Transaction</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        lucide.createIcons();
+        
+        let html5QrCode;
+        let isScanning = false;
+        let scannedActionId = null;
+        let scannedActionData = null;
+        
+        async function toggleScanner() {
+            const scanBtn = document.getElementById('scan-btn');
+            
+            if (!isScanning) {
+                try {
+                    html5QrCode = new Html5Qrcode("qr-reader");
+                    
+                    await html5QrCode.start(
+                        { facingMode: "environment" },
+                        {
+                            fps: 10,
+                            qrbox: { width: 300, height: 300 }
+                        },
+                        onScanSuccess,
+                        onScanError
+                    );
+                    
+                    isScanning = true;
+                    scanBtn.textContent = 'Stop Scanning';
+                    scanBtn.style.background = 'linear-gradient(to right, #ef4444, #dc2626)';
+                } catch (err) {
+                    console.error('Error starting scanner:', err);
+                    showAlert('Unable to start camera. Please check permissions.', 'error');
+                }
+            } else {
+                await html5QrCode.stop();
+                isScanning = false;
+                scanBtn.textContent = 'Start Scanning';
+                scanBtn.style.background = 'linear-gradient(to right, #3b82f6, #2563eb)';
+            }
+        }
+        
+        async function onScanSuccess(decodedText, decodedResult) {
+            console.log('QR Code scanned:', decodedText);
+            
+            try {
+                const qrData = JSON.parse(decodedText);
+                
+                if (qrData.type !== 'ASSISTED_TRANSACTION') {
+                    showAlert('Invalid QR code. Please scan a guardian QR code.', 'error');
+                    return;
+                }
+                
+                // Stop scanning
+                if (isScanning) {
+                    await html5QrCode.stop();
+                    isScanning = false;
+                }
+                
+                // Validate the action
+                await validateAndShowAction(qrData.actionId);
+                
+            } catch (error) {
+                console.error('Error processing QR code:', error);
+                showAlert('Invalid QR code format', 'error');
+            }
+        }
+        
+        function onScanError(error) {
+            // Ignore scan errors (usually just means no QR code in view)
+        }
+        
+        async function validateAndShowAction(actionId) {
+            try {
+                const response = await fetch(`/api/guardian/validate-action/${actionId}`);
+                const data = await response.json();
+                
+                if (!response.ok || !data.valid) {
+                    showAlert(data.error || 'Invalid or expired QR code', 'error');
+                    return;
+                }
+                
+                // Store action data
+                scannedActionId = actionId;
+                scannedActionData = data.action;
+                
+                // Show preview
+                document.getElementById('preview-guardian').textContent = data.action.guardianName;
+                document.getElementById('preview-action').textContent = formatActionType(data.action.type);
+                
+                const amountRow = document.getElementById('preview-amount-row');
+                if (data.action.amount) {
+                    amountRow.style.display = 'flex';
+                    document.getElementById('preview-amount').textContent = `$${data.action.amount.toFixed(2)}`;
+                } else {
+                    amountRow.style.display = 'none';
+                }
+                
+                // Show recipient for transfers
+                const recipientRow = document.getElementById('preview-recipient-row');
+                if (data.action.type === 'TRANSFER' && data.action.recipientAccountNumber) {
+                    recipientRow.style.display = 'flex';
+                    document.getElementById('preview-recipient').textContent = data.action.recipientAccountNumber;
+                } else {
+                    recipientRow.style.display = 'none';
+                }
+                
+                document.getElementById('preview-description').textContent = data.action.description || 'No description';
+                
+                // Show fraud warning for transfers over $300
+                if (data.action.type === 'TRANSFER' && data.action.amount > 300) {
+                    const fraudAlert = document.createElement('div');
+                    fraudAlert.className = 'alert alert-error';
+                    fraudAlert.style.marginTop = '20px';
+                    fraudAlert.innerHTML = `
+                        <strong>⚠️ Fraud Detection Alert</strong><br>
+                        This transfer of $${data.action.amount.toFixed(2)} exceeds the $300 safety threshold. 
+                        Transaction will be logged for security monitoring.
+                    `;
+                    document.getElementById('action-preview').insertBefore(
+                        fraudAlert, 
+                        document.querySelector('.action-buttons')
+                    );
+                }
+                
+                // Hide scanner, show preview
+                document.getElementById('scanner-section').style.display = 'none';
+                document.getElementById('action-preview').classList.add('show');
+                
+            } catch (error) {
+                console.error('Error validating action:', error);
+                showAlert('Failed to validate QR code', 'error');
+            }
+        }
+        
+        async function confirmAction() {
+            if (!scannedActionId) return;
+            
+            // Hide preview, show loading
+            document.getElementById('action-preview').classList.remove('show');
+            document.getElementById('loading').classList.add('show');
+            clearAlert();
+            
+            try {
+                const response = await fetch('/api/guardian/execute-action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        actionId: scannedActionId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Transaction failed');
+                }
+                
+                // Show success
+                showResult(true, data);
+                
+            } catch (error) {
+                console.error('Error executing action:', error);
+                showResult(false, { error: error.message });
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+        
+        function cancelAction() {
+            scannedActionId = null;
+            scannedActionData = null;
+            document.getElementById('action-preview').classList.remove('show');
+            document.getElementById('scanner-section').style.display = 'block';
+        }
+        
+        function showResult(success, data) {
+            const resultSection = document.getElementById('result-section');
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+            const balanceDisplay = document.getElementById('balance-display');
+            const balanceAmount = document.getElementById('balance-amount');
+            
+            if (success) {
+                resultIcon.innerHTML = '<div class="success-icon"><i data-lucide="check-circle" style="width: 48px; height: 48px;"></i></div>';
+                resultTitle.textContent = 'Success!';
+                
+                const actionType = data.actionExecuted.type;
+                let message = `${formatActionType(actionType)} completed successfully`;
+                
+                if (data.actionExecuted.amount) {
+                    if (actionType === 'TRANSFER') {
+                        message = `Transfer of $${data.actionExecuted.amount.toFixed(2)} to ${data.transaction?.recipient || 'recipient'} completed`;
+                        
+                        // Show fraud alert if flagged
+                        if (data.transaction?.fraudAlert) {
+                            const fraudNotice = document.createElement('div');
+                            fraudNotice.className = 'alert alert-error';
+                            fraudNotice.style.marginBottom = '20px';
+                            fraudNotice.innerHTML = `
+                                <strong>⚠️ Security Notice</strong><br>
+                                ${data.transaction.fraudMessage || 'This transaction has been flagged for security review.'}
+                            `;
+                            resultSection.insertBefore(fraudNotice, resultSection.querySelector('.success-icon'));
+                        }
+                    } else {
+                        message = `${formatActionType(actionType)} of $${data.actionExecuted.amount.toFixed(2)} completed`;
+                    }
+                }
+                
+                resultMessage.textContent = message;
+                
+                if (data.account && data.account.balance !== undefined) {
+                    balanceDisplay.style.display = 'block';
+                    balanceAmount.textContent = `$${data.account.balance.toFixed(2)}`;
+                }
+            } else {
+                resultIcon.innerHTML = '<div class="error-icon"><i data-lucide="x-circle" style="width: 48px; height: 48px;"></i></div>';
+                resultTitle.textContent = 'Transaction Failed';
+                resultMessage.textContent = data.error || 'An error occurred';
+                balanceDisplay.style.display = 'none';
+            }
+            
+            resultSection.classList.add('show');
+            lucide.createIcons();
+        }
+        
+        function resetATM() {
+            // Reset all sections
+            document.getElementById('result-section').classList.remove('show');
+            document.getElementById('scanner-section').style.display = 'block';
+            scannedActionId = null;
+            scannedActionData = null;
+            clearAlert();
+        }
+        
+        function formatActionType(type) {
+            const types = {
+                'WITHDRAW': 'Withdrawal',
+                'DEPOSIT': 'Deposit',
+                'CHECK_BALANCE': 'Balance Check',
+                'TRANSFER': 'Transfer'
+            };
+            return types[type] || type;
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+        }
+        
+        function clearAlert() {
+            document.getElementById('alert-container').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

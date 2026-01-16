@@ -37,7 +37,7 @@ export function getDevBalance(externalId) {
   return devBalances.get(externalId);
 }
 
-function setDevBalance(externalId, val) {
+export function setDevBalance(externalId, val) {
   devBalances.set(externalId, parseFloat(val));
   // persist to file
   if (process.env.DEV_ALLOW_ALL === "true") {
@@ -46,7 +46,7 @@ function setDevBalance(externalId, val) {
   }
 }
 
-function addDevTransaction(externalId, type, amount, balanceAfter, description = null) {
+export function addDevTransaction(externalId, type, amount, balanceAfter, description = null) {
   if (!devTransactions.has(externalId)) {
     devTransactions.set(externalId, []);
   }

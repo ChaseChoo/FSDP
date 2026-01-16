@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian QR - Confirm Transaction</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 32px 24px;
+            text-align: center;
+            color: white;
+        }
+        
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header h1 {
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .content {
+            padding: 32px 24px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+        
+        .result {
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .result-icon.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .result-icon.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .result h2 {
+            font-size: 1.75rem;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #111827;
+        }
+        
+        .result-message {
+            text-align: center;
+            color: #6b7280;
+            font-size: 1.05rem;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+        
+        .info-card {
+            background: #f9fafb;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #111827;
+            font-size: 1rem;
+        }
+        
+        .balance-card {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            color: white;
+            margin-bottom: 24px;
+        }
+        
+        .balance-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fbbf24;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin-bottom: 12px;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-secondary:active {
+            background: #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i data-lucide="shield-check" style="width: 36px; height: 36px;"></i>
+            </div>
+            <h1>Guardian QR</h1>
+            <p>Confirm Transaction</p>
+        </div>
+        
+        <div class="content">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing your request...</p>
+            </div>
+            
+            <div class="result" id="result">
+                <div class="result-icon" id="result-icon"></div>
+                <h2 id="result-title">Transaction Complete</h2>
+                <p class="result-message" id="result-message">Your transaction has been processed successfully.</p>
+                
+                <div id="fraud-alert"></div>
+                
+                <div id="balance-section"></div>
+                
+                <div class="info-card" id="transaction-details"></div>
+                
+                <button class="btn btn-primary" onclick="window.location.href='/'">
+                    Return to Home
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='/guardian-qr-create.html'">
+                    Create Another QR
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        lucide.createIcons();
+        
+        async function processQRCode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const actionId = urlParams.get('id') || urlParams.get('actionId');
+            
+            if (!actionId) {
+                showError('Invalid QR Code', 'No action ID found in the QR code.');
+                return;
+            }
+            
+            try {
+                // First, validate the action
+                const validateResponse = await fetch(`/api/guardian/validate-action/${actionId}`);
+                const validateData = await validateResponse.json();
+                
+                if (!validateResponse.ok || !validateData.valid) {
+                    showError('Invalid QR Code', validateData.error || 'This QR code is invalid or has expired.');
+                    return;
+                }
+                
+                // Show what we're about to execute
+                const action = validateData.action;
+                console.log('Executing action:', action);
+                
+                // Execute the action
+                const executeResponse = await fetch('/api/guardian/execute-action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ actionId })
+                });
+                
+                const executeData = await executeResponse.json();
+                
+                if (!executeResponse.ok || !executeData.success) {
+                    // Check if this is a fraud-blocked transaction
+                    if (executeData.fraudAlert && executeData.fraudMessage) {
+                        showFraudBlocked(executeData);
+                    } else {
+                        showError('Transaction Failed', executeData.error || 'Unable to process this transaction.');
+                    }
+                    return;
+                }
+                
+                // Show success
+                showSuccess(executeData);
+                
+            } catch (error) {
+                console.error('Error processing QR code:', error);
+                showError('Error', 'An error occurred while processing your request.');
+            }
+        }
+        
+        function showSuccess(data) {
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+            const fraudAlert = document.getElementById('fraud-alert');
+            const balanceSection = document.getElementById('balance-section');
+            const transactionDetails = document.getElementById('transaction-details');
+            
+            loading.style.display = 'none';
+            result.classList.add('show');
+            
+            // Success icon
+            resultIcon.className = 'result-icon success';
+            resultIcon.innerHTML = '<i data-lucide="check-circle" style="width: 48px; height: 48px;"></i>';
+            
+            // Title and message
+            const actionType = data.actionExecuted.type;
+            resultTitle.textContent = 'Transaction Complete!';
+            
+            let message = `Your ${formatActionType(actionType).toLowerCase()} has been processed successfully.`;
+            if (data.actionExecuted.amount) {
+                if (actionType === 'TRANSFER') {
+                    message = `Transfer of $${data.actionExecuted.amount.toFixed(2)} completed successfully.`;
+                } else {
+                    message = `${formatActionType(actionType)} of $${data.actionExecuted.amount.toFixed(2)} completed successfully.`;
+                }
+            }
+            resultMessage.textContent = message;
+            
+            // Show fraud alert if applicable
+            if (data.transaction?.fraudAlert) {
+                fraudAlert.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i data-lucide="alert-triangle" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+                        <div>
+                            <strong>Security Notice:</strong> ${data.transaction.fraudMessage || 'This transaction has been flagged for security review.'}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Show balance
+            if (data.account && data.account.balance !== undefined) {
+                balanceSection.innerHTML = `
+                    <div class="balance-card">
+                        <div class="balance-label">New Balance</div>
+                        <div class="balance-amount">$${data.account.balance.toFixed(2)}</div>
+                    </div>
+                `;
+            }
+            
+            // Transaction details
+            let detailsHTML = '<div class="info-row"><span class="info-label">Action Type</span><span class="info-value">' + formatActionType(actionType) + '</span></div>';
+            
+            if (data.actionExecuted.amount) {
+                detailsHTML += '<div class="info-row"><span class="info-label">Amount</span><span class="info-value">$' + data.actionExecuted.amount.toFixed(2) + '</span></div>';
+            }
+            
+            if (data.transaction?.recipient) {
+                detailsHTML += '<div class="info-row"><span class="info-label">Recipient</span><span class="info-value">' + data.transaction.recipient + '</span></div>';
+            }
+            
+            if (data.actionExecuted.description) {
+                detailsHTML += '<div class="info-row"><span class="info-label">Description</span><span class="info-value">' + data.actionExecuted.description + '</span></div>';
+            }
+            
+            detailsHTML += '<div class="info-row"><span class="info-label">Time</span><span class="info-value">' + new Date().toLocaleTimeString() + '</span></div>';
+            
+            transactionDetails.innerHTML = detailsHTML;
+            
+            lucide.createIcons();
+        }
+        
+        function showFraudBlocked(data) {
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+            const fraudAlert = document.getElementById('fraud-alert');
+            const balanceSection = document.getElementById('balance-section');
+            const transactionDetails = document.getElementById('transaction-details');
+            
+            loading.style.display = 'none';
+            result.classList.add('show');
+            
+            // Warning/blocked icon
+            resultIcon.className = 'result-icon error';
+            resultIcon.innerHTML = '<i data-lucide="shield-alert" style="width: 48px; height: 48px;"></i>';
+            
+            resultTitle.textContent = 'Transaction Blocked for Your Safety';
+            resultMessage.textContent = 'This transaction was blocked by our fraud protection system.';
+            
+            fraudAlert.innerHTML = `
+                <div class="alert alert-error">
+                    <i data-lucide="shield-off" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+                    <div>
+                        <strong>Security Alert:</strong><br>
+                        ${data.fraudMessage || 'This transaction was flagged as suspicious and blocked.'}
+                    </div>
+                </div>
+            `;
+            
+            balanceSection.innerHTML = '<p style="margin-top: 20px; color: #64748b;">Your account balance remains unchanged.</p>';
+            
+            transactionDetails.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">What to do next</span>
+                    <span class="info-value">Add the recipient to your approved recipients list in your account settings, or contact support for assistance.</span>
+                </div>
+            `;
+            
+            lucide.createIcons();
+        }
+        
+        function showError(title, message) {
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+            const fraudAlert = document.getElementById('fraud-alert');
+            const balanceSection = document.getElementById('balance-section');
+            const transactionDetails = document.getElementById('transaction-details');
+            
+            loading.style.display = 'none';
+            result.classList.add('show');
+            
+            // Error icon
+            resultIcon.className = 'result-icon error';
+            resultIcon.innerHTML = '<i data-lucide="x-circle" style="width: 48px; height: 48px;"></i>';
+            
+            resultTitle.textContent = title;
+            resultMessage.textContent = message;
+            
+            fraudAlert.innerHTML = `
+                <div class="alert alert-error">
+                    <i data-lucide="alert-circle" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+                    <div>Please contact your bank if you believe this is an error.</div>
+                </div>
+            `;
+            
+            balanceSection.innerHTML = '';
+            transactionDetails.innerHTML = '';
+            
+            lucide.createIcons();
+        }
+        
+        function formatActionType(type) {
+            const types = {
+                'WITHDRAW': 'Withdrawal',
+                'DEPOSIT': 'Deposit',
+                'TRANSFER': 'Transfer',
+                'CHECK_BALANCE': 'Balance Check'
+            };
+            return types[type] || type;
+        }
+        
+        // Process QR code on page load
+        window.addEventListener('DOMContentLoaded', processQRCode);
+    </script>
+</body>
+</html>
