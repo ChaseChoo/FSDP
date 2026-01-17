@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Wallet Transfer - Demo View</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .demo-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .demo-header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .demo-title {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .demo-subtitle {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 1024px) {
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .demo-panel {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .panel-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-icon {
+      font-size: 28px;
+    }
+
+    .open-btn {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .open-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .iframe-container {
+      width: 100%;
+      height: 700px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .instructions {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .instructions h2 {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .instruction-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .instruction-step {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .step-description {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .feature-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .tag {
+      padding: 6px 12px;
+      background: #e8f0fe;
+      color: #1967d2;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .mobile-view {
+      max-width: 430px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <div class="demo-header">
+      <h1 class="demo-title">💳 Digital Wallet Transfer Demo</h1>
+      <p class="demo-subtitle">Real-time fund transfers from ATM to Mobile Wallet</p>
+    </div>
+
+    <div class="demo-grid">
+      <!-- ATM Interface -->
+      <div class="demo-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-icon">🏧</span>
+            <span>ATM Interface</span>
+          </div>
+          <button class="open-btn" onclick="window.open('/wallet-transfer', '_blank')">
+            Open in New Tab ↗
+          </button>
+        </div>
+        <div class="iframe-container">
+          <iframe src="/wallet-transfer" title="ATM Interface"></iframe>
+        </div>
+      </div>
+
+      <!-- Mobile Wallet -->
+      <div class="demo-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-icon">📱</span>
+            <span>Mobile Wallet (Alipay)</span>
+          </div>
+          <button class="open-btn" onclick="window.open('/wallet-alipay', '_blank')">
+            Open in New Tab ↗
+          </button>
+        </div>
+        <div class="iframe-container mobile-view">
+          <iframe src="/wallet-alipay?walletId=wallet-12345" title="Mobile Wallet"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+      <h2>
+        <span>📋</span>
+        <span>How to Test the Feature</span>
+      </h2>
+      
+      <div class="instruction-steps">
+        <div class="instruction-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Check Your Balance</div>
+            <div class="step-description">
+              Look at the account balance in the ATM interface (left) and the wallet balance in the mobile app (right).
+            </div>
+          </div>
+        </div>
+
+        <div class="instruction-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Select Wallet Type</div>
+            <div class="step-description">
+              In the ATM interface, choose a wallet type (Alipay is pre-selected). The wallet ID "wallet-12345" should match between both sides.
+            </div>
+          </div>
+        </div>
+
+        <div class="instruction-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Choose Amount</div>
+            <div class="step-description">
+              Click a quick amount button (S$10, S$20, S$50, etc.) or enter a custom amount in the text field.
+            </div>
+          </div>
+        </div>
+
+        <div class="instruction-step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <div class="step-title">Transfer Funds</div>
+            <div class="step-description">
+              Click the "Transfer Now" button. Watch as the ATM balance decreases and the mobile wallet balance increases instantly!
+            </div>
+          </div>
+        </div>
+
+        <div class="instruction-step">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <div class="step-title">View Transaction</div>
+            <div class="step-description">
+              A green notification will appear on the mobile wallet, and the transaction will be added to the transaction history.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-tags">
+        <span class="tag">✨ Real-time Updates</span>
+        <span class="tag">🔒 Secure Transfers</span>
+        <span class="tag">📊 Transaction History</span>
+        <span class="tag">💱 Multi-Wallet Support</span>
+        <span class="tag">🎯 Quick Amounts</span>
+        <span class="tag">📱 Mobile Optimized</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Optional: Add some interactivity or messaging between iframes
+    console.log('Digital Wallet Transfer Demo loaded');
+    console.log('Open browser console to see transfer events');
+  </script>
+</body>
+</html>

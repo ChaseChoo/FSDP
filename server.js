@@ -12,6 +12,7 @@ import cardRoutes from "./routes/cardRoutes.js";
 import supportRoutes from "./routes/supportRoutes.js";
 import approvedRecipientRoutes from "./routes/approvedRecipientRoutes.js";
 import guardianQRRoutes from "./routes/guardianQRRoutes.js";
+import walletRoutes from "./routes/walletRoutes.js";
 import { sessionCount } from "./services/sessionStore.js";
 import fakeLogin from "./middleware/fakeLogin.js";
 import requireSession from "./middleware/requireSession.js";
@@ -69,6 +70,8 @@ app.use("/support", supportRoutes); // Support live agent demo
 app.use("/api", approvedRecipientRoutes);
 // Guardian QR code API (assisted transactions)
 app.use("/api/guardian", fakeLogin, guardianQRRoutes);
+// Digital wallet transfer API
+app.use("/api", fakeLogin, requireSession, walletRoutes);
 
 // Transaction history API endpoint (JSON)
 app.get("/api/transactions", fakeLogin, requireSession, getTransactionHistory);
@@ -96,6 +99,18 @@ app.get("/account", (req, res) => {
 
 app.get("/transactions", (req, res) => {
   res.sendFile(path.resolve("public/transactions.html"));
+});
+
+app.get("/wallet-transfer", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-transfer.html"));
+});
+
+app.get("/wallet-alipay", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-alipay.html"));
+});
+
+app.get("/wallet-demo", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-demo.html"));
 });
 
 // Health check

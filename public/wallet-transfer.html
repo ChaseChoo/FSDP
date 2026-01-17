@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATM - Digital Wallet Transfer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/home.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wallet-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 500px;
+      width: 90%;
+      padding: 40px;
+    }
+
+    .wallet-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .wallet-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1a202c;
+      margin: 0 0 8px 0;
+    }
+
+    .wallet-subtitle {
+      font-size: 14px;
+      color: #718096;
+      margin: 0;
+    }
+
+    .balance-display {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .balance-label {
+      font-size: 14px;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    .balance-amount {
+      font-size: 36px;
+      font-weight: 600;
+      margin: 8px 0 0 0;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #2d3748;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .wallet-type-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .wallet-type-btn {
+      padding: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wallet-type-btn:hover {
+      border-color: #667eea;
+      background: #f7fafc;
+    }
+
+    .wallet-type-btn.active {
+      border-color: #667eea;
+      background: #edf2f7;
+    }
+
+    .wallet-icon {
+      font-size: 32px;
+    }
+
+    .wallet-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #2d3748;
+    }
+
+    .quick-amounts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .quick-amount-btn {
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      background: white;
+      font-size: 16px;
+      font-weight: 500;
+      color: #2d3748;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-amount-btn:hover {
+      border-color: #667eea;
+      background: #f7fafc;
+    }
+
+    .quick-amount-btn.active {
+      border-color: #667eea;
+      background: #667eea;
+      color: white;
+    }
+
+    .transfer-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .transfer-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .transfer-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .back-btn {
+      width: 100%;
+      padding: 12px;
+      background: white;
+      color: #4a5568;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: #f7fafc;
+      border-color: #cbd5e0;
+    }
+
+    .qr-section {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f7fafc;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .qr-code {
+      width: 200px;
+      height: 200px;
+      margin: 16px auto;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .success-message {
+      background: #48bb78;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error-message {
+      background: #f56565;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wallet-container">
+    <div class="wallet-header">
+      <h1 class="wallet-title">💳 Digital Wallet Transfer</h1>
+      <p class="wallet-subtitle">Transfer funds from your ATM account</p>
+    </div>
+
+    <div class="success-message" id="successMessage"></div>
+    <div class="error-message" id="errorMessage"></div>
+
+    <div class="balance-display">
+      <p class="balance-label">Your Account Balance</p>
+      <h2 class="balance-amount" id="currentBalance">S$0.00</h2>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Select Wallet Type</label>
+      <div class="wallet-type-grid">
+        <button class="wallet-type-btn active" data-wallet="alipay">
+          <span class="wallet-icon">🅰️</span>
+          <span class="wallet-name">Alipay</span>
+        </button>
+        <button class="wallet-type-btn" data-wallet="wechat">
+          <span class="wallet-icon">💬</span>
+          <span class="wallet-name">WeChat Pay</span>
+        </button>
+        <button class="wallet-type-btn" data-wallet="grabpay">
+          <span class="wallet-icon">🚗</span>
+          <span class="wallet-name">GrabPay</span>
+        </button>
+        <button class="wallet-type-btn" data-wallet="paynow">
+          <span class="wallet-icon">💰</span>
+          <span class="wallet-name">PayNow</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="walletId">Wallet ID / Phone Number</label>
+      <input type="text" id="walletId" class="form-input" placeholder="Enter your wallet ID" value="wallet-12345">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Quick Amount Selection</label>
+      <div class="quick-amounts">
+        <button class="quick-amount-btn" data-amount="10">S$10</button>
+        <button class="quick-amount-btn" data-amount="20">S$20</button>
+        <button class="quick-amount-btn" data-amount="50">S$50</button>
+        <button class="quick-amount-btn" data-amount="100">S$100</button>
+        <button class="quick-amount-btn" data-amount="200">S$200</button>
+        <button class="quick-amount-btn" data-amount="500">S$500</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="transferAmount">Or Enter Custom Amount</label>
+      <input type="number" id="transferAmount" class="form-input" placeholder="0.00" step="0.01" min="0">
+    </div>
+
+    <button class="transfer-btn" id="transferBtn">Transfer Now</button>
+    <button class="back-btn" onclick="window.location.href='/account'">Back to ATM</button>
+  </div>
+
+  <script>
+    let selectedWalletType = 'alipay';
+    let selectedAmount = 0;
+
+    // Wallet type selection
+    document.querySelectorAll('.wallet-type-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.wallet-type-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectedWalletType = this.dataset.wallet;
+      });
+    });
+
+    // Quick amount selection
+    document.querySelectorAll('.quick-amount-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectedAmount = parseFloat(this.dataset.amount);
+        document.getElementById('transferAmount').value = '';
+      });
+    });
+
+    // Custom amount input
+    document.getElementById('transferAmount').addEventListener('input', function() {
+      if (this.value) {
+        document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
+        selectedAmount = parseFloat(this.value) || 0;
+      }
+    });
+
+    // Load current balance
+    async function loadBalance() {
+      try {
+        const response = await fetch('/account/balance', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        document.getElementById('currentBalance').textContent = `S$${data.balance.toFixed(2)}`;
+      } catch (error) {
+        console.error('Error loading balance:', error);
+        showError('Failed to load balance');
+      }
+    }
+
+    // Transfer funds
+    document.getElementById('transferBtn').addEventListener('click', async function() {
+      const walletId = document.getElementById('walletId').value.trim();
+      const customAmount = parseFloat(document.getElementById('transferAmount').value) || 0;
+      const amount = customAmount > 0 ? customAmount : selectedAmount;
+
+      if (!walletId) {
+        showError('Please enter a wallet ID');
+        return;
+      }
+
+      if (amount <= 0) {
+        showError('Please select or enter an amount');
+        return;
+      }
+
+      this.disabled = true;
+      this.textContent = 'Processing...';
+
+      try {
+        const response = await fetch('/api/wallet/transfer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            amount: amount,
+            walletId: walletId,
+            walletType: selectedWalletType
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showSuccess(`Successfully transferred S$${amount.toFixed(2)} to ${selectedWalletType}!`);
+          document.getElementById('currentBalance').textContent = `S$${data.accountBalance.toFixed(2)}`;
+          
+          // Trigger wallet update event for mobile app
+          if (window.BroadcastChannel) {
+            const channel = new BroadcastChannel('wallet-updates');
+            channel.postMessage({
+              type: 'wallet-update',
+              walletId: walletId,
+              walletType: selectedWalletType,
+              amount: amount,
+              newBalance: data.walletBalance
+            });
+          }
+
+          // Reset form
+          setTimeout(() => {
+            document.getElementById('transferAmount').value = '';
+            selectedAmount = 0;
+            document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
+          }, 2000);
+        } else {
+          showError(data.error || 'Transfer failed');
+        }
+      } catch (error) {
+        console.error('Transfer error:', error);
+        showError('Network error. Please try again.');
+      } finally {
+        this.disabled = false;
+        this.textContent = 'Transfer Now';
+      }
+    });
+
+    function showSuccess(message) {
+      const el = document.getElementById('successMessage');
+      el.textContent = message;
+      el.style.display = 'block';
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 5000);
+    }
+
+    function showError(message) {
+      const el = document.getElementById('errorMessage');
+      el.textContent = message;
+      el.style.display = 'block';
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 5000);
+    }
+
+    // Load balance on page load
+    loadBalance();
+  </script>
+</body>
+</html>
