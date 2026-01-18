@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ATM Transfer">
+  <link rel="manifest" href="/manifest.json">
   <title>ATM - Digital Wallet Transfer</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles/home.css">
@@ -95,9 +99,15 @@
 
     .wallet-type-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
       margin-bottom: 24px;
+    }
+    
+    @media (max-width: 600px) {
+      .wallet-type-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     .wallet-type-btn {
@@ -204,6 +214,104 @@
       background: #f7fafc;
       border-color: #cbd5e0;
     }
+    
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .wallet-container {
+        width: 95%;
+        padding: 30px 20px;
+        border-radius: 12px;
+      }
+      
+      .wallet-title {
+        font-size: 24px;
+      }
+      
+      .balance-amount {
+        font-size: 32px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+        align-items: flex-start;
+        padding-top: 20px;
+      }
+      
+      .wallet-container {
+        width: 100%;
+        padding: 25px 15px;
+        border-radius: 8px;
+      }
+      
+      .wallet-title {
+        font-size: 22px;
+      }
+      
+      .wallet-subtitle {
+        font-size: 13px;
+      }
+      
+      .balance-amount {
+        font-size: 28px;
+      }
+      
+      .balance-label {
+        font-size: 13px;
+      }
+      
+      .form-input {
+        padding: 14px;
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      
+      .quick-amounts {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .wallet-type-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      
+      .wallet-type-btn {
+        padding: 12px;
+      }
+      
+      .wallet-icon {
+        font-size: 28px;
+      }
+      
+      .wallet-name {
+        font-size: 13px;
+      }
+      
+      .transfer-btn {
+        font-size: 16px;
+        padding: 14px;
+      }
+      
+      .qr-code {
+        width: 150px;
+        height: 150px;
+      }
+    }
+    
+    /* Touch-friendly enhancements */
+    @media (hover: none) and (pointer: coarse) {
+      .quick-amount-btn,
+      .wallet-type-btn,
+      .transfer-btn,
+      .back-btn,
+      .open-btn {
+        min-height: 44px; /* Apple's recommended touch target size */
+      }
+    }
 
     .qr-section {
       margin-top: 20px;
@@ -268,11 +376,15 @@
         </button>
         <button class="wallet-type-btn" data-wallet="wechat">
           <span class="wallet-icon">💬</span>
-          <span class="wallet-name">WeChat Pay</span>
+          <span class="wallet-name">Weixin Pay</span>
         </button>
         <button class="wallet-type-btn" data-wallet="grabpay">
           <span class="wallet-icon">🚗</span>
           <span class="wallet-name">GrabPay</span>
+        </button>
+        <button class="wallet-type-btn" data-wallet="touchngo">
+          <span class="wallet-icon">🔵</span>
+          <span class="wallet-name">Touch n Go</span>
         </button>
         <button class="wallet-type-btn" data-wallet="paynow">
           <span class="wallet-icon">💰</span>

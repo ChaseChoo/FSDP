@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Digital Wallet">
+  <link rel="manifest" href="/manifest.json">
+  <title>Digital Wallet - Mobile Access</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .mobile-container {
+      max-width: 400px;
+      width: 100%;
+      background: white;
+      border-radius: 24px;
+      padding: 40px 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .app-icon {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+
+    .app-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 8px;
+    }
+
+    .app-subtitle {
+      font-size: 16px;
+      color: #718096;
+      margin-bottom: 32px;
+    }
+
+    .wallet-options {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .wallet-btn {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: #f7fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      text-decoration: none;
+      color: #1a202c;
+      transition: all 0.2s;
+      cursor: pointer;
+      min-height: 80px;
+    }
+
+    .wallet-btn:hover, .wallet-btn:active {
+      background: #edf2f7;
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .wallet-btn-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .wallet-btn-content {
+      flex: 1;
+      text-align: left;
+    }
+
+    .wallet-btn-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 4px;
+    }
+
+    .wallet-btn-desc {
+      font-size: 13px;
+      color: #718096;
+    }
+
+    .wallet-btn-arrow {
+      font-size: 20px;
+      color: #a0aec0;
+    }
+
+    .qr-section {
+      padding: 24px;
+      background: #f7fafc;
+      border-radius: 16px;
+      margin-bottom: 24px;
+    }
+
+    .qr-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 16px;
+    }
+
+    .qr-code-container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    #qrCode {
+      display: block;
+    }
+
+    .qr-instructions {
+      font-size: 12px;
+      color: #718096;
+      line-height: 1.6;
+    }
+
+    .feature-list {
+      text-align: left;
+      margin-top: 24px;
+      padding: 20px;
+      background: #f7fafc;
+      border-radius: 16px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #4a5568;
+    }
+
+    .feature-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .feature-icon {
+      width: 32px;
+      height: 32px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .install-prompt {
+      margin-top: 24px;
+      padding: 16px;
+      background: #ebf8ff;
+      border: 2px solid #90cdf4;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #2c5282;
+      display: none;
+    }
+
+    .install-prompt.show {
+      display: block;
+    }
+
+    .install-btn {
+      margin-top: 12px;
+      padding: 12px 24px;
+      background: #3182ce;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      .mobile-container {
+        padding: 30px 20px;
+      }
+
+      .app-icon {
+        width: 80px;
+        height: 80px;
+        font-size: 40px;
+      }
+
+      .app-title {
+        font-size: 28px;
+      }
+
+      .app-subtitle {
+        font-size: 14px;
+      }
+
+      .wallet-btn {
+        padding: 16px;
+      }
+
+      .wallet-btn-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+
+      .wallet-btn-title {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-container">
+    <div class="app-icon">💰</div>
+    <h1 class="app-title">Digital Wallet</h1>
+    <p class="app-subtitle">Secure & Fast Mobile Payments</p>
+
+    <div class="wallet-options">
+      <a href="/wallet-alipay?walletId=wallet-12345" class="wallet-btn">
+        <div class="wallet-btn-icon">🅰️</div>
+        <div class="wallet-btn-content">
+          <div class="wallet-btn-title">Alipay Wallet</div>
+          <div class="wallet-btn-desc">View balance & transactions</div>
+        </div>
+        <div class="wallet-btn-arrow">→</div>
+      </a>
+
+      <a href="/wallet-alipay?walletId=wechat-12345&type=wechat" class="wallet-btn">
+        <div class="wallet-btn-icon">💬</div>
+        <div class="wallet-btn-content">
+          <div class="wallet-btn-title">Weixin Pay (WeChat)</div>
+          <div class="wallet-btn-desc">微信支付 - WeChat payments</div>
+        </div>
+        <div class="wallet-btn-arrow">→</div>
+      </a>
+
+      <a href="/wallet-alipay?walletId=touchngo-12345&type=touchngo" class="wallet-btn">
+        <div class="wallet-btn-icon">🔵</div>
+        <div class="wallet-btn-content">
+          <div class="wallet-btn-title">Touch n Go eWallet</div>
+          <div class="wallet-btn-desc">Malaysia's leading eWallet</div>
+        </div>
+        <div class="wallet-btn-arrow">→</div>
+      </a>
+
+      <a href="/wallet-transfer" class="wallet-btn">
+        <div class="wallet-btn-icon">🏧</div>
+        <div class="wallet-btn-content">
+          <div class="wallet-btn-title">ATM Transfer</div>
+          <div class="wallet-btn-desc">Transfer funds from ATM</div>
+        </div>
+        <div class="wallet-btn-arrow">→</div>
+      </a>
+
+      <a href="/wallet-demo" class="wallet-btn">
+        <div class="wallet-btn-icon">📱</div>
+        <div class="wallet-btn-content">
+          <div class="wallet-btn-title">Full Demo</div>
+          <div class="wallet-btn-desc">See ATM & wallet side-by-side</div>
+        </div>
+        <div class="wallet-btn-arrow">→</div>
+      </a>
+      
+      <a href="/wallet-showcase" class="wallet-btn">
+        <div class="wallet-btn-icon">🌟</div>
+        <div class="wallet-btn-content">
+          <div class="wallet-btn-title">All Wallets</div>
+          <div class="wallet-btn-desc">Compare all supported wallets</div>
+        </div>
+        <div class="wallet-btn-arrow">→</div>
+      </a>
+    </div>
+
+    <!-- QR Code Section -->
+    <div class="qr-section" id="qrSection">
+      <div class="qr-title">📱 Scan to Open on Mobile</div>
+      <div class="qr-code-container">
+        <canvas id="qrCode"></canvas>
+      </div>
+      <p class="qr-instructions">
+        Scan this QR code with your phone to quickly access the digital wallet
+      </p>
+    </div>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon">⚡</div>
+        <div>Instant transfers & real-time updates</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔒</div>
+        <div>Secure encrypted transactions</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">💳</div>
+        <div>Multiple wallet support</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📊</div>
+        <div>Transaction history & analytics</div>
+      </div>
+    </div>
+
+    <!-- PWA Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+      <strong>📲 Add to Home Screen</strong>
+      <p style="margin-top: 8px;">Install this app for quick access!</p>
+      <button class="install-btn" id="installBtn">Install App</button>
+    </div>
+  </div>
+
+  <!-- QR Code Library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  
+  <script>
+    // Generate QR code with current URL
+    const currentUrl = window.location.href;
+    const qrCanvas = document.getElementById('qrCode');
+    
+    if (qrCanvas && window.QRious) {
+      const qr = new QRious({
+        element: qrCanvas,
+        value: currentUrl,
+        size: 200,
+        level: 'M'
+      });
+    }
+
+    // PWA Install functionality
+    let deferredPrompt;
+    const installPrompt = document.getElementById('installPrompt');
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      deferredPrompt = e;
+      // Show install prompt
+      installPrompt.classList.add('show');
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        // Clear the deferredPrompt
+        deferredPrompt = null;
+        // Hide the install prompt
+        installPrompt.classList.remove('show');
+      }
+    });
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('App is running in standalone mode');
+      // Hide QR section if already installed
+      const qrSection = document.getElementById('qrSection');
+      if (qrSection) qrSection.style.display = 'none';
+    }
+
+    // Add touch feedback
+    document.querySelectorAll('.wallet-btn').forEach(btn => {
+      btn.addEventListener('touchstart', function() {
+        this.style.transform = 'scale(0.98)';
+      });
+      btn.addEventListener('touchend', function() {
+        this.style.transform = '';
+      });
+    });
+
+    // Register Service Worker for PWA functionality
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('ServiceWorker registration successful:', registration.scope);
+          })
+          .catch((err) => {
+            console.log('ServiceWorker registration failed:', err);
+          });
+      });
+    }
+  </script>
+</body>
+</html>

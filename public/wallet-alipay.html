@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Alipay">
+  <link rel="manifest" href="/manifest.json">
   <title>Alipay - Mock Wallet</title>
   <style>
     * {
@@ -346,11 +350,11 @@
     </div>
 
     <!-- App Header -->
-    <div class="app-header">
+    <div class="app-header" id="appHeader">
       <div class="header-top">
-        <div class="app-logo">
-          <span>🅰️</span>
-          <span>Alipay</span>
+        <div class="app-logo" id="appLogo">
+          <span id="appIcon">🅰️</span>
+          <span id="appName">Alipay</span>
         </div>
         <div class="header-icons">
           <span>🔍</span>
@@ -432,9 +436,80 @@
   </div>
 
   <script>
-    // Initialize wallet ID from URL parameter or use default
+    // Initialize wallet ID and type from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const walletId = urlParams.get('walletId') || 'wallet-12345';
+    const walletType = urlParams.get('type') || 'alipay';
+    
+    // Wallet configuration
+    const walletConfig = {
+      alipay: {
+        name: 'Alipay',
+        icon: '🅰️',
+        color: '#1678ff',
+        colorDark: '#0d5ecc',
+        displayName: '支付宝',
+        currency: 'S$'
+      },
+      wechat: {
+        name: 'Weixin Pay',
+        icon: '💬',
+        color: '#09bb07',
+        colorDark: '#078707',
+        displayName: '微信支付 WeChat Pay',
+        currency: 'S$'
+      },
+      touchngo: {
+        name: 'Touch n Go',
+        icon: '🔵',
+        color: '#0066cc',
+        colorDark: '#004499',
+        displayName: 'Touch n Go eWallet',
+        currency: 'RM'
+      },
+      grabpay: {
+        name: 'GrabPay',
+        icon: '🚗',
+        color: '#00b14f',
+        colorDark: '#008f3f',
+        displayName: 'GrabPay',
+        currency: 'S$'
+      }
+    };
+    
+    const config = walletConfig[walletType] || walletConfig.alipay;
+    
+    // Apply wallet branding
+    document.getElementById('appIcon').textContent = config.icon;
+    document.getElementById('appName').textContent = config.name;
+    document.querySelector('.currency').textContent = config.currency;
+    document.getElementById('walletIdDisplay').textContent = walletId;
+    
+    // Update header colors
+    const appHeader = document.getElementById('appHeader');
+    appHeader.style.background = `linear-gradient(180deg, ${config.color} 0%, ${config.colorDark} 100%)`;
+    
+    // Update status bar color
+    document.querySelector('.status-bar').style.background = config.color;
+    
+    // Update balance amount color
+    document.querySelector('.balance-amount').style.color = config.color;
+    
+    // Update wallet ID color
+    document.querySelector('.wallet-id-value').style.color = config.color;
+    
+    // Update all action buttons and notification colors
+    const style = document.createElement('style');
+    style.textContent = `
+      .action-icon {
+        background: linear-gradient(135deg, ${config.color} 0%, ${config.colorDark} 100%) !important;
+      }
+      .notification {
+        background: ${config.color} !important;
+      }
+    `;
+    document.head.appendChild(style);
+    
     document.getElementById('walletIdDisplay').textContent = walletId;
 
     let currentBalance = 0;
@@ -535,7 +610,7 @@
             <div class="transaction-time">${tx.time}</div>
           </div>
           <div class="transaction-amount ${tx.type === 'sent' ? 'negative' : ''}">
-            ${tx.type === 'received' ? '+' : '-'}S$${Math.abs(tx.amount).toFixed(2)}
+            ${tx.type === 'received' ? '+' : '-'}${config.currency}${Math.abs(tx.amount).toFixed(2)}
           </div>
         </div>
       `).join('');
@@ -564,7 +639,7 @@
           
           updateBalance(newBalance);
           addTransaction('received', amount, `ATM Transfer from ${event.data.walletType}`);
-          showNotification(`✅ Received S$${amount.toFixed(2)} from ATM!`);
+          showNotification(`✅ Received ${config.currency}${amount.toFixed(2)} from ATM!`);
           
           // Play a success sound (if available)
           try {

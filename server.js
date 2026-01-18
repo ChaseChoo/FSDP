@@ -113,6 +113,14 @@ app.get("/wallet-demo", (req, res) => {
   res.sendFile(path.resolve("public/wallet-demo.html"));
 });
 
+app.get("/wallet-mobile", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-mobile.html"));
+});
+
+app.get("/wallet-showcase", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-showcase.html"));
+});
+
 // Health check
 app.get("/health", (req, res) => {
   res.json({ ok: true, sessions: sessionCount() });

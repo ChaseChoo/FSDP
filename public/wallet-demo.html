@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/manifest.json">
   <title>Digital Wallet Transfer - Demo View</title>
   <style>
     * {
@@ -51,6 +54,93 @@
     @media (max-width: 1024px) {
       .demo-grid {
         grid-template-columns: 1fr;
+      }
+      
+      .demo-title {
+        font-size: 28px;
+      }
+      
+      .demo-subtitle {
+        font-size: 16px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .demo-title {
+        font-size: 24px;
+      }
+      
+      .demo-subtitle {
+        font-size: 14px;
+      }
+      
+      .demo-panel {
+        padding: 15px;
+      }
+      
+      .iframe-container {
+        height: 600px;
+      }
+      
+      .open-btn {
+        padding: 10px 14px;
+        font-size: 13px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+      }
+      
+      .demo-title {
+        font-size: 20px;
+      }
+      
+      .demo-subtitle {
+        font-size: 13px;
+      }
+      
+      .demo-panel {
+        padding: 12px;
+        border-radius: 15px;
+      }
+      
+      .panel-title {
+        font-size: 16px;
+      }
+      
+      .panel-icon {
+        font-size: 22px;
+      }
+      
+      .iframe-container {
+        height: 500px;
+      }
+      
+      .instructions {
+        padding: 20px;
+      }
+      
+      .instructions h2 {
+        font-size: 20px;
+      }
+      
+      .instruction-step {
+        padding: 12px;
+        gap: 12px;
+      }
+      
+      .step-title {
+        font-size: 15px;
+      }
+      
+      .step-description {
+        font-size: 13px;
       }
     }
 
