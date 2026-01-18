@@ -471,7 +471,15 @@
 
     function updateBalanceUI() {
       const el = document.getElementById("balanceValue");
-      if (el) el.textContent = formatCurrency(balance);
+      // Always read balance from localStorage for accuracy
+      let localBalance = localStorage.getItem('balance');
+      let displayBalance = 0.0;
+      if (localBalance !== null && !isNaN(parseFloat(localBalance))) {
+        displayBalance = parseFloat(localBalance);
+      } else {
+        displayBalance = balance; // fallback to variable if not found
+      }
+      if (el) el.textContent = formatCurrency(displayBalance);
     }
 
     // Cash: denom + custom
