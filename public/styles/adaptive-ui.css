@@ -1,0 +1,326 @@
+/**
+ * Adaptive ATM UI Styles
+ * Aligned with OCBC ATM design system
+ * Accessibility-focused styling for elderly users
+ */
+
+/* Help Overlay Container */
+.adaptive-help-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  backdrop-filter: blur(2px);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  animation: fadeIn 0.3s ease;
+}
+
+.adaptive-help-overlay.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Help Card */
+.adaptive-help-card {
+  background-color: #ffffff;
+  border-radius: 28px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+  padding: 40px 32px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Help Header */
+.adaptive-help-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.adaptive-help-icon {
+  width: 48px;
+  height: 48px;
+  color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
+  padding: 12px;
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+
+.adaptive-help-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+/* Help Message */
+.adaptive-help-message {
+  font-size: 1.1rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0 0 32px 0;
+  font-weight: 400;
+}
+
+/* Help Buttons */
+.adaptive-help-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.adaptive-btn {
+  padding: 16px 24px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.adaptive-btn:active {
+  transform: scale(0.98);
+}
+
+.adaptive-btn:focus {
+  outline: 3px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* Primary Button (Yes, guide me) */
+.adaptive-btn-primary {
+  background-color: #10b981;
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.adaptive-btn-primary:hover {
+  background-color: #059669;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+}
+
+.adaptive-btn-primary:active {
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+/* Secondary Button (No, continue) */
+.adaptive-btn-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.adaptive-btn-secondary:hover {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  transform: translateY(-2px);
+}
+
+.adaptive-btn-secondary:active {
+  background-color: #d1d5db;
+}
+
+/* Guided Mode Styles */
+body.adaptive-guided-mode {
+  --adaptive-font-scale: 1.2;
+}
+
+/* Increase button sizes in guided mode */
+body.adaptive-guided-mode .atm-page button,
+body.adaptive-guided-mode [data-guided-action] {
+  font-size: calc(1rem * var(--adaptive-font-scale));
+  padding: calc(12px * var(--adaptive-font-scale)) calc(20px * var(--adaptive-font-scale));
+  min-height: calc(48px * var(--adaptive-font-scale));
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+/* Increase text sizes in guided mode */
+body.adaptive-guided-mode .atm-title {
+  font-size: calc(1.9rem * var(--adaptive-font-scale));
+}
+
+body.adaptive-guided-mode .atm-page h3,
+body.adaptive-guided-mode .atm-page h4 {
+  font-size: calc(1.2rem * var(--adaptive-font-scale));
+}
+
+body.adaptive-guided-mode .atm-page p,
+body.adaptive-guided-mode .atm-page input,
+body.adaptive-guided-mode .atm-page label,
+body.adaptive-guided-mode .cta-card {
+  font-size: calc(1.05rem * var(--adaptive-font-scale));
+}
+
+/* Enhance input fields in guided mode */
+body.adaptive-guided-mode input[type="text"],
+body.adaptive-guided-mode input[type="password"],
+body.adaptive-guided-mode select,
+body.adaptive-guided-mode textarea {
+  padding: calc(12px * var(--adaptive-font-scale));
+  border-radius: 10px;
+  border: 2px solid #d1d5db;
+  font-size: calc(1.05rem * var(--adaptive-font-scale));
+}
+
+body.adaptive-guided-mode input[type="text"]:focus,
+body.adaptive-guided-mode input[type="password"]:focus,
+body.adaptive-guided-mode select:focus,
+body.adaptive-guided-mode textarea:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  outline: none;
+}
+
+/* Screen Reader Only Text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Increase contrast in guided mode */
+body.adaptive-guided-mode {
+  color: #0f1419;
+}
+
+body.adaptive-guided-mode .atm-page {
+  background-color: #ffffff;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .adaptive-help-overlay,
+  .adaptive-help-card,
+  .adaptive-btn {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Large text button alternative for screen readers */
+body.adaptive-guided-mode .adaptive-btn span {
+  display: inline-block;
+}
+
+/* Media Query for very large screens (tablets, ATM displays) */
+@media (min-height: 800px) {
+  .adaptive-help-card {
+    padding: 48px 40px;
+  }
+
+  .adaptive-help-title {
+    font-size: 2rem;
+  }
+
+  .adaptive-help-message {
+    font-size: 1.25rem;
+    line-height: 1.8;
+    margin-bottom: 40px;
+  }
+
+  .adaptive-btn {
+    font-size: 1.3rem;
+    min-height: 64px;
+    padding: 20px 32px;
+  }
+}
+
+/* Responsive for mobile/small screens */
+@media (max-width: 480px) {
+  .adaptive-help-card {
+    width: 95%;
+    padding: 32px 20px;
+  }
+
+  .adaptive-help-title {
+    font-size: 1.5rem;
+  }
+
+  .adaptive-help-message {
+    font-size: 1rem;
+    margin-bottom: 24px;
+  }
+
+  .adaptive-btn {
+    font-size: 1rem;
+    min-height: 52px;
+    padding: 14px 20px;
+  }
+
+  body.adaptive-guided-mode {
+    --adaptive-font-scale: 1.15;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .adaptive-help-card {
+    border: 2px solid #111827;
+  }
+
+  .adaptive-btn-primary {
+    border: 2px solid #059669;
+  }
+
+  .adaptive-btn-secondary {
+    border: 2px solid #374151;
+  }
+
+  .adaptive-help-icon {
+    border: 2px solid #10b981;
+  }
+}
