@@ -353,7 +353,7 @@
     <div class="app-header" id="appHeader">
       <div class="header-top">
         <div class="app-logo" id="appLogo">
-          <span id="appIcon">🅰️</span>
+          <img id="appIcon" src="https://logo.clearbit.com/alipay.com" alt="Alipay" style="width: 32px; height: 32px; object-fit: contain; margin-right: 8px;" onerror="this.style.display='none'">
           <span id="appName">Alipay</span>
         </div>
         <div class="header-icons">
@@ -480,7 +480,11 @@
     const config = walletConfig[walletType] || walletConfig.alipay;
     
     // Apply wallet branding
-    document.getElementById('appIcon').textContent = config.icon;
+    const appIconImg = document.getElementById('appIcon');
+    if (appIconImg && appIconImg.tagName === 'IMG') {
+      appIconImg.src = config.logo;
+      appIconImg.onerror = function() { this.style.display = 'none'; };
+    }
     document.getElementById('appName').textContent = config.name;
     document.querySelector('.currency').textContent = config.currency;
     document.getElementById('walletIdDisplay').textContent = walletId;
