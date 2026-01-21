@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OCBC ATM - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles/home.css" />
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ea2a33",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211111",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Public Sans", sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .chatbot-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: 20px;
+            right: -8px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            transform: rotate(45deg);
+            border-right: 1px solid #e2e8f0;
+            border-top: 1px solid #e2e8f0;
+        }
+        .dark .chatbot-bubble::after {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        
+        /* Override ATM styles for new design */
+        .atm-body {
+            background: #f8f6f6;
+        }
+        
+        .atm-pages {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .atm-page {
+            display: none;
+            width: 100%;
+        }
+        
+        .atm-page.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<div class="relative flex h-full min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+
+<!-- HEADER -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-10 py-4 z-10">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-8">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight font-display">OCBC Bank</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4">
+<button class="flex items-center justify-center rounded-lg h-12 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white gap-2 text-sm font-bold px-4 border border-slate-200 dark:border-slate-700" id="langBtn">
+<span class="material-symbols-outlined text-[20px]">language</span>
+<span>English</span>
+</button>
+<button id="exitBtn" class="flex items-center justify-center rounded-lg h-12 bg-primary text-white gap-2 text-sm font-bold px-4 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Exit</span>
+</button>
+</div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-12 relative">
+<div class="max-w-[1200px] w-full">
+
+<!-- MAIN MENU PAGE -->
+<div id="mainMenu" class="atm-page active flex flex-col items-center">
+<div class="text-center mb-12">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[48px] font-bold leading-tight pb-2 font-display" id="greeting">
+                        Hello!
+                    </h1>
+<h2 class="text-slate-500 dark:text-slate-400 text-xl font-medium leading-tight tracking-tight">
+                        What would you like to do today?
+                    </h2>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+<!-- GET CASH -->
+<button id="btnCash" class="flex flex-col items-center justify-between p-8 bg-white dark:bg-slate-900 rounded-2xl border-2 border-primary hover:border-primary/80 shadow-lg hover:shadow-xl transition-all group min-h-[250px]">
+<div class="flex flex-col items-center gap-4 flex-1 justify-center">
+<div class="size-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-[40px] text-primary">wallet</span>
+</div>
+<div class="text-center">
+<p class="font-bold text-slate-900 dark:text-white text-lg">Get Cash</p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Quick amounts + custom</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">arrow_forward</span>
+</button>
+
+<!-- DEPOSIT CASH -->
+<button id="btnDeposit" class="flex flex-col items-center justify-between p-8 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary shadow-lg hover:shadow-xl transition-all group min-h-[250px]">
+<div class="flex flex-col items-center gap-4 flex-1 justify-center">
+<div class="size-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[40px]">package_2</span>
+</div>
+<div class="text-center">
+<p class="font-bold text-slate-900 dark:text-white text-lg">Deposit Cash</p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Insert cash to top-up balance</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">arrow_forward</span>
+</button>
+
+<!-- NON-CASH SERVICES -->
+<button id="btnNonCash" class="flex flex-col items-center justify-between p-8 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary shadow-lg hover:shadow-xl transition-all group min-h-[250px]">
+<div class="flex flex-col items-center gap-4 flex-1 justify-center">
+<div class="size-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[40px]">grid_3x3</span>
+</div>
+<div class="text-center">
+<p class="font-bold text-slate-900 dark:text-white text-lg">Non Cash Services</p>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Balance, transfers, activate card & more</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">arrow_forward</span>
+</button>
+</div>
+</div>
+
+<!-- CASH PAGE -->
+<div id="cashPage" class="atm-page">
+<div class="max-w-[600px] mx-auto">
+<div class="flex items-center gap-4 mb-8">
+<button class="backBtn flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">arrow_back</span>
+<span>Back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-3xl font-bold">Get Cash</h2>
+</div>
+
+<div class="grid grid-cols-2 gap-4 mb-8">
+<button data-amount="50" class="denom-btn p-6 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-center">
+<p class="font-bold text-slate-900 dark:text-white text-2xl">S$50</p>
+</button>
+<button data-amount="80" class="denom-btn p-6 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-center">
+<p class="font-bold text-slate-900 dark:text-white text-2xl">S$80</p>
+</button>
+<button data-amount="100" class="denom-btn p-6 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-center">
+<p class="font-bold text-slate-900 dark:text-white text-2xl">S$100</p>
+</button>
+<button data-amount="500" class="denom-btn p-6 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-center">
+<p class="font-bold text-slate-900 dark:text-white text-2xl">S$500</p>
+</button>
+</div>
+
+<div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-6">
+<label class="block text-sm font-bold text-slate-900 dark:text-white mb-3">Other amount</label>
+<div class="flex gap-3">
+<input id="cashOther" type="number" min="10" step="10" class="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 dark:text-white" placeholder="S$0.00" />
+<button id="cashOtherSet" class="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold rounded-lg hover:bg-slate-200 transition-colors">Set</button>
+<button id="cashConfirm" class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">Confirm</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- DEPOSIT PAGE -->
+<div id="depositPage" class="atm-page">
+<div class="max-w-[600px] mx-auto">
+<div class="flex items-center gap-4 mb-8">
+<button class="backBtn flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">arrow_back</span>
+<span>Back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-3xl font-bold">Deposit Cash</h2>
+</div>
+
+<div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-8">
+<p class="text-slate-600 dark:text-slate-400 mb-6">Enter the amount you plan to deposit, then press <strong>Insert Cash</strong>. When instructed, place the cash into the deposit slot.</p>
+
+<div class="flex gap-3 mb-6">
+<input id="depositAmount" type="number" min="1" step="1" class="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 dark:text-white" placeholder="S$0" />
+<button id="startInsert" class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">Insert Cash</button>
+</div>
+
+<div id="countingBox" style="display:none;" class="p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg">
+<div id="countingText" class="text-slate-600 dark:text-slate-400 mb-3">Waiting for cash insertion...</div>
+<div class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+<div id="countBar" class="h-full bg-primary transition-all" style="width:0%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- NON-CASH SERVICES PAGE -->
+<div id="nonCashPage" class="atm-page">
+<div class="max-w-[900px] mx-auto">
+<div class="flex items-center gap-4 mb-8">
+<button class="backBtn flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">arrow_back</span>
+<span>Back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-3xl font-bold">Non-Cash Services</h2>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+<!-- Balance Enquiry -->
+<button id="btnBalance" class="p-6 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-left group">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<p class="font-bold text-slate-900 dark:text-white">Balance Enquiry</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Current balance</p>
+</button>
+
+<!-- Activate Card -->
+<button id="btnActivateCard" class="p-6 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-left group">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">credit_card</span>
+</div>
+<p class="font-bold text-slate-900 dark:text-white">Activate Card</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Set PIN and enable usage</p>
+</button>
+
+<!-- Transfer Funds -->
+<button id="btnTransfer" class="p-6 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-left group">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">send</span>
+</div>
+<p class="font-bold text-slate-900 dark:text-white">Transfer Funds</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Immediate or non-immediate</p>
+</button>
+
+<!-- Digital Wallet -->
+<button id="btnDigitalWallet" class="p-6 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-left group">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">wallet</span>
+</div>
+<p class="font-bold text-slate-900 dark:text-white">Digital Wallet</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Transfer to Alipay, GrabPay & more</p>
+</button>
+
+<!-- Transactions -->
+<button id="btnTransactions" class="p-6 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-left group">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">history</span>
+</div>
+<p class="font-bold text-slate-900 dark:text-white">Transaction History</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">View past transactions</p>
+</button>
+</div>
+</div>
+</div>
+
+<!-- BALANCE PAGE -->
+<div id="balancePage" class="atm-page">
+<div class="max-w-[600px] mx-auto">
+<div class="flex items-center gap-4 mb-8">
+<button class="backBtn flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">arrow_back</span>
+<span>Back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-3xl font-bold">Balance Enquiry</h2>
+</div>
+
+<div class="bg-gradient-to-br from-primary to-primary/80 text-white rounded-2xl p-10 shadow-2xl">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-[32px]">account_balance</span>
+<span class="text-lg font-semibold">Current Balance</span>
+</div>
+<div id="balanceValue" class="text-5xl font-bold">S$0.00</div>
+</div>
+</div>
+</div>
+
+<!-- ACTIVATE PAGE -->
+<div id="activatePage" class="atm-page">
+<div class="max-w-[600px] mx-auto">
+<div class="flex items-center gap-4 mb-8">
+<button class="backBtn flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">arrow_back</span>
+<span>Back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-3xl font-bold">Activate Card</h2>
+</div>
+
+<div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-8">
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Card last 4 digits</label>
+<input type="text" maxlength="4" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 dark:text-white" placeholder="1234" />
+</div>
+
+<div>
+<label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">OTP</label>
+<input type="text" maxlength="6" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 dark:text-white" placeholder="123456" />
+</div>
+
+<button id="activateConfirm" class="w-full px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">Confirm</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- TRANSFER PAGE -->
+<div id="transferPage" class="atm-page">
+<div class="max-w-[600px] mx-auto">
+<div class="flex items-center gap-4 mb-8">
+<button class="backBtn flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">arrow_back</span>
+<span>Back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-3xl font-bold">Transfer Funds</h2>
+</div>
+
+<div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-8 space-y-6">
+<div>
+<label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Amount</label>
+<input id="transferAmount" type="number" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 dark:text-white" placeholder="S$0.00" />
+</div>
+
+<div>
+<label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">To Account</label>
+<input id="transferToAccount" type="text" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 dark:text-white" placeholder="123-456-789" />
+</div>
+
+<div>
+<label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Bank</label>
+<input id="transferBank" type="text" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 dark:text-white" placeholder="Bank name" />
+</div>
+
+<div>
+<label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Payee Name</label>
+<input id="transferPayee" type="text" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 dark:text-white" placeholder="Name" />
+</div>
+
+<div>
+<label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Payment mode</label>
+<select id="tfMode" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 dark:text-white">
+<option>Non-immediate transfer</option>
+<option>Immediate transfer</option>
+</select>
+</div>
+
+<button id="transferNext" class="w-full px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">Confirm</button>
+</div>
+</div>
+</div>
+
+<!-- TRANSFER CONFIRM PAGE -->
+<div id="transferConfirmPage" class="atm-page">
+<div class="max-w-[600px] mx-auto">
+<div class="flex items-center gap-4 mb-8">
+<button class="backBtn flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">arrow_back</span>
+<span>Back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-3xl font-bold">Transfer Confirmation</h2>
+</div>
+
+<div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-8">
+<p class="text-slate-600 dark:text-slate-400 mb-6">Review details and send.</p>
+
+<div class="space-y-4 mb-8 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+<div class="flex justify-between">
+<span class="text-slate-600 dark:text-slate-400">Method:</span>
+<span id="confirmMethod" class="font-bold text-slate-900 dark:text-white">Bank Transfer</span>
+</div>
+<div class="flex justify-between">
+<span class="text-slate-600 dark:text-slate-400">Recipient:</span>
+<span id="confirmRecipient" class="font-bold text-slate-900 dark:text-white">(loading)</span>
+</div>
+<div class="flex justify-between">
+<span class="text-slate-600 dark:text-slate-400">Amount (SGD):</span>
+<span id="confirmAmount" class="font-bold text-slate-900 dark:text-white">(loading)</span>
+</div>
+</div>
+
+<button id="transferSend" class="w-full px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">Send</button>
+</div>
+</div>
+</div>
+
+</div>
+</main>
+
+<!-- FOOTER -->
+<footer class="p-8 flex flex-col items-center gap-6 border-t border-slate-200 dark:border-slate-800">
+<div class="flex flex-wrap justify-center gap-8">
+<a class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary text-sm font-medium transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+                    Security Tips
+                </a>
+<a class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary text-sm font-medium transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                    Find a Branch
+                </a>
+<a class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary text-sm font-medium transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">contact_support</span>
+                    Help Centre
+                </a>
+</div>
+<div class="text-slate-400 text-xs text-center">
+                © 2024 OCBC Bank. All rights reserved.
+            </div>
+</footer>
+
+</div>
+</div>
+
+<!-- APP LOGIC -->
+<script src="scripts/home.js"></script>
+</body>
+</html>

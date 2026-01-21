@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCBC ATM - QR Login</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="styles/home.css">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ea2a33",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211111",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: "Public Sans", sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        #qr-code {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #qr-code canvas {
+            border-radius: 16px;
+            border: 8px solid white;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #ea2a33;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<div class="relative flex h-full min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+
+<!-- HEADER -->
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
+</div>
+<div class="flex items-center gap-3">
+<button id="backBtn" onclick="window.location.href='/login.html'" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+<span class="material-symbols-outlined !text-lg">arrow_back</span>
+                    Back
+                </button>
+</div>
+</div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-12 relative">
+<div class="max-w-[700px] w-full flex flex-col items-center">
+<div class="text-center mb-12">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[44px] font-bold leading-tight pb-2 font-display">
+                        QR Code Login
+                    </h1>
+<h2 class="text-slate-500 dark:text-slate-400 text-lg font-medium leading-tight tracking-tight">
+                        Scan with your mobile device
+                    </h2>
+</div>
+
+<div class="w-full max-w-[600px] bg-white dark:bg-slate-900 rounded-3xl p-12 shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-8 relative overflow-hidden">
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full"></div>
+
+<div class="relative z-10 w-full flex flex-col items-center">
+<!-- QR CODE CONTAINER -->
+<div class="w-full bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-700 p-8 flex items-center justify-center mb-8">
+<div id="qr-code" class="w-full"></div>
+</div>
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(to bottom, rgba(71, 85, 105, 0.75), #020817);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .title {
+            font-size: 1.9rem;
+            font-weight: 600;
+            margin: 0 0 8px;
+            letter-spacing: -0.02em;
+        }
+        
+        .subtitle {
+            font-size: 1.05rem;
+            color: #6b7280;
+            margin: 0 0 32px;
+        }
+        
+        .qr-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        #qr-code {
+            display: flex;
+            justify-content: center;
+            margin: 24px 0;
+            min-height: 256px;
+        }
+        
+        #qr-code canvas {
+            border-radius: 12px;
+            border: 8px solid white;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+        }
+        
+        .timer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+        
+        .timer-icon {
+            width: 20px;
+            height: 20px;
+            color: #6b7280;
+        }
+        
+        .status {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 500;
+            margin-top: 24px;
+        }
+        
+        .status-waiting {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+        
+        .status-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+            text-align: left;
+        }
+        
+        .instructions-title {
+            font-weight: 600;
+            margin: 0 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #856404;
+        }
+        
+        .instructions p {
+            margin: 6px 0;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+        
+        .btn-back {
+            margin-top: 24px;
+            padding: 14px 28px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #111827;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        
+        .btn-back:hover {
+            background: #f9fafb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #0369a1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="qr-card">
+            <div class="header">
+                <div class="logo-icon">
+                    <i data-lucide="landmark"></i>
+                </div>
+                <span class="logo-text">OCBC</span>
+            </div>
+            
+            <h1 class="title">QR Code Login</h1>
+            <p class="subtitle">Scan with your mobile device</p>
+            
+            <div class="qr-section">
+                <div id="qr-code"></div>
+                
+                <div class="timer">
+                    <i data-lucide="clock" class="timer-icon"></i>
+                    <span>Time remaining: <strong id="time-left">5:00</strong></span>
+                </div>
+            </div>
+            
+            <div id="status" class="status status-waiting">
+                <div class="loading-spinner"></div>
+                <span style="margin-left: 12px;">Waiting for mobile authentication...</span>
+            </div>
+            
+            <div class="instructions">
+                <div class="instructions-title">
+                    <i data-lucide="smartphone"></i>
+                    <span>How to Login:</span>
+                </div>
+                <p>1. Open the camera app on your mobile device</p>
+                <p>2. Point your camera at the QR code above</p>
+                <p>3. Tap the notification to open the authentication page</p>
+                <p>4. Select your account and approve the login request</p>
+            </div>
+            
+            <button class="btn-back" onclick="window.location.href='/public/login.html'">     
+                ← Back to Login Options
+            </button>
+        </div>
+    </div>
+
+    <script>
+        class QRLogin {
+            constructor() {
+                this.sessionId = this.generateSessionId();
+                this.timeRemaining = 300; // 5 minutes in seconds
+                this.pollInterval = null;
+                this.timerInterval = null;
+                
+                this.init();
+            }
+            
+            generateSessionId() {
+                return 'qr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            async init() {
+                // Generate QR code
+                this.generateQRCode();
+                
+                // Start polling for authentication
+                this.startPolling();
+                
+                // Start countdown timer
+                this.startTimer();
+            }
+            
+            generateQRCode() {
+                // Use the current page's hostname and port (works for any device accessing the page)
+                const hostname = window.location.hostname;
+                const port = window.location.port || '3000';
+                const protocol = window.location.protocol; // http: or https:
+                const baseUrl = `${protocol}//${hostname}:${port}`;
+                const qrData = `${baseUrl}/mobile-auth.html?sessionId=${this.sessionId}`;
+                
+                console.log('Generating QR code with URL:', qrData);
+                
+                // Generate QR code
+                new QRCode(document.getElementById('qr-code'), {
+                    text: qrData,
+                    width: 256,
+                    height: 256,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+            
+            startPolling() {
+                // Poll every 2 seconds to check authentication status
+                this.pollInterval = setInterval(async () => {
+                    await this.checkAuthStatus();
+                }, 2000);
+            }
+            
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    this.timeRemaining--;
+                    
+                    const minutes = Math.floor(this.timeRemaining / 60);
+                    const seconds = this.timeRemaining % 60;
+                    const timeLeft = document.getElementById('time-left');
+                    
+                    timeLeft.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Warning when less than 1 minute
+                    if (this.timeRemaining <= 60) {
+                        timeLeft.classList.add('timer-warning');
+                    }
+                    
+                    // Expired
+                    if (this.timeRemaining <= 0) {
+                        this.handleTimeout();
+                    }
+                }, 1000);
+            }
+            
+            async checkAuthStatus() {
+                try {
+                    const response = await fetch(`/api/qr-auth-status/${this.sessionId}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'authenticated') {
+                        this.handleSuccess(data);
+                    } else if (data.status === 'expired' || data.status === 'invalid') {
+                        this.handleTimeout();
+                    }
+                } catch (error) {
+                    console.error('Error checking auth status:', error);
+                }
+            }
+            
+            handleSuccess(data) {
+                // Stop polling and timer
+                clearInterval(this.pollInterval);
+                clearInterval(this.timerInterval);
+                
+                // Update status
+                const statusDiv = document.getElementById('status');
+                statusDiv.className = 'status status-success';
+                statusDiv.innerHTML = '<span>✅ Authentication successful!</span>';
+                
+                // Store token (use 'token' key to match card login)
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('account', JSON.stringify(data.account));
+                }
+                
+                // Redirect to home page
+                setTimeout(() => {
+                    window.location.href = '/home.html';
+                }, 1500);
+            }
+            
+            handleTimeout() {
+                // Stop polling and timer
+                clearInterval(this.pollInterval);
+                clearInterval(this.timerInterval);
+                
+                // Update status
+                const statusDiv = document.getElementById('status');
+                statusDiv.className = 'status status-error';
+                statusDiv.innerHTML = '<span>⏱️ QR Code expired. Please try again.</span>';
+                
+                // Show refresh option
+                setTimeout(() => {
+                    if (confirm('QR Code has expired. Would you like to generate a new one?')) {
+                        window.location.reload();
+                    } else {
+                        window.location.href = '/login';
+                    }
+                }, 2000); 
+            }
+        }
+        
+        // Initialize QR login when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new QRLogin();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

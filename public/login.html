@@ -1,227 +1,155 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ATM Login</title>
-
-  <!-- Fonts -->
-  <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin
-  />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
-    rel="stylesheet"
-  />
-
-  <!-- Base ATM styles (your main design system) -->
-  <link rel="stylesheet" href="styles/home.css" />
-
-  <!-- Login-specific tweaks -->
-  <link rel="stylesheet" href="styles/login.css" />
-
-  <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>OCBC Welcome</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ea2a33",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211111",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            margin: 0;
+            font-family: "Public Sans", sans-serif;
+            overscroll-behavior: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Ensure top bar stays pinned when scrolling */
+        .login-header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            width: 100%;
+            background: #ffffff;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+        }
+    </style>
 </head>
 
-<body class="atm-body">
-  <main class="atm-shell">
-    <section class="atm-card">
-      <!-- FULL-WIDTH BANNER ACROSS THE WHOLE CARD -->
-      <div class="atm-banner">
-        <img src="sources/index photo.jpg" alt="ATM Banner" />
-
-        <div class="banner-text">
-          <p class="atm-hello">Welcome to OCBC </p>
-          <h1 class="atm-title">What would you like to do today?</h1>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 h-screen overflow-hidden flex flex-col">
+<div class="relative flex h-full min-h-0 w-full flex-col group/design-root overflow-hidden">
+<div class="layout-container flex h-full grow flex-col min-h-0" style="padding-top: 0;">
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+        <div class="max-w-[1400px] mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+                    <span class="material-symbols-outlined !text-lg">logout</span>
+                    Exit
+                </button>
+            </div>
         </div>
-      </div>
+    </header>
+<main class="flex-1 min-h-0 overflow-hidden flex flex-col items-center justify-center px-4 py-4 relative mt-[17px]">
+<div class="w-full flex flex-col items-center">
+<div class="text-center mb-8">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[48px] font-bold leading-tight pb-2 font-display">
+Welcome to OCBC
+</h1>
+<h2 class="text-slate-500 dark:text-slate-400 text-xl font-medium leading-tight tracking-tight">
+Your trusted partner in banking.
+</h2>
+</div>
+<div class="w-full max-w-[600px] bg-white dark:bg-slate-900 rounded-3xl p-10 shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-6 mb-8 relative overflow-hidden cursor-pointer hover:shadow-2xl hover:shadow-primary/20 transition-all" onclick="window.location.href='card-login.html'">
+<div class="absolute -top-20 -right-20 w-56 h-56 bg-primary/5 rounded-full"></div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-48 h-32 bg-slate-200 dark:bg-slate-700 rounded-lg shadow-inner flex items-end justify-center pb-4">
+<div class="w-32 h-1 bg-primary rounded-full mb-4"></div>
+</div>
+<div class="absolute -bottom-4 w-36 h-20 bg-white dark:bg-slate-600 rounded-lg border border-slate-200 dark:border-slate-500 shadow-xl flex items-center px-4 gap-3 transform -rotate-3">
+<div class="w-7 h-7 rounded-full bg-primary/20"></div>
+<div class="flex-1 h-2 bg-slate-200 dark:bg-slate-500 rounded"></div>
+</div>
+</div>
+<h2 class="text-slate-900 dark:text-white tracking-tight text-[24px] font-bold leading-tight text-center font-display">
+Please insert your card to begin
+</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-1 text-center text-sm">The card slot is located below the screen to your right.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-[600px]">
+<button onclick="window.location.href='qr-login.html'" class="flex items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary transition-colors group">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">qr_code</span>
+</div>
+<div class="text-left">
+<p class="font-bold text-slate-900 dark:text-white">QR Code Login</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Scan with your phone</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary">chevron_right</span>
+</button>
+<button onclick="window.location.href='face-login.html'" class="flex items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary transition-colors group">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">face</span>
+</div>
+<div class="text-left">
+<p class="font-bold text-slate-900 dark:text-white">Face Login</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Facial recognition</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary">chevron_right</span>
+</button>
+</div>
+</div>
+</main>
+<footer class="p-8 flex flex-col items-center gap-2">
+<div class="flex flex-wrap justify-center gap-8">
+<button class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary text-sm font-medium transition-colors" onclick="window.location.href='face-enrollment.html'">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+Enroll Face
+</button>
+<button class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary text-sm font-medium transition-colors">
+<span class="material-symbols-outlined text-[18px]">volume_up</span>
+Audio Assist
+</button>
+<button class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary text-sm font-medium transition-colors">
+<span class="material-symbols-outlined text-[18px]">info</span>
+How to Login
+</button>
+</div>
+<div class="text-slate-400 text-xs text-center border-t border-slate-200 dark:border-slate-800 pt-6 w-full max-w-[400px]">
+© 2023 OCBC Bank. All rights reserved. <br/>
+ATM Terminal ID: SG-OCBC-8821
+</div>
+</footer>
+</div>
+</div>
 
-
-      <!-- SINGLE-COLUMN CONTENT (uses same spacing style as atm-left) -->
-      <div class="atm-main">
-        <div class="atm-pages">
-          <!-- LOGIN MENU PAGE -->
-          <section id="loginMenu" class="atm-page active">
-            <div class="atm-main-grid">
-              <!-- Card Login -->
-              <button class="cta-card cta-primary hover-tts"
-                onclick="window.location.href='card-login.html'">
-                <div class="cta-row">
-                  <div>
-                    <p class="cta-title">Insert Card</p>
-                    <p class="cta-sub">ATM Card + PIN</p>
-                  </div>
-                  <div class="cta-icon-pill">
-                    <i data-lucide="credit-card" class="icon"></i>
-                  </div>
-                </div>
-              </button>
-
-                            <button id="btnMobileAuth" class="cta-card cta-outline hover-tts" onclick="window.location.href='qr-login.html'">
-                                <div class="cta-row">
-                                    <div>
-                                        <p class="cta-title">Mobile Banking</p>
-                                        <p class="cta-sub">Scan QR Code</p>
-                                    </div>
-                                    <div class="cta-icon-pill light">
-                                        <i data-lucide="smartphone" class="icon"></i>
-                                    </div>
-                                </div>
-                            </button>
-
-              <!-- Face Recognition Login -->
-              <button class="cta-card cta-outline hover-tts" onclick="window.location.href='face-login.html'" style="border: 2px solid #10b981;">
-                <div class="cta-row">
-                  <div>
-                    <p class="cta-title">Face Recognition</p>
-                    <p class="cta-sub">AI-Powered Login 🤖</p>
-                  </div>
-                  <div class="cta-icon-pill light" style="background: linear-gradient(135deg, #10b981, #059669);">
-                    <i data-lucide="smile" class="icon"></i>
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            <!-- QUICK SERVICES -->
-            <div class="quick-services">
-              <div class="quick-grid">
-
-                <button class="tile-card hover-tts" onclick="window.location.href='face-enrollment.html'">
-                  <div class="tile-corner">
-                    <i data-lucide="user-plus" class="icon-xs"></i>
-                  </div>
-                  <p class="tile-label">Enroll Face</p>
-                </button>
-
-                <button class="tile-card hover-tts" onclick="showInstructions()">
-                  <div class="tile-corner">
-                    <i data-lucide="help-circle" class="icon-xs"></i>
-                  </div>
-                  <div class="tile-row">
-                    <div class="tile-icon">
-                      <i data-lucide="phone" class="icon"></i>
-                    </div>
-                    <div>
-                      <p class="tile-title">Need Help?</p>
-                      <p class="tile-sub">Call 1800-EASYATM</p>
-                    </div>
-                  </div>
-                </button>
-
-                <button class="tile-card hover-tts" onclick="toggleAccessibility()">
-                  <div class="tile-corner">
-                    <i data-lucide="volume-2" class="icon-xs"></i>
-                  </div>
-                  <div class="tile-row">
-                    <div class="tile-icon">
-                      <i data-lucide="accessibility" class="icon"></i>
-                    </div>
-                    <div>
-                      <p class="tile-title">Audio Assistance</p>
-                      <p class="tile-sub">Voice Guidance</p>
-                    </div>
-                  </div>
-                </button>
-
-                <button class="tile-card hover-tts" onclick="cycleLanguage()">
-                  <div class="tile-corner">
-                    <i data-lucide="globe" class="icon-xs"></i>
-                  </div>
-                  <div class="tile-row">
-                    <div class="tile-icon">
-                      <i data-lucide="languages" class="icon"></i>
-                    </div>
-                    <div>
-                      <p class="tile-title">Language</p>
-                      <p class="tile-sub">English | 中文 | Melayu</p>
-                    </div>
-                  </div>
-                </button>
-
-              </div>
-            </div>
-          </section>
-
-          <!-- INSTRUCTIONS PAGE -->
-          <section id="instructions-tab" class="atm-page">
-            <div class="page-header">
-              <button class="ghost-btn backBtn hover-tts" type="button" onclick="showLoginMenu()">
-                <i data-lucide="arrow-left" class="icon-xs"></i>
-                <span>Back</span>
-              </button>
-            </div>
-
-            <div class="quick-grid">
-              <div class="balance-card" style="flex-direction: column; text-align: center; padding: 20px;">
-                <div class="balance-label" style="margin-bottom: 16px;">
-                  <div class="balance-icon">
-                    <i data-lucide="credit-card" class="icon"></i>
-                  </div>
-                  <span>Card Authentication</span>
-                </div>
-                <div class="confirm-box">
-                  <p class="confirm-text">
-                    <strong>Step 1:</strong> Insert your ATM card<br>
-                    <strong>Step 2:</strong> Enter your 4-digit PIN<br>
-                    <strong>Step 3:</strong> Select your transaction
-                  </p>
-                </div>
-              </div>
-
-              <div class="balance-card" style="flex-direction: column; text-align: center; padding: 20px;">
-                <div class="balance-label" style="margin-bottom: 16px;">
-                  <div class="balance-icon">
-                    <i data-lucide="smartphone" class="icon"></i>
-                  </div>
-                  <span>Mobile Banking</span>
-                </div>
-                <div class="confirm-box">
-                  <p class="confirm-text">
-                    <strong>Step 1:</strong> Open mobile banking app<br>
-                    <strong>Step 2:</strong> Scan QR code displayed<br>
-                    <strong>Step 3:</strong> Approve on your device
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div class="page-actions">
-            </div>
-          </section>
-
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    if (window.lucide) {
-      window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
-    }
-
-    function showLoginMenu() {
-      document.querySelectorAll(".atm-page").forEach(p => p.classList.remove("active"));
-      document.getElementById("loginMenu").classList.add("active");
-      if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
-    }
-
-    function showInstructions() {
-      document.querySelectorAll(".atm-page").forEach(p => p.classList.remove("active"));
-      document.getElementById("instructions-tab").classList.add("active");
-      if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
-    }
-
-    function toggleAccessibility() {
-      alert("Audio assistance coming soon!");
-    }
-
-    function cycleLanguage() {
-      alert("Language selection coming soon!");
-    }
-  </script>
 </body>
 </html>

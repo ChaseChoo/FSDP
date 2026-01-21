@@ -72,7 +72,7 @@
 <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
 </div>
 <div class="flex items-center gap-3">
-<button id="backBtn" onclick="window.location.href='login.html'" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+<button id="backBtn" onclick="window.location.href='/login.html'" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
 <span class="material-symbols-outlined !text-lg">arrow_back</span>
                     Back
                 </button>
@@ -222,7 +222,7 @@ class QRLogin {
     
     async checkAuthStatus() {
         try {
-            const response = await fetch(`api/qr-auth-status/${this.sessionId}`);
+            const response = await fetch(`/api/qr-auth-status/${this.sessionId}`);
             const data = await response.json();
             
             if (data.status === 'authenticated') {
@@ -254,7 +254,7 @@ class QRLogin {
         
         // Redirect to home page
         setTimeout(() => {
-            window.location.href = 'home.html';
+            window.location.href = '/home.html';
         }, 1500);
     }
     
@@ -273,7 +273,7 @@ class QRLogin {
             if (confirm('QR Code has expired. Would you like to generate a new one?')) {
                 window.location.reload();
             } else {
-                window.location.href = 'login.html';
+                window.location.href = '/login.html';
             }
         }, 2000); 
     }

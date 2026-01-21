@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OCBC ATM - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles/home.css" />
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ea2a33",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211111",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Public Sans", sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .chatbot-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: 20px;
+            right: -8px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            transform: rotate(45deg);
+            border-right: 1px solid #e2e8f0;
+            border-top: 1px solid #e2e8f0;
+        }
+        .dark .chatbot-bubble::after {
+            background: #1e293b;
+            border-color: #334155;
+        }
+    </style>
+</head>
+
+  <body class="atm-body">
+    <main class="atm-shell">
+      <section class="atm-card">
+        <div class="atm-layout">
+          <!-- LEFT: Main Pages -->
+          <div class="atm-left">
+            <!-- Header -->
+            <div class="atm-header">
+              <div class="header-content">
+                <div>
+                  <p
+                    class="atm-hello atm-i18n"
+                    data-i18n="hello"
+                    id="greeting"
+                  >
+                    Hello!
+                  </p>
+                  <h1
+                    class="atm-title atm-i18n"
+                    data-i18n="what_do"
+                  >
+                    What would you like to do today?
+                  </h1>
+                </div>
+              </div>
+            </div>
+
+            <!-- Virtual Teller Overlay (hidden by default) -->
+            <div id="virtualTellerOverlay" class="virtual-teller-overlay" aria-hidden="true" style="display:none;">
+              <div class="vt-panel">
+                <div class="vt-header">
+                  <div class="vt-title">Virtual Teller</div>
+                  <button id="vtClose" class="vt-close" aria-label="End call">✕</button>
+                </div>
+                <div id="vtBody" class="vt-body" style="position:relative; padding:0;">
+                  <div id="vtStatus" class="vt-status" style="padding:12px 16px;">Connecting to your virtual teller...</div>
+                  <!-- Pre-recorded video (muted for autoplay). Will be loaded from /atm-videos via the server. -->
+                  <video id="vtVideo" class="vt-video" playsinline muted loop preload="auto" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:0; background:#000;"></video>
+                  <!-- Sign-language video: smaller, bottom-right overlay inside VT panel. Will be loaded from /atm-videos if available. -->
+                  <video id="vtSignVideo" class="vt-sign-video" playsinline muted loop preload="auto" style="position:absolute; right:12px; bottom:72px; width:160px; max-height:140px; object-fit:cover; display:block; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.18); z-index:60;"></video>
+                </div>
+                <div class="vt-controls" style="align-items:center; justify-content:center; gap:12px;">
+                  <div class="vt-actions">
+                    <button id="vtMic" class="btn-secondary" aria-pressed="false">🎤</button>
+                    <button id="vtUnmute" class="btn-secondary">🔊 Join Call</button>
+                    <button id="vtCloseBtn" class="btn-secondary">End</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pending action banner (hidden by default) -->
+            <div id="pendingBanner" class="pending-banner" aria-hidden="true" style="display:none;">
+              <div class="pending-content">
+                <div id="pendingText" class="pending-text">You requested to withdraw S$0.00</div>
+                <div class="pending-actions">
+                  <button id="pendingConfirmBtn" class="btn-primary">Confirm</button>
+                  <button id="pendingCancelBtn" class="btn-secondary">Cancel</button>
+                </div>
+              </div>
+            </div>
+            <!-- Success banner (shows briefly after actions) -->
+            <div id="successBanner" class="success-banner" aria-hidden="true" style="display:none;">
+              <div class="success-content">
+                <span id="successText">Withdraw successful</span>
+              </div>
+            </div>
+
+            <!-- Pages Wrapper -->
+            <div class="atm-pages">
+              <!-- MAIN MENU -->
+              <!-- =========================================================
+     MAIN MENU (Homepage – now only 3 big buttons)
+========================================================= -->
+<section id="mainMenu" class="atm-page active">
+  <div class="homepage-grid">
+
+    <!-- LEFT COLUMN (Get Cash + Deposit) -->
+    <div class="left-stack">
+      <button id="btnCash" class="cta-card cta-primary hover-tts big-btn">
+        <div class="cta-row">
+          <div>
+            <p class="cta-title">Get Cash</p>
+            <p class="cta-sub">Quick amounts + custom</p>
+          </div>
+          <div class="cta-icon-pill">
+            <i data-lucide="wallet" class="icon"></i>
+          </div>
+        </div>
+      </button>
+
+      <button id="btnDeposit" class="cta-card cta-outline hover-tts big-btn">
+        <div class="cta-row">
+          <div>
+            <p class="cta-title">Deposit Cash</p>
+            <p class="cta-sub">Insert cash to top-up balance</p>
+          </div>
+          <div class="cta-icon-pill light">
+            <i data-lucide="package" class="icon"></i>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <!-- RIGHT COLUMN (Non Cash Services) -->
+    <button id="btnNonCash" class="cta-card cta-outline hover-tts side-btn">
+      <div class="cta-row">
+        <div>
+          <p class="cta-title">Non Cash Services</p>
+          <p class="cta-sub">Balance, transfers, activate card & more</p>
+        </div>
+        <div class="cta-icon-pill light">
+          <i data-lucide="grid" class="icon"></i>
+        </div>
+      </div>
+    </button>
+
+  </div>
+</section>
+
+
+<!-- =========================================================
+     NEW: NON-CASH SERVICES SUBPAGE
+========================================================= -->
+<section id="nonCashMenuPage" class="atm-page">
+  <div class="page-header">
+    <h2 class="page-title">Non-Cash Services</h2>
+    <button class="ghost-btn backBtn hover-tts" type="button"
+            onclick="goHomeMenu()">
+      <i data-lucide="arrow-left" class="icon-xs"></i>
+      <span>Back</span>
+    </button>
+  </div>
+
+  <div class="quick-grid">
+
+    <!-- Balance Enquiry -->
+    <button id="btnBalance" class="tile-card hover-tts">
+      <div class="tile-corner"><i data-lucide="badge-check" class="icon-xs"></i></div>
+      <div class="tile-row">
+        <div class="tile-icon">
+          <i data-lucide="receipt-text" class="icon"></i>
+        </div>
+        <div>
+          <p class="tile-title">Balance Enquiry</p>
+          <p class="tile-sub">Current Balance</p>
+        </div>
+      </div>
+    </button>
+
+    <!-- Activate Card -->
+    <button id="btnActivateCard" class="tile-card hover-tts">
+      <div class="tile-corner"><i data-lucide="circle-dollar-sign" class="icon-xs"></i></div>
+      <div class="tile-row">
+        <div class="tile-icon">
+          <i data-lucide="credit-card" class="icon"></i>
+        </div>
+        <div>
+          <p class="tile-title">Activate Card</p>
+          <p class="tile-sub">Set PIN and enable usage</p>
+        </div>
+      </div>
+    </button>
+
+    <!-- Transfer Funds -->
+    <button id="btnTransfer" class="tile-card hover-tts">
+      <div class="tile-corner"><i data-lucide="arrow-left-right" class="icon-xs"></i></div>
+      <div class="tile-row">
+        <div class="tile-icon">
+          <i data-lucide="send" class="icon"></i>
+        </div>
+        <div>
+          <p class="tile-title">Transfer Funds</p>
+          <p class="tile-sub">Immediate or non-immediate</p>
+        </div>
+      </div>
+    </button>
+
+    <!-- Digital Wallet Transfer -->
+    <button id="btnDigitalWallet" class="tile-card hover-tts" onclick="window.location.href='/wallet-transfer'">
+      <div class="tile-corner"><i data-lucide="smartphone" class="icon-xs"></i></div>
+      <div class="tile-row">
+        <div class="tile-icon">
+          <i data-lucide="wallet" class="icon"></i>
+        </div>
+        <div>
+          <p class="tile-title">Digital Wallet</p>
+          <p class="tile-sub">Transfer to Alipay, GrabPay & more</p>
+        </div>
+      </div>
+    </button>
+
+  </div>
+</section>
+
+
+              <!-- CASH PAGE -->
+              <section
+                id="cashPage"
+                class="atm-page"
+              >
+                <div class="page-header">
+                  <h2
+                    class="page-title atm-i18n"
+                    data-i18n="get_cash"
+                  >
+                    Get Cash
+                  </h2>
+                  <button
+                    class="ghost-btn backBtn hover-tts"
+                    type="button"
+                  >
+                    <i
+                      data-lucide="arrow-left"
+                      class="icon-xs"
+                    ></i>
+                    <span
+                      class="atm-i18n"
+                      data-i18n="back"
+                      >Back</span
+                    >
+                  </button>
+                </div>
+
+                <div class="denom-grid">
+                  <button
+                    data-amount="50"
+                    class="denom-btn hover-tts"
+                  >
+                    S$50
+                  </button>
+                  <button
+                    data-amount="80"
+                    class="denom-btn hover-tts"
+                  >
+                    S$80
+                  </button>
+                  <button
+                    data-amount="100"
+                    class="denom-btn hover-tts"
+                  >
+                    S$100
+                  </button>
+                  <button
+                    data-amount="500"
+                    class="denom-btn hover-tts"
+                  >
+                    S$500
+                  </button>
+                </div>
+
+                <div class="custom-cash-row">
+                  <div class="field-group">
+                    <label
+                      class="field-label atm-i18n"
+                      data-i18n="other_amount"
+                      >Other amount</label
+                    >
+                    <input
+                      id="cashOther"
+                      type="number"
+                      min="10"
+                      step="10"
+                      class="field-input"
+                      placeholder="S$0.00"
+                    />
+                  </div>
+                  <div class="custom-cash-actions">
+                    <button
+                      id="cashOtherSet"
+                      class="btn-secondary hover-tts"
+                      type="button"
+                      data-i18n="set"
+                    >
+                      Set
+                    </button>
+                    <button
+                      id="cashConfirm"
+                      class="btn-primary hover-tts"
+                      type="button"
+                      data-i18n="confirm"
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <!-- DEPOSIT PAGE -->
+              <section id="depositPage" class="atm-page">
+                <div class="page-header">
+                  <h2 class="page-title">Deposit Cash</h2>
+                  <button class="ghost-btn backBtn hover-tts" type="button">
+                    <i data-lucide="arrow-left" class="icon-xs"></i>
+                    <span>Back</span>
+                  </button>
+                </div>
+
+                <div style="padding:18px;">
+                  <p>Enter the amount you plan to deposit, then press <strong>Insert Cash</strong>. When instructed, place the cash into the deposit slot.</p>
+                  <div style="display:flex; gap:10px; align-items:center; margin-top:12px;">
+                    <input id="depositAmount" type="number" min="1" step="1" placeholder="S$0" class="field-input" style="max-width:160px;" />
+                    <button id="startInsert" class="btn-primary">Insert Cash</button>
+                  </div>
+
+                  <div id="countingBox" style="margin-top:18px; display:none; padding:12px; border-radius:10px; border:1px solid #e5e7eb; background:#fff;">
+                    <div id="countingText">Waiting for cash insertion...</div>
+                    <div id="countProgress" style="margin-top:8px; height:8px; background:#f3f4f6; border-radius:6px; overflow:hidden;"><div id="countBar" style="width:0%; height:100%; background:#10b981;"></div></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- NON-CASH PAGE -->
+              <section
+                id="nonCashPage"
+                class="atm-page"
+              >
+                <div class="page-header">
+                  <h2
+                    class="page-title atm-i18n"
+                    data-i18n="non_cash"
+                  >
+                    Non Cash Services
+                  </h2>
+                  <button
+                    class="ghost-btn backBtn hover-tts"
+                    type="button"
+                  >
+                    <i
+                      data-lucide="arrow-left"
+                      class="icon-xs"
+                    ></i>
+                    <span
+                      class="atm-i18n"
+                      data-i18n="back"
+                      >Back</span
+                    >
+                  </button>
+                </div>
+
+                <div class="quick-grid">
+                  <button
+                    id="btnBalance"
+                    class="tile-card hover-tts"
+                  >
+                    <div class="tile-corner">
+                      <i
+                        data-lucide="receipt-text"
+                        class="icon-xs"
+                      ></i>
+                    </div>
+                    <div class="tile-row">
+                      <div class="tile-icon">
+                        <i
+                          data-lucide="wallet"
+                          class="icon"
+                        ></i>
+                      </div>
+                      <div>
+                        <p
+                          class="tile-title atm-i18n"
+                          data-i18n="balance_enquiry"
+                        >
+                          Balance enquiry
+                        </p>
+                        <p
+                          class="tile-sub atm-i18n"
+                          data-i18n="current_balance"
+                        >
+                          Current balance
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    id="btnTransfer"
+                    class="tile-card hover-tts"
+                  >
+                    <div class="tile-corner">
+                      <i
+                        data-lucide="arrow-left-right"
+                        class="icon-xs"
+                      ></i>
+                    </div>
+                    <div class="tile-row">
+                      <div class="tile-icon">
+                        <i
+                          data-lucide="send"
+                          class="icon"
+                        ></i>
+                      </div>
+                      <div>
+                        <p
+                          class="tile-title atm-i18n"
+                          data-i18n="transfer_funds"
+                        >
+                          Transfer Funds
+                        </p>
+                        <p
+                          class="tile-sub atm-i18n"
+                          data-i18n="payment_mode"
+                        >
+                          Payment mode
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    id="btnActivateCard"
+                    class="tile-card hover-tts"
+                  >
+                    <div class="tile-corner">
+                      <i
+                        data-lucide="badge-check"
+                        class="icon-xs"
+                      ></i>
+                    </div>
+                    <div class="tile-row">
+                      <div class="tile-icon">
+                        <i
+                          data-lucide="credit-card"
+                          class="icon"
+                        ></i>
+                      </div>
+                      <div>
+                        <p
+                          class="tile-title atm-i18n"
+                          data-i18n="activate_card"
+                        >
+                          Activate card
+                        </p>
+                        <p class="tile-sub">
+                          Set PIN and enable usage
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button id="btnTransactions" class="tile-card hover-tts">
+                    <div class="tile-corner">
+                      <i data-lucide="history" class="icon-xs"></i>
+                    </div>
+                    <div class="tile-row">
+                      <div class="tile-icon">
+                        <i data-lucide="history" class="icon"></i>
+                      </div>
+                      <div>
+                        <p class="tile-title">Transaction History</p>
+                        <p class="tile-sub">View past deposits & withdrawals</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    id="btnCPF"
+                    class="tile-card hover-tts"
+                  >
+                    <div class="tile-row">
+                      <div class="tile-icon">
+                        <i
+                          data-lucide="shield"
+                          class="icon"
+                        ></i>
+                      </div>
+                      <div>
+                        <p
+                          class="tile-title atm-i18n"
+                          data-i18n="cpf_services"
+                        >
+                          CPF Services
+                        </p>
+                        <p class="tile-sub">
+                          Coming soon
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    id="btnInvest"
+                    class="tile-card hover-tts"
+                  >
+                    <div class="tile-row">
+                      <div class="tile-icon">
+                        <i
+                          data-lucide="line-chart"
+                          class="icon"
+                        ></i>
+                      </div>
+                      <div>
+                        <p
+                          class="tile-title atm-i18n"
+                          data-i18n="investment_services"
+                        >
+                          Investment Services
+                        </p>
+                        <p class="tile-sub">
+                          Coming soon
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </section>
+
+              <!-- BALANCE PAGE -->
+              <section
+                id="balancePage"
+                class="atm-page"
+              >
+                <div class="page-header">
+                  <h2
+                    class="page-title atm-i18n"
+                    data-i18n="balance_enquiry"
+                  >
+                    Balance enquiry
+                  </h2>
+                  <button
+                    class="ghost-btn backBtn hover-tts"
+                    type="button"
+                  >
+                    <i
+                      data-lucide="arrow-left"
+                      class="icon-xs"
+                    ></i>
+                    <span
+                      class="atm-i18n"
+                      data-i18n="back"
+                      >Back</span
+                    >
+                  </button>
+                </div>
+                <div class="balance-card">
+                  <div class="balance-label">
+                    <div class="balance-icon">
+                      <i
+                        data-lucide="piggy-bank"
+                        class="icon"
+                      ></i>
+                    </div>
+                    <span
+                      class="atm-i18n"
+                      data-i18n="current_balance"
+                      >Current balance</span
+                    >
+                  </div>
+                  <div
+                    id="balanceValue"
+                    class="balance-value"
+                  >
+                    S$0.00
+                  </div>
+                </div>
+              </section>
+
+              <!-- ACTIVATE PAGE -->
+              <section
+                id="activatePage"
+                class="atm-page"
+              >
+                <div class="page-header">
+                  <h2
+                    class="page-title atm-i18n"
+                    data-i18n="activate_card"
+                  >
+                    Activate card
+                  </h2>
+                  <button
+                    class="ghost-btn backBtn hover-tts"
+                    type="button"
+                  >
+                    <i
+                      data-lucide="arrow-left"
+                      class="icon-xs"
+                    ></i>
+                    <span
+                      class="atm-i18n"
+                      data-i18n="back"
+                      >Back</span
+                    >
+                  </button>
+                </div>
+                <div class="activate-grid">
+                  <div class="field-group">
+                    <label
+                      class="field-label atm-i18n"
+                      data-i18n="card_last4"
+                      >Card last 4 digits</label
+                    >
+                    <input
+                      type="text"
+                      maxlength="4"
+                      class="field-input"
+                      placeholder="1234"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <label
+                      class="field-label atm-i18n"
+                      data-i18n="otp"
+                      >OTP</label
+                    >
+                    <input
+                      type="text"
+                      maxlength="6"
+                      class="field-input"
+                      placeholder="123456"
+                    />
+                  </div>
+                </div>
+                <div class="page-actions">
+                  <button   
+                    id="activateConfirm"
+                    class="btn-primary hover-tts"
+                    type="button"
+                    data-i18n="confirm"
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </section>
+
+              <!-- TRANSFER PAGE -->
+              <section
+                id="transferPage"
+                class="atm-page"
+              >
+                <div class="page-header">
+                  <h2
+                    class="page-title atm-i18n"
+                    data-i18n="transfer_funds"
+                  >
+                    Transfer Funds
+                  </h2>
+                  <button
+                    class="ghost-btn backBtn hover-tts"
+                    type="button"
+                  >
+                    <i
+                      data-lucide="arrow-left"
+                      class="icon-xs"
+                    ></i>
+                    <span
+                      class="atm-i18n"
+                      data-i18n="back"
+                      >Back</span
+                    >
+                  </button>
+                </div>
+                <div class="transfer-grid">
+                  <div class="field-group">
+                    <label
+                      class="field-label atm-i18n"
+                      data-i18n="amount"
+                      >Amount</label
+                    >
+                    <input
+                      id="transferAmount"
+                      type="number"
+                      class="field-input"
+                      placeholder="S$0.00"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <label
+                      class="field-label atm-i18n"
+                      data-i18n="to_account"
+                      >To Account</label
+                    >
+                    <input
+                      id="transferToAccount"
+                      type="text"
+                      class="field-input"
+                      placeholder="123-456-789"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <label
+                      class="field-label atm-i18n"
+                      data-i18n="bank"
+                      >Bank</label
+                    >
+                    <input
+                      id="transferBank"
+                      type="text"
+                      class="field-input"
+                      placeholder="Bank name"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <label
+                      class="field-label atm-i18n"
+                      data-i18n="payee"
+                      >Payee Name</label
+                    >
+                    <input
+                      id="transferPayee"
+                      type="text"
+                      class="field-input"
+                      placeholder="Name"
+                    />
+                  </div>
+                  <div class="field-group">
+                    <label
+                      class="field-label atm-i18n"
+                      data-i18n="payment_mode"
+                      >Payment mode</label
+                    >
+                    <select
+                      id="tfMode"
+                      class="field-input"
+                    >
+                      <option>
+                        Non-immediate transfer
+                      </option>
+                      <option>
+                        Immediate transfer
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="page-actions">
+                  <button
+                    id="transferNext"
+                    class="btn-primary hover-tts"
+                    type="button"
+                    data-i18n="confirm"
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </section>
+
+              <!-- TRANSFER CONFIRM PAGE -->
+              <section
+                id="transferConfirmPage"
+                class="atm-page"
+              >
+                <div class="page-header">
+                  <h2
+                    class="page-title atm-i18n"
+                    data-i18n="transfer_confirm"
+                  >
+                    Transfer Confirmation
+                  </h2>
+                  <button
+                    class="ghost-btn backBtn hover-tts"
+                    type="button"
+                  >
+                    <i
+                      data-lucide="arrow-left"
+                      class="icon-xs"
+                    ></i>
+                    <span
+                      class="atm-i18n"
+                      data-i18n="back"
+                      >Back</span
+                    >
+                  </button>
+                </div>
+                <div class="confirm-box">
+                  <p class="confirm-text">
+                    Review details and send.
+                  </p>
+                  <div style="margin-top: 20px; text-align: left;">
+                    <p><strong>Method:</strong> <span id="confirmMethod">Bank Transfer</span></p>
+                    <p><strong>Recipient:</strong> <span id="confirmRecipient">(loading)</span></p>
+                    <p><strong>Amount (SGD):</strong> <span id="confirmAmount">(loading)</span></p>
+                  </div>
+                </div>
+                <div class="page-actions">
+                  <button
+                    id="transferSend"
+                    class="btn-primary hover-tts"
+                    type="button"
+                    data-i18n="send"
+                  >
+                    Send
+                  </button>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- RIGHT: Assistant + Controls -->
+          <aside class="atm-right">
+            <!-- Top controls -->
+            <div class="topbar">
+              <!-- Mic toggle -->
+              <div class="mic-wrap">
+                <div
+                  id="micToggleLabel"
+                  class="mic-toggle hover-tts"
+                >
+                  <div class="mic-track">
+                    <div class="mic-knob"></div>
+                  </div>
+                  <div class="mic-labels">
+                    <span
+                      class="mic-on atm-i18n"
+                      data-i18n="listening_on"
+                      >Listening</span
+                    >
+                    <span
+                      class="mic-off atm-i18n"
+                      data-i18n="listening_off"
+                      >Mic Off
+                      </span>
+                  </div>
+                </div>
+                <input
+                  id="micToggle"
+                  type="checkbox"
+                  class="mic-hidden"
+                />
+              </div>
+
+              <!-- Lang + Exit -->
+              <div class="top-right-controls">
+                <select
+                  id="langSelectTop"
+                  class="lang-select"
+                >
+                  <option value="en">English</option>
+                  <option value="zh">中文</option>
+                  <option value="ms">
+                    Bahasa Melayu
+                  </option>
+                  <option value="ta">தமிழ்</option>
+                </select>
+                <div class="divider"></div>
+                <button
+                  id="exitBtn"
+                  class="exit-btn hover-tts"
+                  type="button"
+                >
+                  <i
+                    data-lucide="log-out"
+                    class="icon"
+                  ></i>
+                  <span
+                    class="exit-label atm-i18n"
+                    data-i18n="exit"
+                    >Exit</span
+                  >
+                </button>
+              </div>
+            </div>
+
+            <!-- Chat window -->
+            <div class="chat-shell">
+              <div
+                id="chatlog"
+                class="chat-log"
+              ></div>
+              <div class="chat-input-row">
+                <input
+                  id="userInput"
+                  type="text"
+                  class="chat-input"
+                  data-i18n-placeholder="what_do"
+                  placeholder="What would you like to do today?"
+                />
+                <button
+                  id="sendBtn"
+                  class="chat-send hover-tts"
+                  type="button"
+                >
+                  <i
+                    data-lucide="send"
+                    class="icon-xs"
+                  ></i>
+                </button>
+              </div>
+              <div class="chat-footer">
+                <div class="chat-tip">
+                  Tip: “withdraw 50 dollars”
+                </div>
+                
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- App Logic -->
+    <script src="scripts/home.js"></script>
+  </body>
+</html>
+
+<style>
+/* Outer row: 2 columns */
+/* ==== HOMEPAGE GRID LAYOUT ==== */
+
+/* ==== HOMEPAGE GRID LAYOUT ==== */
+
+.homepage-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 3fr 2fr;   /* left 3/5, right 2/5 */
+  gap: 20px;
+  margin-top: 20px;
+  align-items: flex-start;
+}
+
+/* Left column (stacked buttons) */
+.left-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Big vertical buttons */
+.big-btn {
+  height: 115px;
+  display: flex;
+  padding: 22px 20px;
+}
+
+/* Right-side button (non-cash) */
+.side-btn {
+  height: 248px;              /* same height as 2 stacked buttons */
+  padding: 25px 20px;
+}
+
+/* Make Get Cash & Deposit slightly wider visually */
+.big-btn .cta-title {
+  font-size: 1.15rem;
+}
+
+/* Make side button less wide-looking */
+.side-btn {
+  max-width: 360px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .homepage-grid {
+    grid-template-columns: 1fr;
+  }
+  .side-btn {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+

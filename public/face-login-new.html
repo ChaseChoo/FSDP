@@ -93,7 +93,7 @@
 <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
 </div>
 <div class="flex items-center gap-3">
-<button id="backBtn" onclick="window.location.href='login.html'" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+<button id="backBtn" onclick="window.location.href='/login.html'" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
 <span class="material-symbols-outlined !text-lg">arrow_back</span>
                     Back
                 </button>
@@ -137,7 +137,7 @@ Position your face in the center
 <div class="text-center text-white px-6">
 <p class="text-lg font-semibold mb-4">No enrolled faces found</p>
 <p class="text-sm mb-6">Please enroll your face first in the Face Enrollment page</p>
-<button onclick="window.location.href='face-enrollment.html'" class="px-6 py-2 bg-primary rounded-lg font-bold hover:bg-primary/90 transition-colors">Enroll Face</button>
+<button onclick="window.location.href='/face-enrollment.html'" class="px-6 py-2 bg-primary rounded-lg font-bold hover:bg-primary/90 transition-colors">Enroll Face</button>
 </div>
 </div>
 
@@ -339,7 +339,7 @@ class FaceLogin {
             this.updateStatus('success', `✅ Face recognized as ${bestMatch.label} (${confidence}% match)! Logging in...`);
             
             // Call backend to get token
-            const response = await fetch('api/card/login', {
+            const response = await fetch('/api/card/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -361,7 +361,7 @@ class FaceLogin {
                 
                 // Redirect
                 setTimeout(() => {
-                    window.location.href = 'home.html';
+                    window.location.href = '/home.html';
                 }, 2000);
             } else {
                 throw new Error('Authentication failed');
