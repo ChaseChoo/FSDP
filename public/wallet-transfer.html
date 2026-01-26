@@ -1,433 +1,287 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="ATM Transfer">
-  <link rel="manifest" href="/manifest.json">
-  <title>ATM - Digital Wallet Transfer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles/home.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OCBC ATM - Digital Wallet</title>
 
-    .wallet-container {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      max-width: 500px;
-      width: 90%;
-      padding: 40px;
-    }
-
-    .wallet-header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .wallet-title {
-      font-size: 28px;
-      font-weight: 600;
-      color: #1a202c;
-      margin: 0 0 8px 0;
-    }
-
-    .wallet-subtitle {
-      font-size: 14px;
-      color: #718096;
-      margin: 0;
-    }
-
-    .balance-display {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 24px;
-      border-radius: 12px;
-      margin-bottom: 30px;
-      text-align: center;
-    }
-
-    .balance-label {
-      font-size: 14px;
-      opacity: 0.9;
-      margin: 0;
-    }
-
-    .balance-amount {
-      font-size: 36px;
-      font-weight: 600;
-      margin: 8px 0 0 0;
-    }
-
-    .form-group {
-      margin-bottom: 24px;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 500;
-      color: #2d3748;
-      margin-bottom: 8px;
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 16px;
-      font-family: 'Inter', sans-serif;
-      transition: border-color 0.2s;
-      box-sizing: border-box;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-
-    .wallet-type-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    
-    @media (max-width: 600px) {
-      .wallet-type-grid {
-        grid-template-columns: repeat(2, 1fr);
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#ea2a33",
+          "background-light": "#f8f6f6",
+          "background-dark": "#211111",
+        },
+        fontFamily: { display: ["Public Sans", "sans-serif"] },
+        borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
       }
     }
-
-    .wallet-type-btn {
-      padding: 16px;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      background: white;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .wallet-type-btn:hover {
-      border-color: #667eea;
-      background: #f7fafc;
-    }
-
-    .wallet-type-btn.active {
-      border-color: #667eea;
-      background: #edf2f7;
-    }
-
-    .wallet-icon {
+  }
+  </script>
+  <style type="text/tailwindcss">
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       font-size: 32px;
     }
-
-    .wallet-name {
-      font-size: 14px;
-      font-weight: 500;
-      color: #2d3748;
-    }
-
-    .quick-amounts {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .quick-amount-btn {
-      padding: 12px;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      background: white;
-      font-size: 16px;
-      font-weight: 500;
-      color: #2d3748;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .quick-amount-btn:hover {
-      border-color: #667eea;
-      background: #f7fafc;
-    }
-
-    .quick-amount-btn.active {
-      border-color: #667eea;
-      background: #667eea;
-      color: white;
-    }
-
-    .transfer-btn {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .transfer-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .transfer-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .back-btn {
-      width: 100%;
-      padding: 12px;
-      background: white;
-      color: #4a5568;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      margin-top: 12px;
-      transition: all 0.2s;
-    }
-
-    .back-btn:hover {
-      background: #f7fafc;
-      border-color: #cbd5e0;
-    }
-    
-    /* Mobile Optimizations */
-    @media (max-width: 768px) {
-      body {
-        padding: 10px;
-      }
-      
-      .wallet-container {
-        width: 95%;
-        padding: 30px 20px;
-        border-radius: 12px;
-      }
-      
-      .wallet-title {
-        font-size: 24px;
-      }
-      
-      .balance-amount {
-        font-size: 32px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      body {
-        padding: 5px;
-        align-items: flex-start;
-        padding-top: 20px;
-      }
-      
-      .wallet-container {
-        width: 100%;
-        padding: 25px 15px;
-        border-radius: 8px;
-      }
-      
-      .wallet-title {
-        font-size: 22px;
-      }
-      
-      .wallet-subtitle {
-        font-size: 13px;
-      }
-      
-      .balance-amount {
-        font-size: 28px;
-      }
-      
-      .balance-label {
-        font-size: 13px;
-      }
-      
-      .form-input {
-        padding: 14px;
-        font-size: 16px; /* Prevents zoom on iOS */
-      }
-      
-      .quick-amounts {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .wallet-type-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-      }
-      
-      .wallet-type-btn {
-        padding: 12px;
-      }
-      
-      .wallet-icon {
-        font-size: 28px;
-      }
-      
-      .wallet-name {
-        font-size: 13px;
-      }
-      
-      .transfer-btn {
-        font-size: 16px;
-        padding: 14px;
-      }
-      
-      .qr-code {
-        width: 150px;
-        height: 150px;
-      }
-    }
-    
-    /* Touch-friendly enhancements */
-    @media (hover: none) and (pointer: coarse) {
-      .quick-amount-btn,
-      .wallet-type-btn,
-      .transfer-btn,
-      .back-btn,
-      .open-btn {
-        min-height: 44px; /* Apple's recommended touch target size */
-      }
-    }
-
-    .qr-section {
-      margin-top: 20px;
-      padding: 20px;
-      background: #f7fafc;
-      border-radius: 12px;
-      text-align: center;
-    }
-
-    .qr-code {
-      width: 200px;
-      height: 200px;
-      margin: 16px auto;
-      padding: 16px;
-      background: white;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .success-message {
-      background: #48bb78;
-      color: white;
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    .error-message {
-      background: #f56565;
-      color: white;
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: none;
-    }
+    .tile-card { @apply flex items-center gap-4 bg-primary/5 border border-primary/20 p-4 rounded-xl hover:bg-primary/10 transition-all; }
+    .btn-primary { @apply bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-colors; }
+    .btn-secondary { @apply bg-zinc-200 dark:bg-zinc-700 px-4 py-2 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors; }
+    .card { @apply bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm; }
   </style>
 </head>
-<body>
-  <div class="wallet-container">
-    <div class="wallet-header">
-      <h1 class="wallet-title">💳 Digital Wallet Transfer</h1>
-      <p class="wallet-subtitle">Transfer funds from your ATM account</p>
-    </div>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white min-h-screen flex flex-col">
 
-    <div class="success-message" id="successMessage"></div>
-    <div class="error-message" id="errorMessage"></div>
-
-    <div class="balance-display">
-      <p class="balance-label">Your Account Balance</p>
-      <h2 class="balance-amount" id="currentBalance">S$0.00</h2>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Select Wallet Type</label>
-      <div class="wallet-type-grid">
-        <button class="wallet-type-btn active" data-wallet="alipay">
-          <span class="wallet-icon">🅰️</span>
-          <span class="wallet-name">Alipay</span>
-        </button>
-        <button class="wallet-type-btn" data-wallet="wechat">
-          <span class="wallet-icon">💬</span>
-          <span class="wallet-name">Weixin Pay</span>
-        </button>
-        <button class="wallet-type-btn" data-wallet="grabpay">
-          <span class="wallet-icon">🚗</span>
-          <span class="wallet-name">GrabPay</span>
-        </button>
-        <button class="wallet-type-btn" data-wallet="touchngo">
-          <span class="wallet-icon">🔵</span>
-          <span class="wallet-name">Touch n Go</span>
-        </button>
-        <button class="wallet-type-btn" data-wallet="paynow">
-          <span class="wallet-icon">💰</span>
-          <span class="wallet-name">PayNow</span>
+  <!-- Header (matches Home) -->
+  <header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+          <span class="material-symbols-outlined !text-lg">logout</span> Exit
         </button>
       </div>
     </div>
+  </header>
 
-    <div class="form-group">
-      <label class="form-label" for="walletId">Wallet ID / Phone Number</label>
-      <input type="text" id="walletId" class="form-input" placeholder="Enter your wallet ID" value="wallet-12345">
-    </div>
+  <!-- Main layout: content + AI assistant (matches Home) -->
+  <main class="flex-1 flex flex-row max-w-[1400px] mx-auto w-full px-6 py-8 gap-8 overflow-hidden">
+    <!-- Left: Digital Wallet Transfer -->
+    <div class="flex-1 flex flex-col overflow-y-auto pr-2">
+      <div class="card p-6 md:p-8 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h1 class="text-2xl md:text-3xl font-extrabold">Digital Wallet Transfer</h1>
+          <span class="material-symbols-outlined text-primary">smartphone</span>
+        </div>
+        <p class="text-zinc-500 dark:text-zinc-400 mb-6">Move funds to Alipay, Weixin Pay, GrabPay, Touch 'n Go or PayNow.</p>
 
-    <div class="form-group">
-      <label class="form-label">Quick Amount Selection</label>
-      <div class="quick-amounts">
-        <button class="quick-amount-btn" data-amount="10">S$10</button>
-        <button class="quick-amount-btn" data-amount="20">S$20</button>
-        <button class="quick-amount-btn" data-amount="50">S$50</button>
-        <button class="quick-amount-btn" data-amount="100">S$100</button>
-        <button class="quick-amount-btn" data-amount="200">S$200</button>
-        <button class="quick-amount-btn" data-amount="500">S$500</button>
+        <!-- Success / Error messages -->
+        <div id="successMessage" class="hidden card border-primary/30 p-4 text-sm text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30">Success</div>
+        <div id="errorMessage" class="hidden card border-red-300 p-4 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30">Error</div>
+
+        <!-- Balance -->
+        <div class="card p-5 mb-6">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-primary">savings</span>
+            <span class="font-medium">Current Balance</span>
+          </div>
+          <div id="currentBalance" class="text-3xl font-extrabold text-primary">S$0.00</div>
+        </div>
+
+        <!-- Wallet type selection -->
+        <div class="mb-6">
+          <label class="block font-bold mb-2">Select Wallet Type</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <!-- Alipay -->
+            <button class="wallet-type-btn tile-card group" data-wallet="alipay">
+              <div class="bg-white dark:bg-zinc-800 p-2 rounded-lg group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 w-12 h-12 flex items-center justify-center">
+                <svg viewBox="0 0 120 120" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="aliGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#1677FF;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#0050B3;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="120" height="120" fill="url(#aliGrad)" rx="12"/>
+                  <path d="M 35 45 L 45 45 L 45 60 Q 45 70 55 70 L 70 70 L 70 60 Q 70 55 65 55 L 55 55 Q 50 55 50 60 L 50 70 Q 50 80 60 80 L 75 80 L 75 70 Q 75 65 70 65" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M 50 45 L 85 45 L 85 75 Q 85 85 75 85 L 50 85" fill="white" opacity="0.2" rx="2"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="font-bold text-sm text-primary">Alipay</p>
+                <p class="text-xs text-zinc-500">China</p>
+              </div>
+            </button>
+            <!-- Weixin Pay -->
+            <button class="wallet-type-btn tile-card group" data-wallet="wechat">
+              <div class="bg-white dark:bg-zinc-800 p-2 rounded-lg group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 w-12 h-12 flex items-center justify-center">
+                <svg viewBox="0 0 120 120" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="wxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#09B83E;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#078C2C;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="120" height="120" fill="url(#wxGrad)" rx="12"/>
+                  <path d="M 60 30 C 75 30 85 38 85 50 C 85 58 80 65 70 68 L 72 80 L 58 72 C 52 72 48 70 45 65 C 35 62 28 54 28 45 C 28 35 38 28 52 28 Z" fill="white"/>
+                  <circle cx="40" cy="45" r="2.5" fill="#09B83E"/>
+                  <circle cx="62" cy="45" r="2.5" fill="#09B83E"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="font-bold text-sm text-primary">Weixin Pay</p>
+                <p class="text-xs text-zinc-500">China</p>
+              </div>
+            </button>
+            <!-- GrabPay -->
+            <button class="wallet-type-btn tile-card group" data-wallet="grabpay">
+              <div class="bg-white dark:bg-zinc-800 p-2 rounded-lg group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 w-12 h-12 flex items-center justify-center">
+                <svg viewBox="0 0 120 120" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="grabGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#FF6000;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#E55100;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="120" height="120" fill="url(#grabGrad)" rx="12"/>
+                  <path d="M 50 35 Q 45 35 45 42 L 45 72 Q 45 78 50 80 L 75 80 Q 82 80 85 75 Q 88 70 88 62 L 88 42 Q 88 35 82 35 Z" fill="white"/>
+                  <path d="M 58 45 L 70 45 M 58 57 L 70 57 M 58 69 L 70 69" stroke="#FF6000" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="font-bold text-sm text-primary">GrabPay</p>
+                <p class="text-xs text-zinc-500">SEA</p>
+              </div>
+            </button>
+            <!-- Touch n Go -->
+            <button class="wallet-type-btn tile-card group" data-wallet="touchngo">
+              <div class="bg-white dark:bg-zinc-800 p-2 rounded-lg group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 w-12 h-12 flex items-center justify-center">
+                <svg viewBox="0 0 120 120" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="tngGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#0052CC;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#003A99;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="120" height="120" fill="url(#tngGrad)" rx="12"/>
+                  <circle cx="60" cy="60" r="28" fill="white"/>
+                  <path d="M 60 45 L 68 58 L 52 58 Z" fill="#0052CC"/>
+                  <path d="M 60 75 L 52 62 L 68 62 Z" fill="#0052CC"/>
+                  <circle cx="60" cy="60" r="4" fill="#0052CC"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="font-bold text-sm text-primary">Touch 'n Go</p>
+                <p class="text-xs text-zinc-500">Malaysia</p>
+              </div>
+            </button>
+            <!-- PayNow -->
+            <button class="wallet-type-btn tile-card group" data-wallet="paynow">
+              <div class="bg-white dark:bg-zinc-800 p-2 rounded-lg group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 w-12 h-12 flex items-center justify-center">
+                <svg viewBox="0 0 120 120" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="paynowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#0066FF;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#0050CC;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="120" height="120" fill="url(#paynowGrad)" rx="12"/>
+                  <path d="M 45 35 L 75 35 Q 85 35 85 45 L 85 65 Q 85 75 75 75 L 45 75 Q 35 75 35 65 L 35 45 Q 35 35 45 35 Z" fill="white" opacity="0.9"/>
+                  <text x="60" y="60" font-size="24" font-weight="bold" fill="#0066FF" text-anchor="middle" font-family="Arial">Ⓟ</text>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="font-bold text-sm text-primary">PayNow</p>
+                <p class="text-xs text-zinc-500">Singapore</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Wallet ID / Phone -->
+        <div class="mb-6">
+          <label for="walletId" class="block font-bold mb-2">Wallet ID / Phone Number</label>
+          <input id="walletId" type="text" class="w-full p-3 border rounded-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800" placeholder="Enter your wallet ID" value="wallet-12345"/>
+        </div>
+
+        <!-- Quick amounts -->
+        <div class="mb-6">
+          <label class="block font-bold mb-2">Quick Amount Selection</label>
+          <div class="grid grid-cols-3 gap-3">
+            <button class="quick-amount-btn bg-primary/10 hover:bg-primary/20 p-3 rounded-lg font-bold text-primary" data-amount="10">S$10</button>
+            <button class="quick-amount-btn bg-primary/10 hover:bg-primary/20 p-3 rounded-lg font-bold text-primary" data-amount="20">S$20</button>
+            <button class="quick-amount-btn bg-primary/10 hover:bg-primary/20 p-3 rounded-lg font-bold text-primary" data-amount="50">S$50</button>
+            <button class="quick-amount-btn bg-primary/10 hover:bg-primary/20 p-3 rounded-lg font-bold text-primary" data-amount="100">S$100</button>
+            <button class="quick-amount-btn bg-primary/10 hover:bg-primary/20 p-3 rounded-lg font-bold text-primary" data-amount="200">S$200</button>
+            <button class="quick-amount-btn bg-primary/10 hover:bg-primary/20 p-3 rounded-lg font-bold text-primary" data-amount="500">S$500</button>
+          </div>
+        </div>
+
+        <!-- Custom amount -->
+        <div class="mb-6">
+          <label for="transferAmount" class="block font-bold mb-2">Or Enter Custom Amount</label>
+          <input id="transferAmount" type="number" step="0.01" min="0" class="w-full p-3 border rounded-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800" placeholder="0.00"/>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button id="transferBtn" class="btn-primary w-full sm:w-auto">Transfer Now</button>
+          <button class="btn-secondary w-full sm:w-auto" onclick="window.location.href='/home.html'">Back to ATM</button>
+        </div>
       </div>
     </div>
 
-    <div class="form-group">
-      <label class="form-label" for="transferAmount">Or Enter Custom Amount</label>
-      <input type="number" id="transferAmount" class="form-input" placeholder="0.00" step="0.01" min="0">
+    <!-- Right: AI Chat Assistant (matches Home) -->
+    <aside class="w-full max-w-[360px] flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-lg overflow-hidden shrink-0 h-[70vh] md:h-[78vh] max-h-[80vh]">
+      <div class="bg-primary p-5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="bg-white/20 p-2 rounded-lg">
+            <span class="material-symbols-outlined text-white !text-2xl">smart_toy</span>
+          </div>
+          <div>
+            <h3 class="text-white font-bold text-base leading-none">OCBC AI Assistant</h3>
+            <span class="text-white/70 text-xs font-medium" id="assistantStatus">Online & Ready to Help</span>
+          </div>
+        </div>
+        <label id="micToggleLabel" class="p-2.5 bg-white/20 rounded-full hover:bg-white/30 transition-all cursor-pointer flex items-center justify-center" title="Click to activate voice input">
+          <input id="micToggle" type="checkbox" class="sr-only"/>
+          <span class="material-symbols-outlined text-white !text-xl">mic</span>
+        </label>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-zinc-50 dark:bg-zinc-950/20" id="chatlog"></div>
+      <div class="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        <div class="relative flex items-center">
+          <input id="userInput" class="w-full bg-zinc-100 dark:bg-zinc-800 border-none rounded-full py-3 px-5 pr-12 text-sm focus:ring-2 focus:ring-primary/50 transition-all dark:placeholder:text-zinc-500" placeholder="Type a message..." type="text"/>
+          <button id="sendBtn" class="absolute right-2 p-2 bg-primary text-white rounded-full hover:bg-red-700 transition-colors shadow-sm">
+            <span class="material-symbols-outlined !text-lg">send</span>
+          </button>
+        </div>
+        <p class="text-[10px] text-zinc-400 text-center mt-3 flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined !text-[12px]">security</span>
+          Private & Secure Conversation
+        </p>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Footer (matches Home) -->
+  <footer class="w-full py-6 mt-auto bg-zinc-100 dark:bg-zinc-950/50 px-6">
+    <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-zinc-500 dark:text-zinc-500 text-xs font-medium">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined !text-sm">security</span>
+        <span>Your session is secure and encrypted. Please do not share your PIN.</span>
+      </div>
+      <div class="flex gap-6">
+        <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+        <a class="hover:text-primary transition-colors" href="#">Terms of Use</a>
+        <span>© 2024 OCBC Bank</span>
+      </div>
     </div>
+  </footer>
 
-    <button class="transfer-btn" id="transferBtn">Transfer Now</button>
-    <button class="back-btn" onclick="window.location.href='/account'">Back to ATM</button>
-  </div>
-
+  <!-- Logic: wallet transfer behaviors -->
   <script>
     let selectedWalletType = 'alipay';
     let selectedAmount = 0;
 
+    // Mark Alipay as default selected visually
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const first = document.querySelector('.wallet-type-btn[data-wallet="alipay"]');
+      if(first) first.classList.add('ring-2','ring-primary/50');
+    });
+
     // Wallet type selection
     document.querySelectorAll('.wallet-type-btn').forEach(btn => {
       btn.addEventListener('click', function() {
-        document.querySelectorAll('.wallet-type-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
+        document.querySelectorAll('.wallet-type-btn').forEach(b => b.classList.remove('ring-2','ring-primary/50'));
+        this.classList.add('ring-2','ring-primary/50');
         selectedWalletType = this.dataset.wallet;
       });
     });
@@ -435,17 +289,18 @@
     // Quick amount selection
     document.querySelectorAll('.quick-amount-btn').forEach(btn => {
       btn.addEventListener('click', function() {
-        document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
+        document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('bg-primary','text-white'));
+        this.classList.add('bg-primary','text-white');
         selectedAmount = parseFloat(this.dataset.amount);
-        document.getElementById('transferAmount').value = '';
+        const amtInput = document.getElementById('transferAmount');
+        if (amtInput) amtInput.value = '';
       });
     });
 
     // Custom amount input
     document.getElementById('transferAmount').addEventListener('input', function() {
       if (this.value) {
-        document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('bg-primary','text-white'));
         selectedAmount = parseFloat(this.value) || 0;
       }
     });
@@ -453,11 +308,10 @@
     // Load current balance
     async function loadBalance() {
       try {
-        const response = await fetch('/account/balance', {
-          credentials: 'include'
-        });
+        const response = await fetch('/account/balance', { credentials: 'include' });
         const data = await response.json();
-        document.getElementById('currentBalance').textContent = `S$${data.balance.toFixed(2)}`;
+        const el = document.getElementById('currentBalance');
+        if(el) el.textContent = `S$${Number(data.balance||0).toFixed(2)}`;
       } catch (error) {
         console.error('Error loading balance:', error);
         showError('Failed to load balance');
@@ -470,15 +324,8 @@
       const customAmount = parseFloat(document.getElementById('transferAmount').value) || 0;
       const amount = customAmount > 0 ? customAmount : selectedAmount;
 
-      if (!walletId) {
-        showError('Please enter a wallet ID');
-        return;
-      }
-
-      if (amount <= 0) {
-        showError('Please select or enter an amount');
-        return;
-      }
+      if (!walletId) { showError('Please enter a wallet ID'); return; }
+      if (amount <= 0) { showError('Please select or enter an amount'); return; }
 
       this.disabled = true;
       this.textContent = 'Processing...';
@@ -486,40 +333,28 @@
       try {
         const response = await fetch('/api/wallet/transfer', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({
-            amount: amount,
-            walletId: walletId,
-            walletType: selectedWalletType
-          })
+          body: JSON.stringify({ amount, walletId, walletType: selectedWalletType })
         });
-
         const data = await response.json();
 
         if (response.ok) {
           showSuccess(`Successfully transferred S$${amount.toFixed(2)} to ${selectedWalletType}!`);
-          document.getElementById('currentBalance').textContent = `S$${data.accountBalance.toFixed(2)}`;
-          
-          // Trigger wallet update event for mobile app
+          const bal = document.getElementById('currentBalance');
+          if (bal) bal.textContent = `S$${Number(data.accountBalance||0).toFixed(2)}`;
+
+          // Broadcast update for mobile demo
           if (window.BroadcastChannel) {
             const channel = new BroadcastChannel('wallet-updates');
-            channel.postMessage({
-              type: 'wallet-update',
-              walletId: walletId,
-              walletType: selectedWalletType,
-              amount: amount,
-              newBalance: data.walletBalance
-            });
+            channel.postMessage({ type: 'wallet-update', walletId, walletType: selectedWalletType, amount, newBalance: data.walletBalance });
           }
 
-          // Reset form
           setTimeout(() => {
-            document.getElementById('transferAmount').value = '';
+            const amtInput = document.getElementById('transferAmount');
+            if (amtInput) amtInput.value = '';
             selectedAmount = 0;
-            document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('bg-primary','text-white'));
           }, 2000);
         } else {
           showError(data.error || 'Transfer failed');
@@ -535,24 +370,24 @@
 
     function showSuccess(message) {
       const el = document.getElementById('successMessage');
+      if(!el) return;
       el.textContent = message;
-      el.style.display = 'block';
-      setTimeout(() => {
-        el.style.display = 'none';
-      }, 5000);
+      el.classList.remove('hidden');
+      setTimeout(() => { el.classList.add('hidden'); }, 5000);
     }
 
     function showError(message) {
       const el = document.getElementById('errorMessage');
+      if(!el) return;
       el.textContent = message;
-      el.style.display = 'block';
-      setTimeout(() => {
-        el.style.display = 'none';
-      }, 5000);
+      el.classList.remove('hidden');
+      setTimeout(() => { el.classList.add('hidden'); }, 5000);
     }
 
-    // Load balance on page load
     loadBalance();
   </script>
+
+  <!-- Reuse shared behaviors (logout, assistant, etc.) -->
+  <script src="scripts/home.js"></script>
 </body>
 </html>

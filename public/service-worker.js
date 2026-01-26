@@ -1,10 +1,8 @@
 // Service Worker for Digital Wallet PWA
-const CACHE_NAME = 'digital-wallet-v1';
+const CACHE_NAME = 'digital-wallet-v2';
 const urlsToCache = [
-  '/wallet-mobile',
-  '/wallet-alipay',
-  '/wallet-transfer',
-  '/wallet-demo',
+  // Do NOT pre-cache HTML pages to avoid serving stale UIs.
+  // Assets only:
   '/manifest.json',
   '/styles.css'
 ];
@@ -66,39 +64,33 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // For HTML pages, prefer network-first to ensure latest UI
+  const accept = event.request.headers.get('accept') || '';
+  if (accept.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   // For other requests, try cache first, then network
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-
-        // Clone the request
+        if (response) return response;
         const fetchRequest = event.request.clone();
-
         return fetch(fetchRequest).then((response) => {
-          // Check if valid response
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
-
-          // Clone the response
           const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
           return response;
         });
       })
-      .catch(() => {
-        // Return offline page if available
-        return caches.match('/wallet-mobile');
-      })
+      .catch(() => caches.match('/wallet-mobile'))
   );
 });
 

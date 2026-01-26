@@ -63,6 +63,9 @@ tailwind.config = {
 <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
 </div>
 <div class="flex items-center gap-3">
+<button class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors" onclick="try{ showVirtualTeller('Connecting you to a virtual teller.'); }catch(e){}">
+<span class="material-symbols-outlined !text-lg">support_agent</span> Virtual Teller
+</button>
 <button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
 <span class="material-symbols-outlined !text-lg">logout</span> Exit
 </button>
@@ -409,4 +412,27 @@ Private & Secure Conversation
 
 <script src="scripts/home.js"></script>
 </body>
+<!-- Virtual Teller Overlay -->
+<div id="virtualTellerOverlay" aria-hidden="true" style="display:none;" class="fixed inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4 overflow-auto">
+  <div class="w-full max-w-4xl max-h-[90vh] bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col">
+    <div class="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary">support_agent</span>
+        <span id="vtStatus" class="font-bold">Connecting…</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="vtMic" class="px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors" aria-pressed="false">🎤 Mic</button>
+        <button id="vtUnmute" class="px-3 py-2 rounded-lg bg-primary text-white text-sm hover:bg-red-700 transition-colors">🔈 Join</button>
+        <button id="vtCloseBtn" class="px-3 py-2 rounded-lg bg-zinc-200 dark:bg-zinc-700 text-sm hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors">Close</button>
+      </div>
+    </div>
+    <div class="p-4 grid grid-cols-1 md:grid-cols-[3fr_1fr] gap-4 flex-1 overflow-y-auto">
+      <video id="vtVideo" class="w-full h-auto rounded-lg bg-black/80 max-h-[500px] object-contain" playsinline muted loop style="display:none;"></video>
+      <video id="vtSignVideo" class="w-full h-auto rounded-lg bg-black/60 max-h-[500px] object-contain" playsinline muted loop style="display:none;"></video>
+    </div>
+    <div class="p-3 text-right border-t border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+      <button id="vtClose" class="text-zinc-500 hover:text-primary text-xs font-medium">Close</button>
+    </div>
+  </div>
+</div>
 </html>
