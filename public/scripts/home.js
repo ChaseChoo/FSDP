@@ -23,6 +23,7 @@
     const langSelectTop = document.getElementById("langSelectTop");
     const micToggle = document.getElementById("micToggle");
     const micToggleLabel = document.getElementById("micToggleLabel");
+    const assistantStatus = document.getElementById("assistantStatus");
     const exitBtn = document.getElementById("exitBtn");
     const pendingBanner = document.getElementById('pendingBanner');
     const pendingText = document.getElementById('pendingText');
@@ -1430,18 +1431,42 @@
 
     recognition = setupRecognition();
 
+    // Log speech recognition status
+    if (recognition) {
+      console.log("✅ Speech recognition initialized successfully");
+    } else {
+      console.warn("⚠️ Speech recognition not available in this browser");
+      if (micToggleLabel) {
+        micToggleLabel.style.opacity = "0.5";
+        micToggleLabel.style.cursor = "not-allowed";
+        micToggleLabel.title = "Voice input not supported in this browser";
+      }
+    }
+
     function setMicUI(on) {
       if (!micToggleLabel) return;
       if (on) {
         micToggleLabel.classList.add("on");
+        if (assistantStatus) {
+          assistantStatus.textContent = "🎤 Listening...";
+        }
       } else {
         micToggleLabel.classList.remove("on");
+        if (assistantStatus) {
+          assistantStatus.textContent = "Online & Ready to Help";
+        }
       }
     }
 
     function toggleListening(on) {
       if (!recognition) {
         logBot("Speech recognition not supported in this browser.");
+        speak("Speech recognition not supported in this browser.");
+        if (assistantStatus) {
+          assistantStatus.textContent = "Voice not supported";
+        }
+        // Uncheck the toggle if speech recognition is not available
+        if (micToggle) micToggle.checked = false;
         return;
       }
       listeningActive = on;
@@ -1449,7 +1474,13 @@
       if (on) {
         try {
           recognition.start();
-        } catch {}
+          logBot("Voice input activated. Speak your command.");
+        } catch (err) {
+          console.error("Recognition start error:", err);
+          logBot("Could not start voice input. Please try again.");
+          if (micToggle) micToggle.checked = false;
+          setMicUI(false);
+        }
         speak(i18n[currentLang].listening_on);
       } else {
         try {
