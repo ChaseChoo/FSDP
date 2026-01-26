@@ -635,6 +635,32 @@
 
     loadBalance();
 
+    // Handle URL parameters for pre-filling from AI assistant
+    const urlParams = new URLSearchParams(window.location.search);
+    const presetWallet = urlParams.get('wallet');
+    const presetAmount = urlParams.get('amount');
+
+    if (presetWallet && walletExchangeConfig[presetWallet]) {
+      // Select the specified wallet
+      selectedWalletType = presetWallet;
+      document.querySelectorAll('.wallet-type-btn').forEach(btn => {
+        btn.classList.remove('ring-2', 'ring-primary/50');
+        if (btn.dataset.wallet === presetWallet) {
+          btn.classList.add('ring-2', 'ring-primary/50');
+        }
+      });
+      fetchExchangeRate(selectedWalletType);
+    }
+
+    if (presetAmount) {
+      const amt = parseFloat(presetAmount);
+      if (amt > 0) {
+        selectedAmount = amt;
+        document.getElementById('transferAmount').value = amt;
+        updateConvertedAmount();
+      }
+    }
+
     // Initialize exchange rate for default wallet (Alipay)
     fetchExchangeRate(selectedWalletType);
     

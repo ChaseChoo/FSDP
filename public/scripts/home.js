@@ -958,6 +958,16 @@
           /(balance|余额|baki|இருப்பு|semakan baki|check balance)/i,
         transfer:
           /(transfer|转账|汇款|pindah|pindahan|பரிமாற்றம்)/i,
+        wallet:
+          /(digital wallet|wallet transfer|transfer to wallet|send to wallet|wallet|alipay|weixin|wechat|touchngo|touch n go|grabpay|电子钱包|钱包)/i,
+        alipay:
+          /(alipay|支付宝|ali pay)/i,
+        wechat:
+          /(wechat|weixin|微信|weixin pay|wechat pay)/i,
+        touchngo:
+          /(touchngo|touch n go|touch and go|tng)/i,
+        grabpay:
+          /(grabpay|grab pay|grab)/i,
         history:
           /(history|transactions|transaction history|recent transactions|recent activity|交易记录|最近交易|交易历史|transaksi|sejarah transaksi)/i,
         activate:
@@ -1117,6 +1127,68 @@
         speak(i18n[currentLang].balance_is(balance));
         updateBalanceUI();
         showPage("balance");
+        return;
+      }
+
+      // Digital wallet transfer handling
+      if (intents.wallet.test(lower)) {
+        // Determine which wallet type is mentioned
+        let walletType = 'alipay'; // default
+        let walletName = 'Alipay';
+        
+        if (intents.wechat.test(lower)) {
+          walletType = 'wechat';
+          walletName = 'Weixin Pay';
+        } else if (intents.touchngo.test(lower)) {
+          walletType = 'touchngo';
+          walletName = 'Touch n Go';
+        } else if (intents.grabpay.test(lower)) {
+          walletType = 'grabpay';
+          walletName = 'GrabPay';
+        } else if (intents.alipay.test(lower)) {
+          walletType = 'alipay';
+          walletName = 'Alipay';
+        }
+
+        // Try to extract amount from the command
+        let amt = null;
+        const amtNumMatch = text.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/);
+        if (amtNumMatch) amt = parseFloat(amtNumMatch[1]);
+        if (!amt) {
+          const byWords = wordsToNumber(text);
+          if (byWords) amt = byWords;
+        }
+
+        // Try to extract wallet ID/phone number (8-15 digits)
+        const walletIdMatch = text.match(/(\d{8,15})/);
+        const walletId = walletIdMatch ? walletIdMatch[1] : null;
+
+        // If we have both amount and wallet ID, process the transfer directly
+        if (amt && walletId) {
+          logBot(`Processing ${formatCurrency(amt)} transfer to ${walletName} wallet ${walletId}...`);
+          speak(`Processing ${amt} dollar transfer to ${walletName}.`);
+          
+          // Call the wallet transfer API
+          processWalletTransfer(walletType, walletId, amt);
+          return;
+        }
+
+        // If we have amount but no wallet ID, redirect to wallet transfer page with prefill
+        if (amt) {
+          logBot(`Opening ${walletName} wallet transfer for ${formatCurrency(amt)}. Please enter wallet ID.`);
+          speak(`Opening ${walletName} transfer for ${amt} dollars.`);
+          setTimeout(() => {
+            window.location.href = `/wallet-transfer?wallet=${walletType}&amount=${amt}`;
+          }, 700);
+          return;
+        }
+
+        // If only wallet type mentioned, redirect to wallet transfer page
+        logBot(`Opening ${walletName} wallet transfer. Please enter amount and wallet ID.`);
+        speak(`Opening ${walletName} wallet transfer.`);
+        setTimeout(() => {
+          window.location.href = `/wallet-transfer?wallet=${walletType}`;
+        }, 700);
         return;
       }
 
@@ -1673,6 +1745,74 @@
           speak('Transfer failed');
         }
       });
+    }
+
+    // Process wallet transfer via API
+    async function processWalletTransfer(walletType, walletId, amount) {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          logBot('Session expired - please login again');
+          speak('Session expired');
+          return;
+        }
+
+        // Wallet names for display
+        const walletNames = {
+          alipay: 'Alipay',
+          wechat: 'Weixin Pay',
+          touchngo: 'Touch n Go',
+          grabpay: 'GrabPay',
+          paynow: 'PayNow'
+        };
+
+        const walletName = walletNames[walletType] || walletType;
+
+        const response = await fetch('/api/wallet/transfer', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            amount,
+            walletId,
+            walletType
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          balance = parseFloat(data.accountBalance) || balance - amount;
+          updateBalanceUI();
+          
+          const successMsg = `Successfully transferred ${formatCurrency(amount)} to ${walletName} wallet!`;
+          logBot(successMsg);
+          speak(`Transfer to ${walletName} successful.`);
+          showSuccessBanner(successMsg);
+          
+          // Broadcast update for mobile wallet
+          if (window.BroadcastChannel) {
+            const channel = new BroadcastChannel('wallet-updates');
+            channel.postMessage({
+              type: 'wallet-update',
+              walletId,
+              walletType,
+              amount,
+              newBalance: data.walletBalance || amount
+            });
+          }
+        } else {
+          const error = await response.json();
+          logBot(error.error || 'Transfer failed');
+          speak('Transfer failed');
+        }
+      } catch (error) {
+        console.error('Wallet transfer error:', error);
+        logBot('Network error - please try again');
+        speak('Network error');
+      }
     }
 
     // Init
