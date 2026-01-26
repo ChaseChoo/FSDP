@@ -12,6 +12,15 @@
   ],
   "12345678": [
     {
+      "Id": "dev-1769393412552-0.42152601239958787",
+      "AccountId": "dev-12345678",
+      "Type": "TRANSFER_IN",
+      "Amount": 1000,
+      "BalanceAfter": 1020,
+      "Description": "PayNow to 12345678 via Mobile Number",
+      "CreatedAt": "2026-01-26T02:10:12.552Z"
+    },
+    {
       "Id": "dev-1768570771826-0.7241081836721894",
       "AccountId": "dev-12345678",
       "Type": "TRANSFER_IN",
@@ -28,6 +37,17 @@
       "BalanceAfter": 10,
       "Description": "Test transfer",
       "CreatedAt": "2026-01-16T13:07:45.722Z"
+    }
+  ],
+  "80504999": [
+    {
+      "Id": "dev-1769392939518-0.7092145552957796",
+      "AccountId": "dev-80504999",
+      "Type": "TRANSFER_IN",
+      "Amount": 500,
+      "BalanceAfter": 500,
+      "Description": "PayNow to 80504999 via Mobile Number",
+      "CreatedAt": "2026-01-26T02:02:19.518Z"
     }
   ],
   "91234567": [
@@ -1226,6 +1246,35 @@
       "BalanceAfter": 1000,
       "Description": "ATM deposit",
       "CreatedAt": "2025-11-19T16:44:15.934Z"
+    }
+  ],
+  "user-1": [
+    {
+      "Id": "dev-1769393412549-0.43913225363451325",
+      "AccountId": "dev-user-1",
+      "Type": "TRANSFER_OUT",
+      "Amount": 1000,
+      "BalanceAfter": 3500,
+      "Description": "PayNow to 12345678 via Mobile Number",
+      "CreatedAt": "2026-01-26T02:10:12.549Z"
+    },
+    {
+      "Id": "dev-1769392939514-0.5232181598587666",
+      "AccountId": "dev-user-1",
+      "Type": "TRANSFER_OUT",
+      "Amount": 500,
+      "BalanceAfter": 4500,
+      "Description": "PayNow to 80504999 via Mobile Number",
+      "CreatedAt": "2026-01-26T02:02:19.514Z"
+    },
+    {
+      "Id": "dev-1769392923606-0.8284496001138464",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 5000,
+      "BalanceAfter": 5000,
+      "Description": "ATM deposit",
+      "CreatedAt": "2026-01-26T02:02:03.606Z"
     }
   ]
 }

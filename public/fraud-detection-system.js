@@ -23,17 +23,26 @@ function normalizeNumber(input) {
 async function loadApprovedRecipientsFromApi() {
   try {
     const token = localStorage.getItem('token');
-    const headers = {};
+    const headers = { 'Content-Type': 'application/json' };
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    const resp = await fetch('/api/approved-recipients', { headers });
+    const resp = await fetch('/api/approved-recipients', { 
+      headers,
+      credentials: 'include'
+    });
     if (!resp.ok) throw new Error('api error');
     const data = await resp.json();
-    return (Array.isArray(data) ? data : []).map(r => {
+    
+    // Handle both array and object with approvedRecipients property
+    const list = data.approvedRecipients || data;
+    
+    return (Array.isArray(list) ? list : []).map(r => {
       if (typeof r === 'string') return { value: normalizeNumber(r) };
-      if (r && typeof r.value === 'string') return { ...r, value: normalizeNumber(r.value) };
+      // Handle both Value (from DB) and value properties
+      const val = r.Value || r.value;
+      if (val) return { ...r, value: normalizeNumber(val) };
       return { value: normalizeNumber(String(r)) };
     });
   } catch (err) {
