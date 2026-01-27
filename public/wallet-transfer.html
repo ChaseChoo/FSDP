@@ -328,7 +328,10 @@
             </div>
             <div class="exchange-row">
               <span class="exchange-label">Recipient gets</span>
-              <span class="converted-preview"><span id="convertedSymbol">¥</span><span id="convertedAmount">0.00</span></span>
+              <span class="converted-preview">
+                <span id="conversionSummary">S$0.00 = ¥0.00</span>
+                <span class="sr-only" aria-live="polite"><span id="convertedSymbol">¥</span><span id="convertedAmount">0.00</span></span>
+              </span>
             </div>
             <div class="exchange-row">
               <span class="exchange-label">Transfer Fee</span>
@@ -504,11 +507,16 @@
 
     // Update the converted amount when amount changes
     function updateConvertedAmount() {
+      const config = walletExchangeConfig[selectedWalletType];
       const amount = selectedAmount || parseFloat(document.getElementById('transferAmount').value) || 0;
       const convertedAmount = amount * currentExchangeRate;
       
       document.getElementById('sgdAmount').textContent = amount.toFixed(2);
       document.getElementById('convertedAmount').textContent = convertedAmount.toFixed(2);
+      const summary = document.getElementById('conversionSummary');
+      if (summary && config) {
+        summary.textContent = `S$${amount.toFixed(2)} = ${config.currencySymbol}${convertedAmount.toFixed(2)}`;
+      }
     }
 
     // Mark Alipay as default selected visually
