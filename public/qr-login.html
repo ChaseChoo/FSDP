@@ -173,9 +173,18 @@ class QRLogin {
     generateQRCode() {
         // Use the current page's hostname and port (works for any device accessing the page)
         const hostname = window.location.hostname;
-        const port = window.location.port || '3000';
+        const port = window.location.port;
         const protocol = window.location.protocol; // http: or https:
-        const baseUrl = `${protocol}//${hostname}:${port}`;
+        
+        // Build the base URL - if there's a port and it's not standard (80/443), include it
+        let baseUrl;
+        if (port && port !== '80' && port !== '443') {
+            baseUrl = `${protocol}//${hostname}:${port}`;
+        } else {
+            // For ngrok or standard ports, don't include port
+            baseUrl = `${protocol}//${hostname}`;
+        }
+        
         const qrData = `${baseUrl}/mobile-auth.html?sessionId=${this.sessionId}`;
         
         console.log('Generating QR code with URL:', qrData);
