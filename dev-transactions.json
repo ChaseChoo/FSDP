@@ -189,6 +189,33 @@
   ],
   "FAKE_USER": [
     {
+      "Id": "dev-1769686560862-0.9158868732369174",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 11785,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-01-29T11:36:00.862Z"
+    },
+    {
+      "Id": "dev-1769686548464-0.23338288916701666",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 11795,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-01-29T11:35:48.464Z"
+    },
+    {
+      "Id": "dev-1769686497685-0.13465561653541092",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 11805,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-01-29T11:34:57.685Z"
+    },
+    {
       "Id": "dev-1769428862435-0.02416585687812489",
       "AccountId": "dev-FAKE_USER",
       "Type": "WALLET_TRANSFER",
