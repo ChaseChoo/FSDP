@@ -1394,6 +1394,42 @@
   ],
   "user-1": [
     {
+      "Id": "dev-1769688073821-0.30608301605564536",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 22950,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-01-29T12:01:13.821Z"
+    },
+    {
+      "Id": "dev-1769687961745-0.45087230605202056",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 23050,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-01-29T11:59:21.748Z"
+    },
+    {
+      "Id": "dev-1769687719183-0.32372743541963445",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 10000,
+      "BalanceAfter": 23150,
+      "Description": "ATM deposit",
+      "CreatedAt": "2026-01-29T11:55:19.183Z"
+    },
+    {
+      "Id": "dev-1769687663949-0.1607455463899492",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 10000,
+      "BalanceAfter": 13150,
+      "Description": "ATM deposit",
+      "CreatedAt": "2026-01-29T11:54:23.949Z"
+    },
+    {
       "Id": "dev-1769679901240-0.10256377632222957",
       "AccountId": "dev-user-1",
       "Type": "DEPOSIT",
