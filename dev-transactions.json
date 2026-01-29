@@ -306,6 +306,15 @@
   ],
   "user-6": [
     {
+      "Id": "dev-1768652941783-0.7982815890770834",
+      "AccountId": "dev-user-6",
+      "Type": "TRANSFER",
+      "Amount": 200,
+      "BalanceAfter": 776,
+      "Description": "Pre-configured transfer",
+      "CreatedAt": "2026-01-17T12:29:01.783Z"
+    },
+    {
       "Id": "dev-1768570807359-0.760791214569063",
       "AccountId": "dev-user-6",
       "Type": "TRANSFER",
