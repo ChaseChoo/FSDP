@@ -457,6 +457,20 @@
         let scannedActionId = null;
         let scannedActionData = null;
         
+        // Check if action ID is in URL parameters (from QR code scan)
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const actionId = urlParams.get('action');
+            
+            if (actionId) {
+                // Hide scanner section, show loading, then validate
+                document.getElementById('scanner-section').style.display = 'none';
+                setTimeout(() => {
+                    validateAndShowAction(actionId);
+                }, 500);
+            }
+        });
+        
         async function toggleScanner() {
             const scanBtn = document.getElementById('scan-btn');
             
@@ -493,11 +507,25 @@
             console.log('QR Code scanned:', decodedText);
             
             try {
-                const qrData = JSON.parse(decodedText);
+                let actionId;
                 
-                if (qrData.type !== 'ASSISTED_TRANSACTION') {
-                    showAlert('Invalid QR code. Please scan a guardian QR code.', 'error');
-                    return;
+                // Check if it's a URL (new format)
+                if (decodedText.startsWith('http')) {
+                    const url = new URL(decodedText);
+                    actionId = url.searchParams.get('action');
+                    if (!actionId) {
+                        showAlert('Invalid QR code format. Missing action ID.', 'error');
+                        return;
+                    }
+                } else {
+                    // Try parsing as JSON (old format)
+                    const qrData = JSON.parse(decodedText);
+                    
+                    if (qrData.type !== 'ASSISTED_TRANSACTION') {
+                        showAlert('Invalid QR code. Please scan a guardian QR code.', 'error');
+                        return;
+                    }
+                    actionId = qrData.actionId;
                 }
                 
                 // Stop scanning
@@ -507,7 +535,7 @@
                 }
                 
                 // Validate the action
-                await validateAndShowAction(qrData.actionId);
+                await validateAndShowAction(actionId);
                 
             } catch (error) {
                 console.error('Error processing QR code:', error);

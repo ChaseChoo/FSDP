@@ -37,6 +37,11 @@ export async function cardLogin(req, res) {
             if (!/^\d{16}$/.test(cleanCardNumber) || !/^\d{4}$/.test(pin)) {
                 return res.status(400).json({ success: false, error: 'Invalid card or PIN format' });
             }
+            
+            // In dev mode, PIN must be 1234
+            if (pin !== '1234') {
+                return res.status(401).json({ success: false, error: 'Incorrect PIN', shouldRetry: true });
+            }
 
             // Map known demo card numbers to dev externalIds/userIds used in dev-balances.json
             let devUser = null;

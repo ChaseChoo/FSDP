@@ -31,15 +31,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Request logger (add immediately after body-parser)
 app.use((req, res, next) => {
-  console.log("REQ", req.method, req.path, "headers:", {
-    authorization: !!req.headers.authorization,
-    cookie: !!req.headers.cookie
-  });
+  console.log("========================================");
+  console.log("REQ", req.method, req.path, req.url);
+  console.log("Headers:", req.headers);
+  console.log("========================================");
   next();
 });
 
 // Serve static files from 'public' folder
-app.use(express.static("public"));
+app.use(express.static("public", {
+  setHeaders: (res, path) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
 
 // Serve atm videos folder at /atm-videos (so files in `atm videos/` are web-accessible)
 app.use('/atm-videos', express.static(path.resolve('atm videos')));
@@ -64,7 +70,9 @@ app.use("/account", fakeLogin, accountRoutes);
 app.use("/auth", authRoutes);
 app.use("/api", qrAuthRoutes); // QR authentication and login/signup
 app.use("/api", loginRoutes); // Login and signup functionality
+console.log('Mounting card routes at /api/card...');
 app.use("/api/card", cardRoutes); // Card-based authentication
+console.log('Card routes mounted successfully');
 app.use("/support", supportRoutes); // Support live agent demo
 // Approved recipients API (list/create/update/delete)
 app.use("/api", approvedRecipientRoutes);

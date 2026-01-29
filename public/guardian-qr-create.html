@@ -564,9 +564,28 @@
             const qrCodeDiv = document.getElementById('qr-code');
             qrCodeDiv.innerHTML = ''; // Clear previous QR code
             
-            // Create URL that can be scanned by phone and redirects to confirmation page
-            const currentDomain = window.location.origin; // e.g., http://localhost:3000
-            const qrUrl = `${currentDomain}/qr-confirm.html?id=${data.actionId}`;
+            // Get the actual IP being used (not localhost)
+            const hostname = window.location.hostname;
+            const port = window.location.port || 3000;
+            let qrUrl;
+            
+            // If accessing via localhost, use the network IP for the QR code
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                // Use the WiFi IP for mobile access
+                qrUrl = `http://192.168.18.139:${port}/assisted-qr-login.html?action=${data.actionId}`;
+            } else {
+                // Already using network IP
+                qrUrl = `http://${hostname}:${port}/assisted-qr-login.html?action=${data.actionId}`;
+            }
+            
+            // Display the URL for manual entry or copying
+            const urlDisplay = document.createElement('div');
+            urlDisplay.style.cssText = 'margin-top: 16px; padding: 12px; background: #1e293b; border-radius: 8px;';
+            urlDisplay.innerHTML = `
+                <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 8px 0;"><strong>Mobile URL:</strong></p>
+                <p style="color: #3b82f6; font-size: 0.9rem; margin: 0; word-break: break-all; font-family: monospace;">${qrUrl}</p>
+            `;
+            qrCodeDiv.parentElement.insertBefore(urlDisplay, qrCodeDiv.nextSibling);
             
             new QRCode(qrCodeDiv, {
                 text: qrUrl,

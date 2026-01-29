@@ -6,15 +6,17 @@ dotenv.config();
 const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  server: process.env.DB_SERVER,
+  server: process.env.DB_SERVER || 'localhost',
   database: process.env.DB_DATABASE,
-  port: parseInt(process.env.DB_PORT, 10) || 1433,
+  // Don't set port when using named instance - let SQL Server Browser handle it
+  ...(process.env.DB_PORT && !process.env.DB_INSTANCE ? { port: parseInt(process.env.DB_PORT, 10) } : {}),
   connectionTimeout: 60000,
   requestTimeout: 30000,
   options: {
     encrypt: process.env.DB_ENCRYPT === "true",
     trustServerCertificate: true,
     enableArithAbort: true,
+    useUTC: true,
     ...(process.env.DB_INSTANCE ? { instanceName: process.env.DB_INSTANCE } : {})
   },
   pool: { 
