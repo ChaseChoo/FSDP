@@ -64,7 +64,15 @@
 
       async function tryLoadFromServer() {
         try {
-          const resp = await fetch('/api/approved-recipients');
+          const token = localStorage.getItem('token');
+          if (!token) throw new Error('no-auth');
+          const resp = await fetch('/api/approved-recipients', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+          });
           if (!resp.ok) throw new Error('no-server');
           const json = await resp.json();
           // Accept either an array response or an object with `approvedRecipients` property.
@@ -140,13 +148,30 @@
       async function syncWithServer(){
         // Try to synchronize deletions and upserts to server. If any network/error occurs, fallback to saving locally.
         try{
+          const token = localStorage.getItem('token');
+          if (!token) throw new Error('Not authenticated');
+          
           // Check if server is available first
-          const healthCheck = await fetch('/api/approved-recipients', { method: 'GET' });
+          const healthCheck = await fetch('/api/approved-recipients', { 
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+          });
           if (!healthCheck.ok) throw new Error('Server unavailable');
 
           // delete first
           for(const sid of deletedServerIds){
-            const dResp = await fetch('/api/approved-recipients/' + sid, { method: 'DELETE' });
+            const dResp = await fetch('/api/approved-recipients/' + sid, { 
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              credentials: 'include'
+            });
             if (!dResp.ok) console.warn('Failed delete', sid, dResp.status);
           }
           deletedServerIds = [];
@@ -154,10 +179,26 @@
           // upsert items
           for(const it of items){
             if (it.serverId){
-              const p = await fetch('/api/approved-recipients/' + it.serverId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: it.value }) });
+              const p = await fetch('/api/approved-recipients/' + it.serverId, { 
+                method: 'PUT', 
+                headers: { 
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json' 
+                }, 
+                credentials: 'include',
+                body: JSON.stringify({ value: it.value }) 
+              });
               if (!p.ok) throw new Error('PUT failed');
             } else {
-              const c = await fetch('/api/approved-recipients', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: it.value }) });
+              const c = await fetch('/api/approved-recipients', { 
+                method: 'POST', 
+                headers: { 
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json' 
+                }, 
+                credentials: 'include',
+                body: JSON.stringify({ value: it.value }) 
+              });
               if (!c.ok) throw new Error('POST failed');
               const j = await c.json();
               const created = j.approvedRecipient || j;

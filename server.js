@@ -12,6 +12,7 @@ import cardRoutes from "./routes/cardRoutes.js";
 import supportRoutes from "./routes/supportRoutes.js";
 import approvedRecipientRoutes from "./routes/approvedRecipientRoutes.js";
 import guardianQRRoutes from "./routes/guardianQRRoutes.js";
+import walletRoutes from "./routes/walletRoutes.js";
 import { sessionCount } from "./services/sessionStore.js";
 import fakeLogin from "./middleware/fakeLogin.js";
 import requireSession from "./middleware/requireSession.js";
@@ -69,6 +70,8 @@ app.use("/support", supportRoutes); // Support live agent demo
 app.use("/api", approvedRecipientRoutes);
 // Guardian QR code API (assisted transactions)
 app.use("/api/guardian", fakeLogin, guardianQRRoutes);
+// Digital wallet transfer API
+app.use("/api", fakeLogin, requireSession, walletRoutes);
 
 // Transaction history API endpoint (JSON)
 app.get("/api/transactions", fakeLogin, requireSession, getTransactionHistory);
@@ -98,6 +101,26 @@ app.get("/transactions", (req, res) => {
   res.sendFile(path.resolve("public/transactions.html"));
 });
 
+app.get("/wallet-transfer", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-transfer.html"));
+});
+
+app.get("/wallet-alipay", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-alipay.html"));
+});
+
+app.get("/wallet-demo", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-demo.html"));
+});
+
+app.get("/wallet-mobile", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-mobile.html"));
+});
+
+app.get("/wallet-showcase", (req, res) => {
+  res.sendFile(path.resolve("public/wallet-showcase.html"));
+});
+
 // Health check
 app.get("/health", (req, res) => {
   res.json({ ok: true, sessions: sessionCount() });
@@ -109,5 +132,5 @@ const HOST = '0.0.0.0'; // Listen on all network interfaces
 app.listen(PORT, HOST, () => {
   console.log(`Server listening on port ${PORT}`);
   console.log(`Local: http://localhost:${PORT}`);
-  console.log(`Network: http://172.20.10.7:${PORT}`);
+  console.log(`Network: http://192.168.18.83:${PORT}`);
 });

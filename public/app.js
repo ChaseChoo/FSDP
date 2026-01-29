@@ -1,16 +1,45 @@
-// -------- Approved recipients source (prefer localStorage, fall back to built-in) --------
+// -------- Approved recipients source (prefer API, then localStorage, fall back to built-in) --------
 const builtinApprovedRecipients = [
   { label: "Daughter (9123 4567)", value: "91234567" },
   { label: "Son (8765 4321)", value: "87654321" },
   { label: "Helper (S1234567A)", value: "S1234567A" }
 ];
 
+async function loadApprovedRecipientsFromAPI() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    
+    const response = await fetch('/api/approved-recipients', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+    
+    if (!response.ok) return null;
+    const data = await response.json();
+    const list = data.approvedRecipients || data;
+    
+    // Cache to localStorage
+    if (Array.isArray(list) && list.length > 0) {
+      localStorage.setItem('approvedRecipients', JSON.stringify(list));
+      return list;
+    }
+    return null;
+  } catch (e) {
+    console.warn('Failed to load approved recipients from API:', e);
+    return null;
+  }
+}
+
 function getApprovedRecipients() {
   try {
     const raw = localStorage.getItem('approvedRecipients');
     if (raw) {
       const parsed = JSON.parse(raw);
-      return parsed.map(r => ({ label: r.label || r.value || '', value: String(r.value || r.Value || r).replace(/\D/g, '') }));
+      return parsed.map(r => ({ label: r.label || r.Label || r.value || '', value: String(r.value || r.Value || r).replace(/\D/g, '') }));
     }
   } catch (e) {}
   return builtinApprovedRecipients.map(r => ({ label: r.label || '', value: String(r.value || '').replace(/\D/g, '') }));
@@ -64,9 +93,12 @@ const recipientInput = $("#recipient");
 const recipientSelect = $("#recipient-select");
 const billerSelect = $("#biller");
 
-function populateRecipientsSafeMode(enabled) {
+async function populateRecipientsSafeMode(enabled) {
   if (!recipientInput || !recipientSelect) return;
   if (enabled) {
+    // Try to load fresh data from API first
+    await loadApprovedRecipientsFromAPI();
+    
     recipientSelect.innerHTML = "";
     const list = getApprovedRecipients();
     list.forEach((r) => {
@@ -230,6 +262,9 @@ if (sendBtn) {
     const method = localStorage.getItem('paynow_method');
     const description = `PayNow to ${recipient} via ${method}`;
     
+    // Debug logging
+    console.log('Transfer details:', { recipient, amount, method, description });
+    
     // Validate
     if (!amount || amount <= 0) {
       alert('Invalid transfer amount');
@@ -244,11 +279,21 @@ if (sendBtn) {
     try {
       const token = localStorage.getItem('token');
       
+      console.log('Token exists:', !!token);
+      
       if (!token) {
         alert('Session expired - please login again');
         window.location.href = 'login.html';
         return;
       }
+      
+      const requestBody = {
+        amount,
+        toAccountNumber: recipient,
+        description
+      };
+      
+      console.log('Sending transfer request:', requestBody);
       
       // Call the transfer API
       const response = await fetch('/account/transfer', {
@@ -258,12 +303,10 @@ if (sendBtn) {
           'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({
-          amount,
-          toAccountNumber: recipient,
-          description
-        })
+        body: JSON.stringify(requestBody)
       });
+      
+      console.log('Response status:', response.status, response.statusText);
       
       if (response.ok) {
         const data = await response.json();
@@ -279,7 +322,8 @@ if (sendBtn) {
         window.location.href = 'success.html';
       } else {
         const error = await response.json();
-        alert(`Transfer failed: ${error.message || 'Unknown error'}`);
+        console.error('Transfer failed:', error);
+        alert(`Transfer failed: ${error.error || error.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Transfer error:', error);

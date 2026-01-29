@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EasyATM — Confirm Bill Payment</title>
+
+  <!-- ATM homepage styling -->
+  <link rel="stylesheet" href="styles/home.css">
+
+  <!-- App form style -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Impersonation Guard Styles -->
+  <link rel="stylesheet" href="impersonation-guard.css">
+
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .bill-summary-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .bill-summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .bill-summary-item:last-child {
+      margin-bottom: 0;
+      border-bottom: none;
+    }
+
+    .bill-label {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .bill-value {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .bill-total {
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .warning-badge {
+      background: #fed7d7;
+      border-left: 4px solid #f56565;
+      color: #742a2a;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .bill-receipt {
+      background: #f7fafc;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+
+    .receipt-row strong {
+      color: #2d3748;
+    }
+  </style>
+</head>
+
+<body class="atm-body">
+
+<main class="atm-shell">
+  <section class="atm-card">
+    <div class="atm-layout">
+
+      <!-- =============================== -->
+      <!-- LEFT SIDE: CONFIRM DETAILS      -->
+      <!-- =============================== -->
+      <div class="atm-left">
+
+        <!-- Header -->
+        <div class="atm-header">
+          <div class="header-content">
+            <h1 class="atm-title">Confirm Bill Payment</h1>
+
+            <button onclick="location.href='bills.html'" class="logout-btn">
+              <i data-lucide="arrow-left"></i> Back
+            </button>
+          </div>
+        </div>
+
+        <!-- Review Details Box -->
+        <div class="card" style="margin-top:20px;">
+          <p class="summary">
+            <strong>Final check:</strong> Verify all bill details before confirming payment.
+          </p>
+
+          <!-- Payment Summary -->
+          <div class="bill-summary-card">
+            <div class="bill-summary-item">
+              <span class="bill-label">Bill Type</span>
+              <span class="bill-value" id="confirm-billType">(loading)</span>
+            </div>
+            <div class="bill-summary-item">
+              <span class="bill-label">Provider</span>
+              <span class="bill-value" id="confirm-provider">(loading)</span>
+            </div>
+            <div class="bill-summary-item">
+              <span class="bill-label">Account Number</span>
+              <span class="bill-value" id="confirm-accountNumber">(loading)</span>
+            </div>
+            <div class="bill-summary-item">
+              <span class="bill-label">Due Date</span>
+              <span class="bill-value" id="confirm-dueDate">(loading)</span>
+            </div>
+            <div class="bill-total">
+              Amount: $<span id="confirm-amount">(loading)</span>
+            </div>
+          </div>
+
+          <!-- Warning -->
+          <div class="warning-badge">
+            ⚠️ Once confirmed, this payment will be deducted from your account balance immediately.
+          </div>
+
+          <!-- Receipt Preview -->
+          <div class="bill-receipt">
+            <div class="receipt-row">
+              <strong>Transaction Type</strong>
+              <strong>Bill Payment</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Processing Fee</span>
+              <span>$0.00</span>
+            </div>
+            <div class="receipt-row">
+              <span>Balance After</span>
+              <span id="balance-after">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="actions">
+            <a href="bills.html" class="btn btn-ghost">Back</a>
+            <button id="confirm-payment" class="btn btn-primary btn-lg">Confirm & Pay</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- =============================== -->
+      <!-- RIGHT SIDE: CHATBOT             -->
+      <!-- =============================== -->
+      <aside class="atm-right">
+
+        <div class="topbar">
+
+          <div class="top-right-controls">
+
+            <select class="lang-select">
+              <option>English</option>
+            </select>
+
+            <div class="divider"></div>
+
+            <!-- Compact Safe Mode -->
+            <div class="safe safe-compact" role="group" aria-label="Safe Mode">
+              <input id="safemode" type="checkbox" checked />
+              <label for="safemode">Safe Mode</label>
+            </div>
+
+            <div class="divider"></div>
+
+            <button onclick="location.href='home.html'" class="exit-btn hover-tts">
+              <i data-lucide="log-out" class="icon"></i>
+              <span>Exit</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Chat module -->
+        <div class="chat-shell">
+          <div id="chatlog" class="chat-log"></div>
+
+          <div class="chat-input-row">
+            <input id="userInput" class="chat-input" placeholder="How can I assist?" />
+            <button id="sendBtn" class="chat-send">
+              <i data-lucide="send" class="icon-xs"></i>
+            </button>
+          </div>
+
+          <div class="chat-footer">
+            <div class="chat-tip">Tip: "What payment methods are available?"</div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+  </section>
+</main>
+
+<!-- Icons -->
+<script> lucide.createIcons(); </script>
+
+<!-- Safe mode, TTS, chatbot -->
+<script src="scripts/home.js"></script>
+
+<!-- Your original logic -->
+<script src="app.js"></script>
+<script src="fraud-detection-system.js"></script>
+<script src="impersonation-guard.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Load bill payment data from session storage
+    let bill = null;
+    try {
+      const billData = sessionStorage.getItem('billPaymentData');
+      if (billData) {
+        bill = JSON.parse(billData);
+      }
+    } catch (e) {
+      bill = null;
+    }
+    if (!bill || typeof bill !== 'object') {
+      alert('No bill payment data found. Please start from the bill payment page.');
+      window.location.href = 'bills.html';
+      return;
+    }
+
+    // Format bill type display
+    const billTypeMap = {
+      'electricity': 'Electricity',
+      'water': 'Water',
+      'gas': 'Gas',
+      'internet': 'Internet',
+      'town-council': 'Town Council',
+      'insurance': 'Insurance'
+    };
+
+    // Populate confirmation details safely
+    document.getElementById('confirm-billType').textContent = billTypeMap[bill.billType] || (bill.billType ? bill.billType : '—');
+    document.getElementById('confirm-provider').textContent = bill.provider || '—';
+    document.getElementById('confirm-accountNumber').textContent = bill.accountNumber || '—';
+    document.getElementById('confirm-dueDate').textContent = bill.dueDate || '—';
+    document.getElementById('confirm-amount').textContent = (typeof bill.amount === 'number' && !isNaN(bill.amount)) ? bill.amount.toFixed(2) : '0.00';
+
+    // Balance logic and payment button
+    let rawBalance = localStorage.getItem('balance');
+    if (rawBalance === null || rawBalance === undefined || isNaN(parseFloat(rawBalance))) {
+      localStorage.setItem('balance', '0');
+      rawBalance = '0';
+    }
+    const currentBalance = parseFloat(rawBalance);
+    let warningDiv = document.querySelector('.warning-badge');
+    let confirmBtn = document.getElementById('confirm-payment');
+    let balanceAfter = currentBalance - (typeof bill.amount === 'number' ? bill.amount : 0);
+    // Update balance-after display
+    document.getElementById('balance-after').textContent = '$' + (balanceAfter >= 0 ? balanceAfter.toFixed(2) : '0.00');
+
+    function setButtonState() {
+      if (currentBalance < (typeof bill.amount === 'number' ? bill.amount : 0)) {
+        if (confirmBtn) {
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = 'Insufficient Funds';
+        }
+        if (warningDiv) warningDiv.style.display = 'block';
+      } else {
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Confirm Payment';
+        }
+        if (warningDiv) warningDiv.style.display = 'none';
+      }
+    }
+    setButtonState();
+
+    // Payment logic
+    if (confirmBtn) {
+      confirmBtn.onclick = function() {
+        // Double check balance before payment
+        let liveBalance = parseFloat(localStorage.getItem('balance') || '0');
+        if (liveBalance < (typeof bill.amount === 'number' ? bill.amount : 0)) {
+          alert('❌ Insufficient balance to complete this payment.');
+          setButtonState();
+          return;
+        }
+        // Disable button during processing
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Processing...';
+        setTimeout(function() {
+          let newBalance = liveBalance - bill.amount;
+          localStorage.setItem('balance', newBalance.toFixed(2));
+          // Record transaction
+          const transaction = {
+            id: 'BILL-' + Date.now(),
+            type: 'Bill Payment',
+            provider: bill.provider,
+            accountNumber: bill.accountNumber,
+            amount: parseFloat(bill.amount),
+            date: new Date().toLocaleString(),
+            status: 'Completed',
+            balanceAfter: newBalance
+          };
+          let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+          transactions.unshift(transaction);
+          localStorage.setItem('transactions', JSON.stringify(transactions.slice(0, 50)));
+          if (window.dispatchEvent) {
+            window.dispatchEvent(new CustomEvent('balanceUpdated', { detail: { newBalance: newBalance } }));
+          }
+          sessionStorage.removeItem('billPaymentData');
+          window.location.href = 'success.html?type=billpayment&provider=' + encodeURIComponent(bill.provider) + '&amount=' + bill.amount;
+        }, 1200);
+      };
+    }
+});
+</script>
+
+</body>
+</html>

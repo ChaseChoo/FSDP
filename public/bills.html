@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EasyATM — Bill Payment</title>
+
+  <!-- ATM Homepage UI Styles -->
+  <link rel="stylesheet" href="styles/home.css">
+
+  <!-- Bill Payment form styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Impersonation Guard Styles -->
+  <link rel="stylesheet" href="impersonation-guard.css">
+
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .issued-bills-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .bill-stripe {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+
+    .bill-stripe:hover {
+      border-color: #667eea;
+      background: #f7fafc;
+      transform: translateX(4px);
+    }
+
+    .bill-stripe.selected {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #eef2ff 0%, #f0e7ff 100%);
+    }
+
+    .bill-stripe-icon {
+      font-size: 32px;
+      margin-right: 16px;
+      min-width: 40px;
+    }
+
+    .bill-stripe-content {
+      flex: 1;
+    }
+
+    .bill-stripe-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .bill-stripe-provider {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 14px;
+    }
+
+    .bill-stripe-type {
+      font-size: 11px;
+      background: #edf2f7;
+      color: #2d3748;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .bill-stripe-amount {
+      font-weight: 600;
+      color: #667eea;
+      font-size: 16px;
+    }
+
+    .bill-stripe-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #718096;
+      margin-top: 4px;
+    }
+
+    .bill-stripe-duedate {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .bill-stripe-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #cbd5e0;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 12px;
+    }
+
+    .bill-stripe.selected .bill-stripe-checkbox {
+      background: #667eea;
+      border-color: #667eea;
+      color: white;
+    }
+
+    .no-bills-message {
+      text-align: center;
+      padding: 40px 20px;
+      color: #718096;
+    }
+
+    .no-bills-message-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+
+<body class="atm-body">
+
+<main class="atm-shell">
+  <section class="atm-card">
+    <div class="atm-layout">
+      <div class="atm-left">
+        <div class="atm-header">
+          <div class="header-content">
+            <div>
+              <h1 class="atm-title">Bill Payment</h1>
+            </div>
+            <button onclick="location.href='index.html'" class="logout-btn">
+              <i data-lucide="arrow-left"></i> Back
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div id="bills-info" class="summary">
+            <strong>Your issued bills:</strong> Select a bill to pay.
+          </div>
+          <div id="bills-list" class="issued-bills-list">
+            <div class="bill-stripe" onclick="payDemoBill(1)">
+              <div class="bill-stripe-icon">⚡</div>
+              <div class="bill-stripe-content">
+                <div class="bill-stripe-header">
+                  <div>
+                    <div class="bill-stripe-provider">Demo Power Co.</div>
+                    <span class="bill-stripe-type">ELECTRICITY</span>
+                  </div>
+                  <div class="bill-stripe-amount">$50.00</div>
+                </div>
+                <div class="bill-stripe-details">
+                  <span>Acct: DEMO-0001</span>
+                  <span class="bill-stripe-duedate">📅 Due: 2026-02-28</span>
+                </div>
+              </div>
+              <div class="bill-stripe-checkbox">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+              </div>
+            </div>
+            <div class="bill-stripe" onclick="payDemoBill(2)">
+              <div class="bill-stripe-icon">💧</div>
+              <div class="bill-stripe-content">
+                <div class="bill-stripe-header">
+                  <div>
+                    <div class="bill-stripe-provider">Demo Waterworks</div>
+                    <span class="bill-stripe-type">WATER</span>
+                  </div>
+                  <div class="bill-stripe-amount">$30.00</div>
+                </div>
+                <div class="bill-stripe-details">
+                  <span>Acct: DEMO-0002</span>
+                  <span class="bill-stripe-duedate">📅 Due: 2026-03-05</span>
+                </div>
+              </div>
+              <div class="bill-stripe-checkbox">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  lucide.createIcons();
+
+  // Demo bill payment handler
+  window.payDemoBill = function(idx) {
+    let bill;
+    if (idx === 1) {
+      bill = {
+        billType: 'electricity',
+        provider: 'Demo Power Co.',
+        accountNumber: 'DEMO-0001',
+        amount: 50.00,
+        dueDate: '2026-02-28'
+      };
+    } else if (idx === 2) {
+      bill = {
+        billType: 'water',
+        provider: 'Demo Waterworks',
+        accountNumber: 'DEMO-0002',
+        amount: 30.00,
+        dueDate: '2026-03-05'
+      };
+    }
+    if (bill) {
+      sessionStorage.setItem('billPaymentData', JSON.stringify(bill));
+      window.location.href = 'confirm-bill-payment.html';
+    }
+  }
+</script>
+
+<script src="scripts/home.js"></script>
+<script src="app.js"></script>
+<script src="fraud-detection-system.js"></script>
+<script src="impersonation-guard.js"></script>
+
+</body>
+</html>

@@ -1,514 +1,404 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html class="light" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATM Card Authentication - OCBCATM</title>
-    <link rel="stylesheet" href="home.css">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <title>OCBC ATM - Card Login</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="styles/home.css">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ea2a33",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211111",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
     <style>
-        .atm-interface {
-            max-width: 500px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #1e293b, #334155);
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            color: white;
+        body {
+            font-family: "Public Sans", sans-serif;
         }
-        
-        .screen {
-            background: #0f172a;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 3px solid #475569;
-            min-height: 300px;
-            position: relative;
-        }
-        
-        .screen-content {
-            text-align: center;
-        }
-        
-        .card-insertion-area {
-            text-align: center;
-            margin: 32px 0;
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
         
         .card-slot {
-            width: 220px;
-            height: 12px;
-            background: #374151;
-            margin: 24px auto;
-            border-radius: 6px;
             position: relative;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
-        }
-        
-        .card-slot::before {
-            content: "INSERT CARD HERE";
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 11px;
-            color: #64748b;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-        
-        .card-animation {
-            width: 200px;
-            height: 120px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            border-radius: 8px;
-            margin: 24px auto;
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            display: none;
-        }
-        
-        .card-animation.show {
-            display: block;
-            animation: cardInsert 2s ease-in-out;
-        }
-        
-        @keyframes cardInsert {
-            0% { transform: translateY(-100px) rotateY(15deg); opacity: 0; }
-            50% { transform: translateY(0) rotateY(0deg); opacity: 1; }
-            100% { transform: translateY(0) rotateY(0deg); opacity: 1; }
-        }
-        
-        .chip {
-            width: 24px;
-            height: 18px;
-            background: #fbbf24;
-            border-radius: 3px;
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-        
-        .card-number {
-            position: absolute;
-            bottom: 30px;
-            left: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            color: white;
-            letter-spacing: 2px;
-        }
-        
-        .pin-entry {
-            display: none;
-            text-align: center;
-        }
-        
-        .pin-entry.show {
-            display: block;
-        }
-        
-        .pin-display {
-            background: #1e293b;
+            height: 160px;
+            background: linear-gradient(to right, #1e293b, #0f172a, #1e293b);
+            border-radius: 12px;
             border: 2px solid #475569;
-            border-radius: 8px;
-            padding: 16px;
             margin: 24px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 24px;
-            letter-spacing: 8px;
-            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
         }
         
-        .keypad {
+        .card-slot::before {
+            content: 'INSERT CARD HERE';
+            position: absolute;
+            font-size: 12px;
+            color: #64748b;
+            letter-spacing: 2px;
+            opacity: 0.5;
+        }
+        
+        @keyframes slideCard {
+            0% { transform: translateX(-150%); }
+            50% { transform: translateX(0); }
+            100% { transform: translateX(150%); }
+        }
+        
+        .card-moving {
+            animation: slideCard 2.5s ease-in-out;
+        }
+        
+        .card-visual {
+            width: 280px;
+            height: 150px;
+            background: linear-gradient(135deg, #ea2a33, #c41f28);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(234, 42, 51, 0.3);
+            padding: 16px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .card-chip {
+            width: 40px;
+            height: 32px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border-radius: 4px;
+        }
+        
+        .pin-display {
+            font-size: 32px;
+            letter-spacing: 8px;
+            text-align: center;
+            min-height: 48px;
+            font-weight: bold;
+        }
+        
+        .numpad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            max-width: 300px;
-            margin: 0 auto;
+            margin: 24px 0;
         }
         
-        .keypad-btn {
-            background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
-            border: 2px solid #9ca3af;
-            border-radius: 8px;
+        .numpad-btn {
             padding: 16px;
+            background: white;
+            dark:bg-slate-900;
+            border: 2px solid #e2e8f0;
+            dark:border-slate-700;
+            border-radius: 12px;
             font-size: 20px;
             font-weight: bold;
-            color: #374151;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-height: 60px;
-        }
-        
-        .keypad-btn:hover {
-            background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
-            transform: translateY(-2px);
-        }
-        
-        .keypad-btn:active {
-            transform: translateY(0) scale(0.95);
-        }
-        
-        .keypad-secondary {
-            background: linear-gradient(to bottom, #9ca3af, #6b7280);
-            color: white;
-            font-size: 16px;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-        }
-        
-        .action-btn {
-            flex: 1;
-            background: linear-gradient(to bottom, #dc2626, #b91c1c);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
         
-        .action-btn.confirm {
-            background: linear-gradient(to bottom, #16a34a, #15803d);
-        }
-        
-        .action-btn:hover {
+        .numpad-btn:hover:not(:disabled) {
+            background: #f8f9fa;
+            border-color: #ea2a33;
+            color: #ea2a33;
             transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
         
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 32px;
+        .numpad-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
-        .loading.show {
-            display: block;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #475569;
-            border-top: 4px solid #3b82f6;
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #ea2a33;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
         }
         
         @keyframes spin {
-            from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
         
-        .status-message {
-            font-size: 18px;
-            margin: 16px 0;
+        .success-text {
+            color: #16a34a;
         }
         
-        .error {
-            color: #ef4444;
-        }
-        
-        .success {
-            color: #10b981;
-        }
-        
-        .back-link {
-            color: #64748b;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            transition: color 0.2s;
-            margin-bottom: 20px;
-        }
-        
-        .back-link:hover {
-            color: #3b82f6;
+        .error-text {
+            color: #dc2626;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <a href="login.html" class="back-link">
-            <i data-lucide="arrow-left"></i>
-            Back to Login Options
-        </a>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<div class="relative flex h-full min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+
+<!-- HEADER -->
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
+</div>
+<div class="flex items-center gap-3">
+<button id="backBtn" onclick="window.location.href='login.html'" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+<span class="material-symbols-outlined !text-lg">arrow_back</span>
+                    Back
+                </button>
+</div>
+</div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-12 relative">
+<div class="max-w-[600px] w-full flex flex-col items-center">
+<div class="text-center mb-12">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[44px] font-bold leading-tight pb-2 font-display">
+Insert Your Card
+</h1>
+<h2 class="text-slate-500 dark:text-slate-400 text-lg font-medium leading-tight tracking-tight">
+Card slot is located to your right
+</h2>
+</div>
+
+<div class="w-full max-w-[600px] bg-white dark:bg-slate-900 rounded-3xl p-12 shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-slate-800 relative overflow-hidden">
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full"></div>
+
+<div class="relative z-10">
+<!-- CARD INSERTION AREA -->
+<div id="card-animation-container" class="card-slot">
+<div id="card-animation" class="card-visual">
+<div class="flex justify-between items-start">
+<span class="text-lg font-bold">OCBC</span>
+<div class="card-chip"></div>
+</div>
+<div class="text-sm">YOUR NAME</div>
+<div class="text-xs font-mono">1234 5678 9012 3456</div>
+<div class="flex justify-between items-end">
+<span class="text-xs">VALID THRU 12/28</span>
+<span class="text-xs">CVV</span>
+</div>
+</div>
+</div>
+
+<!-- ANIMATION SEQUENCE (hidden after card insertion) -->
+<div id="card-inserted" style="display:none; text-align: center; margin: 24px 0;">
+<div class="flex justify-center mb-4">
+<span class="material-symbols-outlined text-primary text-[48px]">check_circle</span>
+</div>
+<p class="text-lg font-semibold text-slate-900 dark:text-white mb-2">Card Detected</p>
+<p class="text-sm text-slate-600 dark:text-slate-400">Please enter your PIN</p>
+</div>
+
+<!-- PIN ENTRY INTERFACE -->
+<div id="pin-entry" style="display:none;">
+<div class="mb-8">
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Enter Your PIN</label>
+<div class="pin-display bg-slate-100 dark:bg-slate-800 rounded-lg p-4" id="pin-dots"></div>
+</div>
+
+<!-- NUMERIC KEYPAD -->
+<div class="numpad">
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('1')">1</button>
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('2')">2</button>
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('3')">3</button>
+
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('4')">4</button>
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('5')">5</button>
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('6')">6</button>
+
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('7')">7</button>
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('8')">8</button>
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('9')">9</button>
+
+<button class="numpad-btn dark:text-slate-900" onclick="clearPin()" style="grid-column: 1;">Clear</button>
+<button class="numpad-btn dark:text-slate-900" onclick="enterDigit('0')">0</button>
+<button class="numpad-btn dark:text-slate-900" onclick="deleteDigit()" style="grid-column: 3;">Delete</button>
+</div>
+
+<!-- ACTION BUTTONS -->
+<div class="flex gap-4 mt-8">
+<button id="submit-btn" class="flex-1 px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="submitPin()" disabled>Submit PIN</button>
+<button class="flex-1 px-6 py-3 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-bold rounded-lg hover:bg-slate-300 transition-colors" onclick="cancelTransaction()">Cancel</button>
+</div>
+</div>
+
+<!-- LOADING STATE -->
+<div id="loading" style="display:none; text-align: center;">
+<div class="flex justify-center mb-4">
+<div class="loading-spinner"></div>
+</div>
+<p class="text-lg font-semibold text-slate-900 dark:text-white mb-2">Verifying PIN</p>
+<p class="text-sm text-slate-600 dark:text-slate-400">Please wait...</p>
+</div>
+
+<!-- STATUS MESSAGE -->
+<div id="status-message" class="text-center text-lg font-semibold mt-8"></div>
+</div>
+</div>
+</div>
+</main>
+
+<!-- FOOTER -->
+<footer class="p-8 flex flex-col items-center gap-6 border-t border-slate-200 dark:border-slate-800">
+<div class="text-slate-400 text-xs text-center">
+© 2024 OCBC Bank. All rights reserved.
+</div>
+</footer>
+
+</div>
+</div>
+
+<script>
+let pin = '';
+let cardNumber = '1234567890123456';
+let isProcessing = false;
+
+// Start card animation on page load
+window.addEventListener('load', function() {
+    setTimeout(showCardInsertion, 1500);
+});
+
+function showCardInsertion() {
+    const cardAnimation = document.getElementById('card-animation-container');
+    const cardAnimationEl = document.getElementById('card-animation');
+    
+    cardAnimationEl.classList.add('card-moving');
+    
+    setTimeout(() => {
+        cardAnimation.style.display = 'none';
+        document.getElementById('card-inserted').style.display = 'block';
+        document.getElementById('pin-entry').style.display = 'block';
+    }, 2500);
+}
+
+function enterDigit(digit) {
+    if (pin.length < 4 && !isProcessing) {
+        pin += digit;
+        updatePinDisplay();
         
-        <header class="header">
-            <div class="logo">
-                <i data-lucide="landmark"></i>
-                <span>OCBC ATM</span>
-            </div>
-        </header>
-
-        <main class="main-content">
-            <div class="atm-interface">
-                <div class="screen">
-                    <!-- Step 1: Card Selection -->
-                    <div id="card-insertion" class="screen-content">
-                        <h2>Insert Your ATM Card</h2>
-                        <p>Please select which card to insert</p>
-                        
-                        <div class="card-insertion-area">
-                            <div class="card-slot"></div>
-                            
-                            <div style="display: flex; gap: 16px; justify-content: center; margin-top: 24px;">
-                                <button onclick="insertCard('5555444433332222')" class="keypad-btn" style="width: 180px; background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-                                    <i data-lucide="credit-card"></i>
-                                    Account 1<br>
-                                    <span id="acct1Balance" style="font-size: 11px; opacity: 0.8;">Loading...</span>
-                                </button>
-                                <button onclick="insertCard('4444333322221111')" class="keypad-btn" style="width: 180px; background: linear-gradient(135deg, #10b981, #059669);">
-                                    <i data-lucide="credit-card"></i>
-                                    Account 2<br>
-                                    <span id="acct2Balance" style="font-size: 11px; opacity: 0.8;">Loading...</span>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <p style="font-size: 14px; color: #64748b; margin-top: 24px;">
-                            <i data-lucide="shield-check"></i>
-                            Your card information is protected with bank-level encryption
-                        </p>
-                    </div>
-                    
-                    <!-- Card Animation -->
-                    <div id="card-animation" class="card-animation">
-                        <div class="chip"></div>
-                        <div class="card-number">•••• •••• •••• 2222</div>
-                    </div>
-                    
-                    <!-- Step 2: PIN Entry -->
-                    <div id="pin-entry" class="pin-entry">
-                        <h2>Enter Your PIN</h2>
-                        <p>Please enter your 4-digit PIN</p>
-                        
-                        <div class="pin-display" id="pin-display">
-                            <span id="pin-dots"></span>
-                        </div>
-                        
-                        <div class="keypad">
-                            <button class="keypad-btn" onclick="enterDigit('1')">1</button>
-                            <button class="keypad-btn" onclick="enterDigit('2')">2</button>
-                            <button class="keypad-btn" onclick="enterDigit('3')">3</button>
-                            <button class="keypad-btn" onclick="enterDigit('4')">4</button>
-                            <button class="keypad-btn" onclick="enterDigit('5')">5</button>
-                            <button class="keypad-btn" onclick="enterDigit('6')">6</button>
-                            <button class="keypad-btn" onclick="enterDigit('7')">7</button>
-                            <button class="keypad-btn" onclick="enterDigit('8')">8</button>
-                            <button class="keypad-btn" onclick="enterDigit('9')">9</button>
-                            <button class="keypad-btn keypad-secondary" onclick="clearPin()">Clear</button>
-                            <button class="keypad-btn" onclick="enterDigit('0')">0</button>
-                            <button class="keypad-btn keypad-secondary" onclick="deleteDigit()">Delete</button>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="action-btn" onclick="cancelTransaction()">Cancel</button>
-                            <button class="action-btn confirm" onclick="submitPin()" id="submit-btn" disabled>Enter</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Loading State -->
-                    <div id="loading" class="loading">
-                        <div class="spinner"></div>
-                        <div class="status-message" id="status-message">Verifying your credentials...</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        let pin = '';
-        let cardNumber = '';
-        let isProcessing = false;
-
-        // Initialize Lucide icons
-        lucide.createIcons();
-
-        // Format currency helper
-        function formatCurrency(amount, currency) {
-            const cur = currency || 'SGD';
-            try {
-                return new Intl.NumberFormat('en-SG', { 
-                    style: 'currency', 
-                    currency: cur,
-                    minimumFractionDigits: 2
-                }).format(Number(amount || 0));
-            } catch {
-                return `$${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            }
+        if (pin.length === 4) {
+            document.getElementById('submit-btn').disabled = false;
         }
+    }
+}
 
-        // Load live balances from database
-        async function loadDemoBalances() {
-            try {
-                const res = await fetch('/api/card/demo-balances');
-                if (!res.ok) throw new Error('Failed to load balances');
-                
-                const data = await res.json();
-                if (data.success && data.accounts) {
-                    const acct1 = data.accounts.find(a => a.cardNumber === '5555444433332222');
-                    const acct2 = data.accounts.find(a => a.cardNumber === '4444333322221111');
-                    
-                    if (acct1) {
-                        document.getElementById('acct1Balance').textContent = formatCurrency(acct1.balance, acct1.currency);
-                    }
-                    if (acct2) {
-                        document.getElementById('acct2Balance').textContent = formatCurrency(acct2.balance, acct2.currency);
-                    }
-                    lucide.createIcons();
-                } else {
-                    throw new Error('Invalid response format');
-                }
-            } catch (error) {
-                console.warn('Could not load live balances, using fallback:', error);
-                document.getElementById('acct1Balance').textContent = '$5,000.00';
-                document.getElementById('acct2Balance').textContent = '$7,500.00';
-            }
+function deleteDigit() {
+    if (pin.length > 0 && !isProcessing) {
+        pin = pin.slice(0, -1);
+        updatePinDisplay();
+        
+        if (pin.length < 4) {
+            document.getElementById('submit-btn').disabled = true;
         }
+    }
+}
 
-        // Load balances on page load
-        loadDemoBalances();
+function clearPin() {
+    if (!isProcessing) {
+        pin = '';
+        updatePinDisplay();
+        document.getElementById('submit-btn').disabled = true;
+    }
+}
 
-        function insertCard(selectedCardNumber) {
-            if (isProcessing) return;
-            
-            cardNumber = selectedCardNumber;
-            
-            // Hide insertion screen
-            document.getElementById('card-insertion').style.display = 'none';
-            
-            // Show card animation
-            const cardAnimation = document.getElementById('card-animation');
-            cardAnimation.classList.add('show');
-            
-            // After animation, show PIN entry
-            setTimeout(() => {
-                cardAnimation.style.display = 'none';
-                document.getElementById('pin-entry').classList.add('show');
-            }, 2500);
-        }
+function updatePinDisplay() {
+    const displayEl = document.getElementById('pin-dots');
+    const dots = '•'.repeat(pin.length);
+    displayEl.textContent = dots;
+}
 
-        function enterDigit(digit) {
-            if (pin.length < 4 && !isProcessing) {
-                pin += digit;
-                updatePinDisplay();
-                
-                if (pin.length === 4) {
-                    document.getElementById('submit-btn').disabled = false;
-                }
-            }
-        }
-
-        function deleteDigit() {
-            if (pin.length > 0 && !isProcessing) {
-                pin = pin.slice(0, -1);
-                updatePinDisplay();
-                
-                if (pin.length < 4) {
-                    document.getElementById('submit-btn').disabled = true;
-                }
-            }
-        }
-
-        function clearPin() {
-            if (!isProcessing) {
-                pin = '';
-                updatePinDisplay();
-                document.getElementById('submit-btn').disabled = true;
-            }
-        }
-
-        function updatePinDisplay() {
-            const dots = '•'.repeat(pin.length);
-            document.getElementById('pin-dots').textContent = dots;
-        }
-
-        async function submitPin() {
-            if (pin.length !== 4 || isProcessing) return;
-            
-            isProcessing = true;
-            
-            // Hide PIN entry and show loading
-            document.getElementById('pin-entry').style.display = 'none';
-            document.getElementById('loading').classList.add('show');
-            
-            try {
-                const response = await fetch('/api/card/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        cardNumber: cardNumber,
-                        pin: pin
-                    }),
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    
-                    document.getElementById('status-message').innerHTML = 
-                        '<span class="success">✓ Authentication successful!</span>';
-                    
-                    setTimeout(() => {
-                        window.location.href = '/home.html';
-                    }, 2000);
-                } else {
-                    throw new Error(data.message || 'Authentication failed');
-                }
-            } catch (error) {
-                document.getElementById('status-message').innerHTML = 
-                    '<span class="error">✗ ' + error.message + '</span>';
-                
-                setTimeout(() => {
-                    pin = '';
-                    updatePinDisplay();
-                    isProcessing = false;
-                    
-                    document.getElementById('loading').classList.remove('show');
-                    document.getElementById('pin-entry').style.display = 'block';
-                }, 3000);
-            }
-        }
-
-        function cancelTransaction() {
-            if (confirm('Are you sure you want to cancel this transaction?')) {
-                window.location.href = '/login';
-            }
-        }
-
-        document.addEventListener('keydown', function(event) {
-            if (document.getElementById('pin-entry').classList.contains('show') && !isProcessing) {
-                if (event.key >= '0' && event.key <= '9') {
-                    enterDigit(event.key);
-                } else if (event.key === 'Backspace') {
-                    deleteDigit();
-                } else if (event.key === 'Enter' && pin.length === 4) {
-                    submitPin();
-                } else if (event.key === 'Escape') {
-                    clearPin();
-                }
-            }
+async function submitPin() {
+    if (pin.length !== 4 || isProcessing) return;
+    
+    isProcessing = true;
+    
+    // Hide PIN entry and show loading
+    document.getElementById('pin-entry').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+    
+    try {
+        const response = await fetch('api/card/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                cardNumber: cardNumber,
+                pin: pin
+            }),
         });
-    </script>
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('status-message').innerHTML = 
+                '<span class="success-text">✓ Authentication successful!</span>';
+            
+            setTimeout(() => {
+                window.location.href = 'home.html';
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'Authentication failed');
+        }
+    } catch (error) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('status-message').innerHTML = 
+            '<span class="error-text">✗ ' + error.message + '</span>';
+        
+        setTimeout(() => {
+            pin = '';
+            updatePinDisplay();
+            isProcessing = false;
+            
+            document.getElementById('pin-entry').style.display = 'block';
+        }, 3000);
+    }
+}
+
+function cancelTransaction() {
+    if (confirm('Are you sure you want to cancel this transaction?')) {
+        window.location.href = 'login.html';
+    }
+}
+
+// Keyboard support
+document.addEventListener('keydown', function(event) {
+    if (document.getElementById('pin-entry').style.display === 'block' && !isProcessing) {
+        if (event.key >= '0' && event.key <= '9') {
+            enterDigit(event.key);
+        } else if (event.key === 'Backspace') {
+            deleteDigit();
+        } else if (event.key === 'Enter' && pin.length === 4) {
+            submitPin();
+        } else if (event.key === 'Escape') {
+            clearPin();
+        }
+    }
+});
+</script>
 </body>
 </html>

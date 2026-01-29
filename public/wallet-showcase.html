@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.json">
+  <title>Digital Wallets Showcase</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .showcase-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .showcase-header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    .showcase-title {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .showcase-subtitle {
+      font-size: 20px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .showcase-description {
+      font-size: 16px;
+      opacity: 0.8;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .wallets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .wallet-card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wallet-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+
+    .wallet-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 8px;
+      background: var(--wallet-color);
+    }
+
+    .wallet-icon-large {
+      font-size: 64px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .wallet-name {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .wallet-native-name {
+      font-size: 18px;
+      color: #718096;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .wallet-description {
+      font-size: 14px;
+      color: #4a5568;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .wallet-features {
+      list-style: none;
+      margin-bottom: 24px;
+    }
+
+    .wallet-feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+
+    .feature-icon {
+      color: var(--wallet-color);
+      font-size: 16px;
+    }
+
+    .wallet-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .wallet-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .wallet-btn-primary {
+      background: var(--wallet-color);
+      color: white;
+    }
+
+    .wallet-btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .wallet-btn-secondary {
+      background: #f7fafc;
+      color: #4a5568;
+      border: 2px solid #e2e8f0;
+    }
+
+    .wallet-btn-secondary:hover {
+      background: #edf2f7;
+    }
+
+    .comparison-table {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin-bottom: 40px;
+      overflow-x: auto;
+    }
+
+    .comparison-table h2 {
+      font-size: 28px;
+      margin-bottom: 24px;
+      color: #1a202c;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+      background: #f7fafc;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    td {
+      color: #4a5568;
+    }
+
+    .check-icon {
+      color: #48bb78;
+      font-size: 20px;
+    }
+
+    .info-section {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .info-section h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #1a202c;
+    }
+
+    .info-section p {
+      font-size: 16px;
+      line-height: 1.8;
+      color: #4a5568;
+      margin-bottom: 16px;
+    }
+
+    .info-list {
+      list-style: none;
+      margin: 20px 0;
+    }
+
+    .info-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 15px;
+      color: #4a5568;
+    }
+
+    .info-list li:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 20px 10px;
+      }
+
+      .showcase-title {
+        font-size: 32px;
+      }
+
+      .showcase-subtitle {
+        font-size: 18px;
+      }
+
+      .wallets-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison-table, .info-section {
+        padding: 24px;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 12px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="showcase-container">
+    <div class="showcase-header">
+      <h1 class="showcase-title">💰 Digital Wallets</h1>
+      <p class="showcase-subtitle">Multiple Payment Options Supported</p>
+      <p class="showcase-description">
+        Choose from popular digital wallets across Asia-Pacific region. Transfer funds instantly from ATM to your mobile wallet.
+      </p>
+    </div>
+
+    <div class="wallets-grid">
+      <!-- Alipay Card -->
+      <div class="wallet-card" style="--wallet-color: #1678ff;">
+        <div class="wallet-icon-large">
+          <img src="https://logo.clearbit.com/alipay.com" alt="Alipay" style="width: 80px; height: 80px; border-radius: 16px; object-fit: contain;" onerror="this.textContent='🅰️'">
+        </div>
+        <h3 class="wallet-name">Alipay</h3>
+        <p class="wallet-native-name">支付宝 | Zhīfùbǎo</p>
+        <p class="wallet-description">
+          China's leading digital payment platform by Ant Group. Widely accepted across Asia.
+        </p>
+        <ul class="wallet-features">
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Instant transfers</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>QR code payments</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Multi-currency support</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Real-time balance updates</span>
+          </li>
+        </ul>
+        <div class="wallet-actions">
+          <a href="/wallet-alipay?walletId=alipay-12345&type=alipay" class="wallet-btn wallet-btn-primary">
+            Open Wallet
+          </a>
+          <a href="/wallet-transfer" class="wallet-btn wallet-btn-secondary">
+            Transfer
+          </a>
+        </div>
+      </div>
+
+      <!-- Weixin Pay Card -->
+      <div class="wallet-card" style="--wallet-color: #09bb07;">
+        <div class="wallet-icon-large">
+          <img src="https://logo.clearbit.com/wechat.com" alt="WeChat" style="width: 80px; height: 80px; border-radius: 16px; object-fit: contain; background: #f5f5f5; padding: 10px;" onerror="this.textContent='💬'">
+        </div>
+        <h3 class="wallet-name">Weixin Pay</h3>
+        <p class="wallet-native-name">微信支付 | WeChat Pay</p>
+        <p class="wallet-description">
+          Integrated payment solution within WeChat. Popular for peer-to-peer transfers and merchant payments.
+        </p>
+        <ul class="wallet-features">
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Social payment integration</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Red packet features</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Merchant QR codes</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>In-app mini programs</span>
+          </li>
+        </ul>
+        <div class="wallet-actions">
+          <a href="/wallet-alipay?walletId=wechat-12345&type=wechat" class="wallet-btn wallet-btn-primary">
+            Open Wallet
+          </a>
+          <a href="/wallet-transfer" class="wallet-btn wallet-btn-secondary">
+            Transfer
+          </a>
+        </div>
+      </div>
+
+      <!-- Touch n Go Card -->
+      <div class="wallet-card" style="--wallet-color: #0066cc;">
+        <div class="wallet-icon-large">
+          <img src="https://logo.clearbit.com/touchngo.com.my" alt="Touch n Go" style="width: 80px; height: 80px; border-radius: 16px; object-fit: contain; background: #f5f5f5; padding: 10px;" onerror="this.textContent='🔵'">
+        </div>
+        <h3 class="wallet-name">Touch n Go eWallet</h3>
+        <p class="wallet-native-name">Malaysia's #1 eWallet</p>
+        <p class="wallet-description">
+          Malaysia's leading cashless payment solution for tolls, parking, retail, and transportation.
+        </p>
+        <ul class="wallet-features">
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Highway toll payments</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>LRT & bus integration</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Parking & F&B payments</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Ringgit (RM) currency</span>
+          </li>
+        </ul>
+        <div class="wallet-actions">
+          <a href="/wallet-alipay?walletId=touchngo-12345&type=touchngo" class="wallet-btn wallet-btn-primary">
+            Open Wallet
+          </a>
+          <a href="/wallet-transfer" class="wallet-btn wallet-btn-secondary">
+            Transfer
+          </a>
+        </div>
+      </div>
+
+      <!-- GrabPay Card -->
+      <div class="wallet-card" style="--wallet-color: #00b14f;">
+        <div class="wallet-icon-large">
+          <img src="https://logo.clearbit.com/grab.com" alt="Grab" style="width: 80px; height: 80px; border-radius: 16px; object-fit: contain; background: #f5f5f5; padding: 10px;" onerror="this.textContent='🚗'">
+        </div>
+        <h3 class="wallet-name">GrabPay</h3>
+        <p class="wallet-native-name">Southeast Asia eWallet</p>
+        <p class="wallet-description">
+          Integrated payment wallet from Grab. Used for rides, food delivery, and merchant payments.
+        </p>
+        <ul class="wallet-features">
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Ride & food payments</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Rewards & cashback</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Bills & top-ups</span>
+          </li>
+          <li class="wallet-feature">
+            <span class="feature-icon">✓</span>
+            <span>Multi-country support</span>
+          </li>
+        </ul>
+        <div class="wallet-actions">
+          <a href="/wallet-alipay?walletId=grabpay-12345&type=grabpay" class="wallet-btn wallet-btn-primary">
+            Open Wallet
+          </a>
+          <a href="/wallet-transfer" class="wallet-btn wallet-btn-secondary">
+            Transfer
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="comparison-table">
+      <h2>🔍 Feature Comparison</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Alipay</th>
+            <th>Weixin Pay</th>
+            <th>Touch n Go</th>
+            <th>GrabPay</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ATM Transfers</td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+          </tr>
+          <tr>
+            <td>QR Code Payments</td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+          </tr>
+          <tr>
+            <td>Peer-to-Peer Transfer</td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+          </tr>
+          <tr>
+            <td>Transportation</td>
+            <td>Limited</td>
+            <td>Limited</td>
+            <td><span class="check-icon">✓</span></td>
+            <td><span class="check-icon">✓</span></td>
+          </tr>
+          <tr>
+            <td>Primary Region</td>
+            <td>China/Asia</td>
+            <td>China/Global</td>
+            <td>Malaysia</td>
+            <td>Southeast Asia</td>
+          </tr>
+          <tr>
+            <td>Currency</td>
+            <td>Multi-currency</td>
+            <td>Multi-currency</td>
+            <td>RM (Ringgit)</td>
+            <td>SGD, MYR, etc.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Information Section -->
+    <div class="info-section">
+      <h2>💡 How It Works</h2>
+      <p>
+        Our digital wallet integration allows you to transfer funds directly from ATM machines to your mobile wallet instantly. Simply select your wallet type, enter the amount, and complete the transfer.
+      </p>
+      
+      <ul class="info-list">
+        <li><strong>Step 1:</strong> Insert your card at the ATM and authenticate</li>
+        <li><strong>Step 2:</strong> Select "Digital Wallet Transfer" option</li>
+        <li><strong>Step 3:</strong> Choose your wallet type (Alipay, Weixin, Touch n Go, or GrabPay)</li>
+        <li><strong>Step 4:</strong> Enter transfer amount and confirm</li>
+        <li><strong>Step 5:</strong> Funds appear in your mobile wallet instantly</li>
+      </ul>
+
+      <p>
+        All transfers are secured with bank-level encryption and real-time balance verification. Transaction history is maintained for your records.
+      </p>
+
+      <div style="margin-top: 32px; text-align: center;">
+        <a href="/wallet-mobile" class="wallet-btn wallet-btn-secondary" style="display: inline-block; padding: 14px 32px;">
+          ← Back to Mobile Access
+        </a>
+        <a href="/wallet-demo" class="wallet-btn wallet-btn-primary" style="display: inline-block; padding: 14px 32px; margin-left: 12px;">
+          Try Live Demo →
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -589,10 +589,16 @@ body.atm-body {
 /* Top bar */
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding: 8px 0;
+  background-color: #f3f4f6;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
 }
 
 /* Mic toggle */
