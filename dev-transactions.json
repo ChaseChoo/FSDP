@@ -189,6 +189,51 @@
   ],
   "FAKE_USER": [
     {
+      "Id": "dev-1769777924745-0.3611348365105427",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 11735,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-01-30T12:58:44.745Z"
+    },
+    {
+      "Id": "dev-1769777731883-0.14607360536802205",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 11745,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-01-30T12:55:31.883Z"
+    },
+    {
+      "Id": "dev-1769777724537-0.926621238632521",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 11755,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-01-30T12:55:24.537Z"
+    },
+    {
+      "Id": "dev-1769777617726-0.9950671175620001",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 11765,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-01-30T12:53:37.726Z"
+    },
+    {
+      "Id": "dev-1769777607672-0.2746841372073743",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 11775,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-01-30T12:53:27.672Z"
+    },
+    {
       "Id": "dev-1769686560862-0.9158868732369174",
       "AccountId": "dev-FAKE_USER",
       "Type": "WALLET_TRANSFER",
@@ -460,6 +505,15 @@
     }
   ],
   "user-6": [
+    {
+      "Id": "dev-1769778321494-0.43775451603656124",
+      "AccountId": "dev-user-6",
+      "Type": "WITHDRAW",
+      "Amount": 50,
+      "BalanceAfter": 926,
+      "Description": "ATM withdrawal",
+      "CreatedAt": "2026-01-30T13:05:21.494Z"
+    },
     {
       "Id": "dev-1768652941783-0.7982815890770834",
       "AccountId": "dev-user-6",
@@ -1393,6 +1447,15 @@
     }
   ],
   "user-1": [
+    {
+      "Id": "dev-1769778842442-0.7022861985804678",
+      "AccountId": "dev-user-1",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 24440,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-01-30T13:14:02.442Z"
+    },
     {
       "Id": "dev-1769755083529-0.23748148594707397",
       "AccountId": "dev-user-1",

@@ -567,7 +567,16 @@
     // Load current balance
     async function loadBalance() {
       try {
-        const response = await fetch('/account/balance', { credentials: 'include' });
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await fetch('/account/balance', { 
+          credentials: 'include',
+          headers: headers
+        });
         const data = await response.json();
         const el = document.getElementById('currentBalance');
         if(el) el.textContent = `S$${Number(data.balance||0).toFixed(2)}`;
@@ -590,9 +599,15 @@
       this.textContent = 'Processing...';
 
       try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const response = await fetch('/api/wallet/transfer', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headers,
           credentials: 'include',
           body: JSON.stringify({ amount, walletId, walletType: selectedWalletType })
         });
