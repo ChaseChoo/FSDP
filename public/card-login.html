@@ -339,7 +339,7 @@ async function submitPin() {
     document.getElementById('loading').style.display = 'block';
     
     try {
-        const response = await fetch('api/card/login', {
+        const response = await fetch('/api/card/login?v=' + Date.now(), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

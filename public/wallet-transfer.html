@@ -33,6 +33,101 @@
     .btn-primary { @apply bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-colors; }
     .btn-secondary { @apply bg-zinc-200 dark:bg-zinc-700 px-4 py-2 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors; }
     .card { @apply bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm; }
+
+    /* Exchange Rate Info Card */
+    .exchange-info {
+      margin-top: 1rem;
+      padding: 1.25rem;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 2px solid #0ea5e9;
+      border-radius: 0.75rem;
+      display: none;
+      animation: slideDown 0.3s ease-out;
+    }
+    .exchange-info.show {
+      display: block;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .exchange-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #bae6fd;
+    }
+    .exchange-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #075985;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #10b981;
+      color: white;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.9); }
+    }
+    .exchange-details {
+      display: grid;
+      gap: 0.75rem;
+    }
+    .exchange-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      background: white;
+      border-radius: 0.5rem;
+    }
+    .exchange-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .exchange-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0c4a6e;
+    }
+    .converted-preview {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0ea5e9;
+      font-family: 'Courier New', monospace;
+    }
+    .no-fee-badge {
+      background: #dcfce7;
+      color: #166534;
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white min-h-screen flex flex-col">
@@ -212,6 +307,47 @@
           <input id="transferAmount" type="number" step="0.01" min="0" class="w-full p-3 border rounded-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800" placeholder="0.00"/>
         </div>
 
+        <!-- Exchange Rate Info Card -->
+        <div id="exchangeInfo" class="exchange-info">
+          <div class="exchange-header">
+            <div class="exchange-title">
+              <span class="material-symbols-outlined !text-lg">currency_exchange</span>
+              <span id="exchangeInfoTitle">Exchange Rate Information</span>
+            </div>
+            <div class="live-badge">
+              <div class="pulse-dot"></div>
+              LIVE
+            </div>
+          </div>
+          <div class="exchange-details">
+            <div class="exchange-row">
+              <span class="exchange-label">Exchange Rate</span>
+              <span class="exchange-value">1 SGD = <span id="rateValue">5.3500</span> <span id="targetCurrencyCode">CNY</span></span>
+            </div>
+            <div class="exchange-row">
+              <span class="exchange-label">You're sending</span>
+              <span class="exchange-value">S$<span id="sgdAmount">0.00</span></span>
+            </div>
+            <div class="exchange-row">
+              <span class="exchange-label">Recipient gets</span>
+              <span class="converted-preview">
+                <span id="conversionSummary">S$0.00 = ¥0.00</span>
+                <span class="sr-only" aria-live="polite"><span id="convertedSymbol">¥</span><span id="convertedAmount">0.00</span></span>
+              </span>
+            </div>
+            <div class="exchange-row">
+              <span class="exchange-label">Transfer Fee</span>
+              <span class="no-fee-badge">
+                <span class="material-symbols-outlined !text-sm">check_circle</span>
+                NO FEES
+              </span>
+            </div>
+            <div style="margin-top: 0.5rem; padding: 0.5rem; background: white; border-radius: 0.5rem; font-size: 0.75rem; color: #64748b; text-align: center;">
+              Rate updates every 5 minutes • Last updated: <span id="rateUpdateTime">now</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Actions -->
         <div class="flex flex-col sm:flex-row gap-3">
           <button id="transferBtn" class="btn-primary w-full sm:w-auto">Transfer Now</button>
@@ -272,6 +408,118 @@
   <script>
     let selectedWalletType = 'alipay';
     let selectedAmount = 0;
+    let currentExchangeRate = 1.0;
+
+    // Wallet configuration with exchange rates
+    const walletExchangeConfig = {
+      alipay: {
+        name: 'Alipay',
+        targetCurrency: 'CNY',
+        currencySymbol: '¥',
+        currencyName: 'Chinese Yuan',
+        apiCode: 'SGD_CNY',
+        fallbackRate: 5.35
+      },
+      wechat: {
+        name: 'Weixin Pay',
+        targetCurrency: 'CNY',
+        currencySymbol: '¥',
+        currencyName: 'Chinese Yuan',
+        apiCode: 'SGD_CNY',
+        fallbackRate: 5.35
+      },
+      touchngo: {
+        name: 'Touch n Go',
+        targetCurrency: 'MYR',
+        currencySymbol: 'RM',
+        currencyName: 'Malaysian Ringgit',
+        apiCode: 'SGD_MYR',
+        fallbackRate: 3.45
+      },
+      grabpay: {
+        name: 'GrabPay',
+        targetCurrency: 'SGD',
+        currencySymbol: 'S$',
+        currencyName: 'Singapore Dollar',
+        apiCode: null,
+        fallbackRate: 1.0
+      },
+      paynow: {
+        name: 'PayNow',
+        targetCurrency: 'SGD',
+        currencySymbol: 'S$',
+        currencyName: 'Singapore Dollar',
+        apiCode: null,
+        fallbackRate: 1.0
+      }
+    };
+
+    // Fetch live exchange rate
+    async function fetchExchangeRate(walletType) {
+      const config = walletExchangeConfig[walletType];
+      if (!config || !config.apiCode) {
+        currentExchangeRate = 1.0;
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://open.er-api.com/v6/latest/SGD`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.rates && data.rates[config.targetCurrency]) {
+            currentExchangeRate = data.rates[config.targetCurrency];
+            console.log(`Live rate: 1 SGD = ${currentExchangeRate} ${config.targetCurrency}`);
+          } else {
+            currentExchangeRate = config.fallbackRate;
+          }
+        } else {
+          currentExchangeRate = config.fallbackRate;
+        }
+      } catch (error) {
+        console.error('Exchange rate fetch error:', error);
+        currentExchangeRate = config.fallbackRate;
+      }
+
+      updateExchangeInfoDisplay();
+    }
+
+    // Update the exchange info card
+    function updateExchangeInfoDisplay() {
+      const config = walletExchangeConfig[selectedWalletType];
+      const exchangeCard = document.getElementById('exchangeInfo');
+      
+      // Show exchange info only for wallets that need conversion
+      if (!config.apiCode) {
+        exchangeCard.classList.remove('show');
+        return;
+      }
+
+      exchangeCard.classList.add('show');
+      
+      // Update labels and currency symbols
+      document.getElementById('exchangeInfoTitle').textContent = `SGD to ${config.currencyName}`;
+      document.getElementById('targetCurrencyCode').textContent = config.targetCurrency;
+      document.getElementById('convertedSymbol').textContent = config.currencySymbol;
+      document.getElementById('rateValue').textContent = currentExchangeRate.toFixed(4);
+      document.getElementById('rateUpdateTime').textContent = new Date().toLocaleTimeString();
+
+      // Update converted amount based on current selection
+      updateConvertedAmount();
+    }
+
+    // Update the converted amount when amount changes
+    function updateConvertedAmount() {
+      const config = walletExchangeConfig[selectedWalletType];
+      const amount = selectedAmount || parseFloat(document.getElementById('transferAmount').value) || 0;
+      const convertedAmount = amount * currentExchangeRate;
+      
+      document.getElementById('sgdAmount').textContent = amount.toFixed(2);
+      document.getElementById('convertedAmount').textContent = convertedAmount.toFixed(2);
+      const summary = document.getElementById('conversionSummary');
+      if (summary && config) {
+        summary.textContent = `S$${amount.toFixed(2)} = ${config.currencySymbol}${convertedAmount.toFixed(2)}`;
+      }
+    }
 
     // Mark Alipay as default selected visually
     document.addEventListener('DOMContentLoaded', ()=>{
@@ -285,6 +533,9 @@
         document.querySelectorAll('.wallet-type-btn').forEach(b => b.classList.remove('ring-2','ring-primary/50'));
         this.classList.add('ring-2','ring-primary/50');
         selectedWalletType = this.dataset.wallet;
+        
+        // Fetch exchange rate and show info card
+        fetchExchangeRate(selectedWalletType);
       });
     });
 
@@ -296,6 +547,9 @@
         selectedAmount = parseFloat(this.dataset.amount);
         const amtInput = document.getElementById('transferAmount');
         if (amtInput) amtInput.value = '';
+        
+        // Update converted amount
+        updateConvertedAmount();
       });
     });
 
@@ -304,6 +558,9 @@
       if (this.value) {
         document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('bg-primary','text-white'));
         selectedAmount = parseFloat(this.value) || 0;
+        
+        // Update converted amount
+        updateConvertedAmount();
       }
     });
 
@@ -387,6 +644,40 @@
     }
 
     loadBalance();
+
+    // Handle URL parameters for pre-filling from AI assistant
+    const urlParams = new URLSearchParams(window.location.search);
+    const presetWallet = urlParams.get('wallet');
+    const presetAmount = urlParams.get('amount');
+
+    if (presetWallet && walletExchangeConfig[presetWallet]) {
+      // Select the specified wallet
+      selectedWalletType = presetWallet;
+      document.querySelectorAll('.wallet-type-btn').forEach(btn => {
+        btn.classList.remove('ring-2', 'ring-primary/50');
+        if (btn.dataset.wallet === presetWallet) {
+          btn.classList.add('ring-2', 'ring-primary/50');
+        }
+      });
+      fetchExchangeRate(selectedWalletType);
+    }
+
+    if (presetAmount) {
+      const amt = parseFloat(presetAmount);
+      if (amt > 0) {
+        selectedAmount = amt;
+        document.getElementById('transferAmount').value = amt;
+        updateConvertedAmount();
+      }
+    }
+
+    // Initialize exchange rate for default wallet (Alipay)
+    fetchExchangeRate(selectedWalletType);
+    
+    // Refresh exchange rates every 5 minutes
+    setInterval(() => {
+      fetchExchangeRate(selectedWalletType);
+    }, 300000);
   </script>
 
   <!-- Reuse shared behaviors (logout, assistant, etc.) -->

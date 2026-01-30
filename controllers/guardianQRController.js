@@ -26,6 +26,7 @@ export async function createActionQR(req, res) {
     
     // Get authenticated user info - use fallback for demo mode
     let externalId = req.user?.externalId;
+    let userId = req.user?.userId; // Get userId for card-based auth
     let guardianInfo;
     
     if (!externalId) {
@@ -34,12 +35,17 @@ export async function createActionQR(req, res) {
       externalId = 'FAKE_USER'; // Same as fakeLogin middleware
       guardianInfo = {
         externalId: externalId,
+        userId: null,
         cardNumber: '5555 **** **** 2222',
         name: 'Demo User'
       };
     } else {
+      // For card-based auth, construct the balance key using userId
+      const balanceKey = userId ? `user-${userId}` : externalId;
+      
       guardianInfo = {
-        externalId: externalId,
+        externalId: balanceKey, // Use the same key as the account controller
+        userId: userId,
         cardNumber: req.user.cardNumber || 'N/A',
         name: req.user.name || req.user.fullName || 'Guardian User'
       };
@@ -421,13 +427,18 @@ async function executeWithdraw(externalId, userId, amount, description) {
     const key = externalId;
     const currentBalance = getDevBalance(key);
     
+    console.log(`[Guardian Withdraw] Key: ${key}, Balance: ${currentBalance}, Amount: ${amount}`);
+    
     if (currentBalance < amount) {
+      console.log(`[Guardian Withdraw] Insufficient funds: ${currentBalance} < ${amount}`);
       return { success: false, error: 'Insufficient funds' };
     }
     
     const newBalance = currentBalance - amount;
     setDevBalance(key, newBalance);
     addDevTransaction(key, 'WITHDRAWAL', amount, newBalance, description);
+    
+    console.log(`[Guardian Withdraw] Success! New balance: ${newBalance}`);
     
     return {
       success: true,
