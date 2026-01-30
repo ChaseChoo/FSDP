@@ -851,6 +851,9 @@
       }catch(e){ console.error(e); }
     }
 
+    // Expose function globally so onclick handlers can access it
+    window.showVirtualTeller = showVirtualTeller;
+
     function closeVirtualTeller(){
       try{ 
         const overlay = document.getElementById('virtualTellerOverlay'); 
