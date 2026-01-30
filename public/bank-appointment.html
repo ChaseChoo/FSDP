@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bank Appointment Booking</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>OCBC Bank Appointments</title>
     <style>
         * {
             margin: 0;
@@ -13,19 +12,33 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
 
-        .appointment-container {
-            max-width: 600px;
+        .container {
+            max-width: 900px;
             margin: 0 auto;
+        }
+
+        .page {
+            display: none;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .header {
@@ -37,112 +50,122 @@
 
         .header h1 {
             font-size: 28px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .header p {
-            font-size: 14px;
             opacity: 0.9;
+            font-size: 14px;
         }
 
         .content {
             padding: 30px 20px;
         }
 
-        .section {
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .section-title::before {
-            content: '';
-            display: inline-block;
-            width: 4px;
-            height: 20px;
-            background: #667eea;
-            margin-right: 10px;
-            border-radius: 2px;
-        }
-
-        .location-search {
-            position: relative;
+        .form-group {
             margin-bottom: 20px;
         }
 
-        .location-search input {
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            padding: 12px 15px;
+            padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
+            font-family: inherit;
             font-size: 14px;
             transition: border-color 0.3s;
         }
 
-        .location-search input:focus {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: #667eea;
         }
 
-        .location-search input::placeholder {
-            color: #999;
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
         }
 
         .bank-list {
             display: grid;
-            grid-template-columns: 1fr;
             gap: 12px;
-            max-height: 400px;
-            overflow-y: auto;
         }
 
         .bank-card {
-            padding: 15px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
+            padding: 16px;
             cursor: pointer;
             transition: all 0.3s;
         }
 
         .bank-card:hover {
             border-color: #667eea;
-            background: #f8f9fa;
+            background: #f9f7ff;
         }
 
         .bank-card.selected {
             border-color: #667eea;
-            background: #f0f4ff;
+            background: #f0f7ff;
         }
 
-        .bank-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-            font-size: 15px;
+        .bank-card h3 {
+            color: #667eea;
+            margin-bottom: 8px;
         }
 
-        .bank-address {
+        .bank-card p {
             color: #666;
             font-size: 13px;
-            margin-bottom: 5px;
+            margin: 4px 0;
         }
 
-        .bank-distance {
+        .distance {
             color: #999;
             font-size: 12px;
+            margin-top: 8px;
         }
 
-        .time-slot-grid {
+        .slot-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
         }
 
         .time-slot {
@@ -156,9 +179,9 @@
             font-weight: 500;
         }
 
-        .time-slot:hover {
+        .time-slot:hover:not(.disabled) {
             border-color: #667eea;
-            background: #f8f9fa;
+            background: #f9f7ff;
         }
 
         .time-slot.selected {
@@ -168,42 +191,182 @@
         }
 
         .time-slot.disabled {
+            background: #f0f0f0;
+            color: #999;
             cursor: not-allowed;
-            opacity: 0.5;
-            background: #f5f5f5;
         }
 
-        .date-picker {
-            margin-bottom: 20px;
-        }
-
-        .date-picker input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
+        .confirmation-email {
+            background: white;
+            border: 1px solid #ddd;
             border-radius: 8px;
+            max-width: 500px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+
+        .email-header {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .email-header h2 {
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .email-content {
+            padding: 30px 20px;
+        }
+
+        .confirmation-section {
+            margin-bottom: 24px;
+        }
+
+        .confirmation-section h3 {
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
             font-size: 14px;
         }
 
-        .date-picker input:focus {
-            outline: none;
-            border-color: #667eea;
+        .detail-row strong {
+            color: #333;
+        }
+
+        .detail-row span {
+            color: #666;
+        }
+
+        .confirmation-number {
+            background: #f0f7ff;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .confirmation-number .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .confirmation-number .number {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+
+        .email-footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #999;
+        }
+
+        .step.active .step-number {
+            background: #667eea;
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
         }
 
         .loading {
             text-align: center;
-            padding: 20px;
-            color: #999;
+            padding: 30px;
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
+            border: 4px solid #f0f0f0;
             border-top: 4px solid #667eea;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            margin: 0 auto 16px;
         }
 
         @keyframes spin {
@@ -211,430 +374,479 @@
             100% { transform: rotate(360deg); }
         }
 
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 30px;
-        }
-
-        .btn {
-            padding: 14px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            grid-column: 1 / -1;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
-        .notification {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .notification.success {
-            background: #d4edda;
-            color: #155724;
-            display: block;
-        }
-
-        .notification.error {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
-        }
-
-        .summary {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border-left: 4px solid #667eea;
-        }
-
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .summary-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .summary-label {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .summary-value {
-            color: #333;
-            font-weight: 600;
-        }
-
         @media (max-width: 600px) {
-            .time-slot-grid {
+            .slot-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .header h1 {
-                font-size: 24px;
+            .buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-row {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
-    <div class="appointment-container">
-        <div class="header">
-            <h1>📅 Bank Appointment</h1>
-            <p>Book your next visit to OCBC Bank</p>
-        </div>
-
-        <div class="content">
-            <div id="notification" class="notification"></div>
-
-            <!-- Location Search Section -->
-            <div class="section">
-                <div class="section-title">Select Location</div>
-                <div class="location-search">
-                    <input 
-                        type="text" 
-                        id="locationInput" 
-                        placeholder="Enter your location (e.g., Bukit Timah, Orchard)"
-                        autocomplete="off"
-                    >
-                </div>
+    <div class="container">
+        <!-- Step 1: Location Search -->
+        <div id="locationPage" class="page active">
+            <div class="header">
+                <h1>📍 Find a Bank</h1>
+                <p>Search for OCBC banks near you</p>
             </div>
-
-            <!-- Bank Selection Section -->
-            <div class="section">
-                <div class="section-title">Choose Bank</div>
-                <div id="bankList" class="bank-list">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Searching nearby banks...</p>
+            <div class="content">
+                <div class="step-indicator">
+                    <div class="step active">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Location</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Select Bank</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Choose Time</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-label">Confirm</div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Date Selection Section -->
-            <div class="section">
-                <div class="section-title">Select Date</div>
-                <div class="date-picker">
-                    <input type="date" id="appointmentDate">
+                <div id="error" class="error"></div>
+
+                <div class="form-group">
+                    <label>Search Location (e.g., "Bukit Timah")</label>
+                    <input type="text" id="locationInput" placeholder="Enter location name" value="Bukit Timah">
+                </div>
+
+                <div class="form-group">
+                    <label>Search Radius (km)</label>
+                    <select id="radiusSelect">
+                        <option value="3">3 km</option>
+                        <option value="5" selected>5 km</option>
+                        <option value="10">10 km</option>
+                        <option value="20">20 km</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="searchBanks()">Search Banks</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Select Bank -->
+        <div id="bankPage" class="page">
+            <div class="header">
+                <h1>🏦 Select a Bank</h1>
+                <p>Choose your preferred OCBC branch</p>
+            </div>
+            <div class="content">
+                <div class="step-indicator">
+                    <div class="step completed">
+                        <div class="step-number">✓</div>
+                        <div class="step-label">Location</div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Select Bank</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Choose Time</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-label">Confirm</div>
+                    </div>
+                </div>
+
+                <div id="bankList" class="bank-list"></div>
+
+                <div class="buttons" style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="goToPage('locationPage')">← Back</button>
+                    <button class="btn btn-primary" onclick="goToPage('dateTimePage')" id="selectBankBtn" disabled>Next →</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Time Slot Section -->
-            <div class="section">
-                <div class="section-title">Select Time Slot</div>
-                <div id="timeSlotContainer">
-                    <p style="color: #999; text-align: center;">Please select a date first</p>
+        <!-- Step 3: Select Date & Time -->
+        <div id="dateTimePage" class="page">
+            <div class="header">
+                <h1>📅 Choose Date & Time</h1>
+                <p>Select your preferred appointment slot</p>
+            </div>
+            <div class="content">
+                <div class="step-indicator">
+                    <div class="step completed">
+                        <div class="step-number">✓</div>
+                        <div class="step-label">Location</div>
+                    </div>
+                    <div class="step completed">
+                        <div class="step-number">✓</div>
+                        <div class="step-label">Select Bank</div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Choose Time</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-label">Confirm</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Appointment Date</label>
+                    <input type="date" id="appointmentDate" min="" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Available Time Slots</label>
+                    <div class="slot-grid" id="slotsGrid"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Service Type (Optional)</label>
+                    <select id="serviceType">
+                        <option value="General Inquiry">General Inquiry</option>
+                        <option value="Account Opening">Account Opening</option>
+                        <option value="Loan Application">Loan Application</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="Investment Services">Investment Services</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn btn-secondary" onclick="goToPage('bankPage')">← Back</button>
+                    <button class="btn btn-primary" onclick="goToPage('confirmPage')" id="confirmDateBtn" disabled>Next →</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Summary Section -->
-            <div id="summarySection" class="summary" style="display: none;">
-                <div class="summary-item">
-                    <span class="summary-label">Bank:</span>
-                    <span class="summary-value" id="summaryBank">-</span>
+        <!-- Step 4: Confirmation (Email Style) -->
+        <div id="confirmPage" class="page">
+            <div class="header">
+                <h1>✅ Confirmation</h1>
+                <p>Your appointment has been booked</p>
+            </div>
+            <div class="content">
+                <div class="confirmation-email">
+                    <div class="email-header">
+                        <h2>Appointment Confirmed</h2>
+                        <p>Your OCBC Bank Appointment</p>
+                    </div>
+
+                    <div class="email-content">
+                        <p style="margin-bottom: 20px; color: #666;">Dear Customer,</p>
+
+                        <p style="margin-bottom: 24px; color: #666;">Your bank appointment has been successfully booked. Here are your appointment details:</p>
+
+                        <div class="confirmation-section">
+                            <h3>📍 Location</h3>
+                            <div class="detail-row">
+                                <strong>Bank Name:</strong>
+                                <span id="confirmBankName">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Address:</strong>
+                                <span id="confirmBankAddress">-</span>
+                            </div>
+                        </div>
+
+                        <div class="confirmation-section">
+                            <h3>📅 Date & Time</h3>
+                            <div class="detail-row">
+                                <strong>Date:</strong>
+                                <span id="confirmDate">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Time:</strong>
+                                <span id="confirmTime">-</span>
+                            </div>
+                        </div>
+
+                        <div class="confirmation-section">
+                            <h3>🎯 Service</h3>
+                            <div class="detail-row">
+                                <strong>Service Type:</strong>
+                                <span id="confirmService">-</span>
+                            </div>
+                        </div>
+
+                        <div class="confirmation-number">
+                            <div class="label">CONFIRMATION NUMBER</div>
+                            <div class="number" id="confirmNumber">APT-XXXX-XXXX</div>
+                        </div>
+
+                        <p style="color: #666; font-size: 13px; margin: 20px 0;">Please arrive 5-10 minutes before your scheduled time. If you need to cancel or reschedule, please contact us at least 24 hours in advance.</p>
+                    </div>
+
+                    <div class="email-footer">
+                        <p>© 2026 OCBC Bank. All rights reserved.</p>
+                    </div>
                 </div>
-                <div class="summary-item">
-                    <span class="summary-label">Date:</span>
-                    <span class="summary-value" id="summaryDate">-</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Time:</span>
-                    <span class="summary-value" id="summaryTime">-</span>
+
+                <div class="buttons" style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="goToPage('dateTimePage')">← Back</button>
+                    <button class="btn btn-primary" onclick="bookAppointment()">Confirm Booking</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
-                <button class="btn btn-primary" id="bookBtn" onclick="bookAppointment()" disabled>
-                    Book Appointment
-                </button>
+        <!-- Step 5: Booked Successfully -->
+        <div id="successPage" class="page">
+            <div class="header">
+                <h1>🎉 Success!</h1>
+                <p>Your appointment is confirmed</p>
+            </div>
+            <div class="content" style="text-align: center;">
+                <div style="font-size: 64px; margin: 30px 0;">✅</div>
+                <h2 style="color: #667eea; margin-bottom: 8px;">Appointment Booked</h2>
+                <p style="color: #666; margin-bottom: 30px;">A confirmation email has been sent to your registered email address.</p>
+
+                <div class="confirmation-email">
+                    <div class="email-header">
+                        <h2>Appointment Confirmed</h2>
+                    </div>
+                    <div class="email-content">
+                        <div class="confirmation-section">
+                            <h3>📍 Location</h3>
+                            <div class="detail-row">
+                                <strong>Bank:</strong>
+                                <span id="successBankName">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Address:</strong>
+                                <span id="successBankAddress">-</span>
+                            </div>
+                        </div>
+                        <div class="confirmation-section">
+                            <h3>📅 Date & Time</h3>
+                            <div class="detail-row">
+                                <strong>Date:</strong>
+                                <span id="successDate">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Time:</strong>
+                                <span id="successTime">-</span>
+                            </div>
+                        </div>
+                        <div class="confirmation-number">
+                            <div class="label">CONFIRMATION NUMBER</div>
+                            <div class="number" id="successNumber">APT-XXXX-XXXX</div>
+                        </div>
+                    </div>
+                    <div class="email-footer">
+                        <p>Check your email for the full confirmation details</p>
+                    </div>
+                </div>
+
+                <div class="buttons" style="margin-top: 30px;">
+                    <button class="btn btn-secondary" onclick="viewMyAppointments()">View My Appointments</button>
+                    <button class="btn btn-primary" onclick="newAppointment()">Book Another →</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Sample OCBC bank data (in real scenario, fetch from backend)
-        const ocbcBanks = {
-            'bukit timah': [
-                {
-                    id: 'ocbc_bt_001',
-                    name: 'OCBC Bukit Timah Branch',
-                    address: '1 Jalan Anak Bukit, #01-01, Singapore 588996',
-                    coordinates: { lat: 1.3521, lng: 103.8198 },
-                    distance: 0.2,
-                    hours: '10:00 AM - 3:00 PM'
-                },
-                {
-                    id: 'ocbc_bt_002',
-                    name: 'OCBC Coronation Shopping Centre',
-                    address: '587 Bukit Timah Road, #B1-03, Singapore 269707',
-                    coordinates: { lat: 1.3500, lng: 103.8120 },
-                    distance: 1.5,
-                    hours: '10:00 AM - 3:00 PM'
-                }
-            ],
-            'orchard': [
-                {
-                    id: 'ocbc_orchard_001',
-                    name: 'OCBC Orchard Branch',
-                    address: '438 Orchard Road, #18-01, Singapore 238876',
-                    coordinates: { lat: 1.3049, lng: 103.8327 },
-                    distance: 0.1,
-                    hours: '10:00 AM - 4:00 PM'
-                }
-            ],
-            'marina': [
-                {
-                    id: 'ocbc_marina_001',
-                    name: 'OCBC Marina Bay Financial Centre',
-                    address: '4 Marina Boulevard, #20-01, Singapore 018974',
-                    coordinates: { lat: 1.2802, lng: 103.8527 },
-                    distance: 2.3,
-                    hours: '9:00 AM - 5:00 PM'
-                }
-            ]
+        // State
+        const state = {
+            selectedBank: null,
+            selectedDate: null,
+            selectedTime: null,
+            serviceType: 'General Inquiry',
+            banks: [],
+            token: localStorage.getItem('token')
         };
 
-        let selectedBank = null;
-        let selectedDate = null;
-        let selectedTime = null;
-
-        const locationInput = document.getElementById('locationInput');
-        const bankList = document.getElementById('bankList');
-        const appointmentDate = document.getElementById('appointmentDate');
-        const timeSlotContainer = document.getElementById('timeSlotContainer');
-        const notification = document.getElementById('notification');
-        const bookBtn = document.getElementById('bookBtn');
-        const summarySection = document.getElementById('summarySection');
-
-        // Set minimum date to today
-        const today = new Date();
-        const minDate = today.toISOString().split('T')[0];
-        appointmentDate.min = minDate;
-        appointmentDate.value = minDate;
-
-        // Location search
-        locationInput.addEventListener('input', debounce(searchBanks, 300));
-        locationInput.addEventListener('focus', () => {
-            if (locationInput.value) searchBanks();
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('appointmentDate').min = tomorrow.toISOString().split('T')[0];
+            document.getElementById('appointmentDate').value = tomorrow.toISOString().split('T')[0];
         });
 
-        appointmentDate.addEventListener('change', generateTimeSlots);
-
-        function debounce(func, delay) {
-            let timeoutId;
-            return function(...args) {
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => func.apply(this, args), delay);
-            };
+        function goToPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
         }
 
-        function searchBanks() {
-            const location = locationInput.value.toLowerCase().trim();
-            
+        async function searchBanks() {
+            const location = document.getElementById('locationInput').value;
+            const radius = document.getElementById('radiusSelect').value;
+
             if (!location) {
-                bankList.innerHTML = '<p style="color: #999; text-align: center;">Type a location to search</p>';
+                showError('Please enter a location');
                 return;
             }
 
-            // Search for matching banks
-            let matchingBanks = [];
-            for (const [key, banks] of Object.entries(ocbcBanks)) {
-                if (key.includes(location)) {
-                    matchingBanks.push(...banks);
+            // Hardcoded coordinates for Bukit Timah area (can be extended with geocoding)
+            const coordinates = {
+                'bukit timah': { lat: 1.3523, lng: 103.7744 },
+                'marina bay': { lat: 1.2757, lng: 103.8502 },
+                'orchard': { lat: 1.3047, lng: 103.8350 },
+                'tampines': { lat: 1.3521, lng: 103.9450 },
+                'jurong': { lat: 1.3345, lng: 103.7880 }
+            };
+
+            const coords = coordinates[location.toLowerCase()] || { lat: 1.3521, lng: 103.8198 };
+
+            try {
+                const response = await fetch(`/api/appointments/nearby?latitude=${coords.lat}&longitude=${coords.lng}&radius=${radius}`, {
+                    headers: state.token ? { 'Authorization': `Bearer ${state.token}` } : {}
+                });
+                const data = await response.json();
+
+                if (data.banks && data.banks.length > 0) {
+                    state.banks = data.banks;
+                    renderBanks(data.banks);
+                    goToPage('bankPage');
+                } else {
+                    showError('No banks found in that area. Try a larger radius.');
                 }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error searching for banks');
             }
+        }
 
-            if (matchingBanks.length === 0) {
-                bankList.innerHTML = '<p style="color: #999; text-align: center;">No banks found. Try: Bukit Timah, Orchard, Marina</p>';
-                return;
-            }
-
-            // Display banks
-            bankList.innerHTML = matchingBanks.map(bank => `
-                <div class="bank-card ${selectedBank?.id === bank.id ? 'selected' : ''}" onclick="selectBank('${bank.id}', ${matchingBanks.findIndex(b => b.id === bank.id)})">
-                    <div class="bank-name">${bank.name}</div>
-                    <div class="bank-address">📍 ${bank.address}</div>
-                    <div class="bank-distance">📏 ${bank.distance} km away • ${bank.hours}</div>
+        function renderBanks(banks) {
+            const list = document.getElementById('bankList');
+            list.innerHTML = banks.map(bank => `
+                <div class="bank-card" data-id="${bank.id}" onclick="selectBank(${bank.id}, this)">
+                    <h3>${bank.name}</h3>
+                    <p>${bank.address}</p>
+                    <p>⏰ ${bank.openHours}</p>
+                    <div class="distance">${bank.distance ? bank.distance.toFixed(1) + ' km away' : ''}</div>
                 </div>
             `).join('');
         }
 
-        function selectBank(bankId, index) {
-            const location = locationInput.value.toLowerCase().trim();
-            let matchingBanks = [];
-            for (const [key, banks] of Object.entries(ocbcBanks)) {
-                if (key.includes(location)) {
-                    matchingBanks.push(...banks);
-                }
-            }
-
-            selectedBank = matchingBanks[index];
-            
-            // Update UI
-            document.querySelectorAll('.bank-card').forEach((card, i) => {
-                card.classList.toggle('selected', i === index);
-            });
-
-            updateSummary();
-            generateTimeSlots();
-        }
-
-        function generateTimeSlots() {
-            if (!selectedDate || !appointmentDate.value) {
-                selectedDate = appointmentDate.value;
-            } else {
-                selectedDate = appointmentDate.value;
-            }
-
-            // Generate time slots (9 AM to 3 PM, every 30 minutes)
-            const slots = [];
-            for (let hour = 9; hour < 17; hour++) {
-                for (let min = 0; min < 60; min += 30) {
-                    const timeStr = `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-                    slots.push(timeStr);
-                }
-            }
-
-            timeSlotContainer.innerHTML = `
-                <div class="time-slot-grid">
-                    ${slots.map((time, i) => `
-                        <div class="time-slot ${selectedTime === time ? 'selected' : ''}" onclick="selectTimeSlot('${time}', this)">
-                            ${time}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function selectTimeSlot(time, element) {
-            selectedTime = time;
-            document.querySelectorAll('.time-slot').forEach(slot => {
-                slot.classList.remove('selected');
-            });
+        function selectBank(bankId, element) {
+            document.querySelectorAll('.bank-card').forEach(e => e.classList.remove('selected'));
             element.classList.add('selected');
-            updateSummary();
+            state.selectedBank = state.banks.find(b => b.id === bankId);
+            document.getElementById('selectBankBtn').disabled = false;
         }
 
-        function updateSummary() {
-            if (selectedBank && selectedDate && selectedTime) {
-                document.getElementById('summaryBank').textContent = selectedBank.name;
-                document.getElementById('summaryDate').textContent = new Date(selectedDate).toLocaleDateString('en-SG');
-                document.getElementById('summaryTime').textContent = selectedTime;
-                summarySection.style.display = 'block';
-                bookBtn.disabled = false;
-            } else {
-                summarySection.style.display = 'none';
-                bookBtn.disabled = true;
-            }
+        function loadTimeSlots() {
+            const date = document.getElementById('appointmentDate').value;
+            const slotsGrid = document.getElementById('slotsGrid');
+
+            // Hardcoded time slots
+            const slots = ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
+
+            slotsGrid.innerHTML = slots.map(slot => `
+                <div class="time-slot" onclick="selectTime('${slot}', this)">${slot}</div>
+            `).join('');
         }
+
+        function selectTime(time, element) {
+            document.querySelectorAll('.time-slot').forEach(e => e.classList.remove('selected'));
+            element.classList.add('selected');
+            state.selectedTime = time;
+            document.getElementById('confirmDateBtn').disabled = false;
+        }
+
+        document.getElementById('appointmentDate').addEventListener('change', () => {
+            state.selectedDate = document.getElementById('appointmentDate').value;
+            loadTimeSlots();
+        });
+
+        document.getElementById('serviceType').addEventListener('change', (e) => {
+            state.serviceType = e.target.value;
+        });
 
         async function bookAppointment() {
-            if (!selectedBank || !selectedDate || !selectedTime) {
-                showNotification('Please select a bank, date, and time slot', 'error');
+            if (!state.selectedBank || !state.selectedDate || !state.selectedTime) {
+                showError('Please complete all selections');
                 return;
             }
-
-            bookBtn.disabled = true;
 
             try {
                 const response = await fetch('/api/appointments/book', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...(state.token ? { 'Authorization': `Bearer ${state.token}` } : {})
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
-                        bankId: selectedBank.id,
-                        bankName: selectedBank.name,
-                        bankAddress: selectedBank.address,
-                        appointmentDate: selectedDate,
-                        appointmentTime: selectedTime
+                        bankId: state.selectedBank.id,
+                        bankName: state.selectedBank.name,
+                        bankAddress: state.selectedBank.address,
+                        appointmentDate: state.selectedDate,
+                        appointmentTime: state.selectedTime,
+                        serviceType: state.serviceType
                     })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    showNotification('Appointment booked successfully!', 'success');
-                    // Redirect to confirmation page after 2 seconds
-                    setTimeout(() => {
-                        window.location.href = `/appointment-confirmation.html?id=${data.appointmentId}`;
-                    }, 2000);
+                    // Display success page
+                    const dateObj = new Date(state.selectedDate);
+                    const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+                    ['successBankName', 'confirmBankName'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = state.selectedBank.name;
+                    });
+                    ['successBankAddress', 'confirmBankAddress'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = state.selectedBank.address;
+                    });
+                    ['successDate', 'confirmDate'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = formattedDate;
+                    });
+                    ['successTime', 'confirmTime'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = state.selectedTime;
+                    });
+                    ['successNumber', 'confirmNumber'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = data.appointment.id;
+                    });
+
+                    goToPage('successPage');
                 } else {
-                    showNotification(data.message || 'Failed to book appointment', 'error');
-                    bookBtn.disabled = false;
+                    showError(data.message || data.error || 'Booking failed');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showNotification('Error booking appointment', 'error');
-                bookBtn.disabled = false;
+                showError('Error booking appointment');
             }
         }
 
-        function showNotification(message, type) {
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 3000);
-            }
+        function viewMyAppointments() {
+            window.location.href = '/my-appointments.html';
         }
 
-        function resetForm() {
-            selectedBank = null;
-            selectedDate = null;
-            selectedTime = null;
-            locationInput.value = '';
-            appointmentDate.value = minDate;
-            bankList.innerHTML = '<p style="color: #999; text-align: center;">Type a location to search</p>';
-            timeSlotContainer.innerHTML = '<p style="color: #999; text-align: center;">Please select a date first</p>';
-            summarySection.style.display = 'none';
-            bookBtn.disabled = true;
-            notification.style.display = 'none';
+        function newAppointment() {
+            state.selectedBank = null;
+            state.selectedDate = null;
+            state.selectedTime = null;
+            goToPage('locationPage');
         }
 
-        // Initialize
-        window.addEventListener('load', () => {
-            appointmentDate.value = minDate;
-        });
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+            setTimeout(() => errorEl.classList.remove('show'), 5000);
+        }
+
+        // Load initial time slots
+        loadTimeSlots();
     </script>
 </body>
 </html>

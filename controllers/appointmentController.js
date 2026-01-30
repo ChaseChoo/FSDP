@@ -7,12 +7,19 @@ import {
   updateAppointment as dbUpdateAppointment,
   getAppointmentsByDateRange,
 } from "../models/appointmentModel.js";
+import { findUserByExternalId } from "../models/userModel.js";
 
 // Book a new appointment
 export async function bookAppointment(req, res) {
   try {
-    const { bankId, bankName, bankAddress, appointmentDate, appointmentTime } =
-      req.body;
+    const {
+      bankId,
+      bankName,
+      bankAddress,
+      appointmentDate,
+      appointmentTime,
+      serviceType,
+    } = req.body;
 
     // Validate required fields
     if (
@@ -29,7 +36,18 @@ export async function bookAppointment(req, res) {
     }
 
     // Get userId from session (assuming it's stored in req.session)
-    const userId = req.session?.userId || req.body.userId || null;
+    let userId = req.user?.userId || req.session?.userId || req.body.userId || null;
+    if (!userId && req.user?.externalId) {
+      const user = await findUserByExternalId(req.user.externalId);
+      userId = user?.Id || null;
+    }
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
 
     // Book the appointment
     const appointment = await dbBookAppointment(userId, {
@@ -38,6 +56,7 @@ export async function bookAppointment(req, res) {
       bankAddress,
       appointmentDate,
       appointmentTime,
+      serviceType,
     });
 
     res.status(201).json({

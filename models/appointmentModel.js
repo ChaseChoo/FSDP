@@ -47,6 +47,8 @@ export async function bookAppointment(userId, appointmentData) {
       bankAddress,
       appointmentDate,
       appointmentTime,
+      serviceType,
+      notes,
     } = appointmentData;
 
     const result = await pool
@@ -57,9 +59,10 @@ export async function bookAppointment(userId, appointmentData) {
       .input("bankAddress", mssql.VarChar(500), bankAddress)
       .input("appointmentDate", mssql.Date, appointmentDate)
       .input("appointmentTime", mssql.VarChar(10), appointmentTime)
+      .input("notes", mssql.VarChar(mssql.MAX), notes || serviceType || null)
       .query(`
-        INSERT INTO appointments (userId, bankId, bankName, bankAddress, appointmentDate, appointmentTime, status, createdAt, updatedAt)
-        VALUES (@userId, @bankId, @bankName, @bankAddress, @appointmentDate, @appointmentTime, 'confirmed', GETDATE(), GETDATE());
+        INSERT INTO appointments (userId, bankId, bankName, bankAddress, appointmentDate, appointmentTime, status, notes, createdAt, updatedAt)
+        VALUES (@userId, @bankId, @bankName, @bankAddress, @appointmentDate, @appointmentTime, 'confirmed', @notes, GETDATE(), GETDATE());
         
         SELECT SCOPE_IDENTITY() as id;
       `);
@@ -75,6 +78,7 @@ export async function bookAppointment(userId, appointmentData) {
       bankAddress,
       appointmentDate,
       appointmentTime,
+      serviceType: notes || serviceType || null,
       status: "confirmed",
     };
   } catch (err) {

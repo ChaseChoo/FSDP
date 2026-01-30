@@ -3,6 +3,7 @@ dotenv.config();
 
 import { poolPromise, mssql } from "../models/db.js";
 import { insertTransaction } from "../models/transactionModel.js";
+import { getUserAppointments } from "../models/appointmentModel.js";
 import { findAccountByUserId, findAccountByAccountNumber, transferBetweenAccounts } from "../models/accountModel.js";
 import { findUserByExternalId } from "../models/userModel.js";
 import fs from "fs";
@@ -363,5 +364,48 @@ export async function transfer(req, res) {
     }
 
     return res.status(500).json({ error: "Server error during transfer" });
+  }
+}
+
+/**
+ * GET /account/appointments
+ */
+export async function getAppointments(req, res) {
+  try {
+    const externalId = req.user?.externalId;
+    const userId = req.user?.userId;
+
+    let user;
+    if (userId) {
+      user = { Id: userId };
+    } else if (externalId) {
+      user = await findUserByExternalId(externalId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+    } else {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const appointments = await getUserAppointments(user.Id);
+    const normalized = appointments.map((apt) => {
+      const statusRaw = (apt.status || "confirmed").toString();
+      const statusLabel = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1).toLowerCase();
+      return {
+        ...apt,
+        timeSlot: apt.timeSlot || apt.appointmentTime,
+        serviceType: apt.serviceType || apt.notes || "General Inquiry",
+        status: statusLabel,
+      };
+    });
+
+    return res.json({
+      success: true,
+      appointments: normalized,
+      count: normalized.length,
+    });
+  } catch (err) {
+    console.error("Error fetching appointments:", err);
+    return res.status(500).json({ error: "Server error fetching appointments" });
   }
 }
