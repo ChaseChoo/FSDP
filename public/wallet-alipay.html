@@ -758,20 +758,32 @@
         return;
       }
 
-      listElement.innerHTML = transactions.map(tx => `
-        <div class="transaction-item">
-          <div class="transaction-icon">
-            ${tx.type === 'received' ? '📥' : '📤'}
+      listElement.innerHTML = transactions.map(tx => {
+        // Handle both old format and new database format
+        const txType = tx.TransactionType || tx.type;
+        const txAmount = parseFloat(tx.Amount || tx.amount);
+        const txDescription = tx.Description || tx.description;
+        const txTime = tx.CreatedAt 
+          ? new Date(tx.CreatedAt).toLocaleTimeString() 
+          : (tx.time || new Date().toLocaleTimeString());
+        
+        const isReceived = txType === 'received' || txAmount > 0;
+        
+        return `
+          <div class="transaction-item">
+            <div class="transaction-icon">
+              ${isReceived ? '📥' : '📤'}
+            </div>
+            <div class="transaction-info">
+              <div class="transaction-title">${txDescription}</div>
+              <div class="transaction-time">${txTime}</div>
+            </div>
+            <div class="transaction-amount ${!isReceived ? 'negative' : ''}">
+              ${isReceived ? '+' : '-'}${config.currency}${Math.abs(txAmount).toFixed(2)}
+            </div>
           </div>
-          <div class="transaction-info">
-            <div class="transaction-title">${tx.description}</div>
-            <div class="transaction-time">${tx.time}</div>
-          </div>
-          <div class="transaction-amount ${tx.type === 'sent' ? 'negative' : ''}">
-            ${tx.type === 'received' ? '+' : '-'}${config.currency}${Math.abs(tx.amount).toFixed(2)}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     // Fetch wallet balance from server
@@ -787,6 +799,49 @@
       }
     }
 
+    // Fetch wallet transactions from database
+    async function fetchWalletTransactions() {
+      try {
+        const response = await fetch(`/api/wallet/transactions/${walletId}?limit=20`);
+        if (response.ok) {
+          const data = await response.json();
+          transactions = data.transactions || [];
+          renderTransactions();
+        }
+      } catch (error) {
+        console.error('Error fetching wallet transactions:', error);
+      }
+    }
+
+    // Fetch wallet summary (balance + transactions + statistics)
+    async function fetchWalletSummary() {
+      try {
+        const response = await fetch(`/api/wallet/summary/${walletId}?type=${walletType}`);
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.wallet) {
+            updateBalance(parseFloat(data.wallet.Balance));
+          }
+          
+          if (data.transactions) {
+            transactions = data.transactions;
+            renderTransactions();
+          }
+          
+          // Log statistics for debugging
+          if (data.statistics) {
+            console.log('Wallet Statistics:', data.statistics);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching wallet summary:', error);
+        // Fallback to individual calls
+        await fetchWalletBalance();
+        await fetchWalletTransactions();
+      }
+    }
+
     // Listen for wallet updates using BroadcastChannel
     if (window.BroadcastChannel) {
       const channel = new BroadcastChannel('wallet-updates');
@@ -799,6 +854,9 @@
           addTransaction('received', amount, `ATM Transfer from ${event.data.walletType}`);
           showNotification(`✅ Received ${config.currency}${amount.toFixed(2)} from ATM!`);
           
+          // Refresh transaction list from database
+          fetchWalletTransactions();
+          
           // Play a success sound (if available)
           try {
             const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBi6B0fPTgjMGHm7A7+OZRQ0OUqnn77BfGAhBmtvyv3AoBjJ+zPPWgzcGHGu77OGVRw0PUqnn77BfGAhBmtvyv3AoBjJ+zPPWgzcGHGu77OGVRw0PUqnn77BfGAhBmtvyv3AoBjJ+zPPWgzcGHGu77OGVRw0PUqnn77BfGAhBmtvyv3AoBjJ+zPPWgzcGHGu77OGVRw0P');
@@ -808,25 +866,18 @@
       };
     }
 
-    // Poll for updates every 2 seconds (fallback for browsers without BroadcastChannel)
-    setInterval(fetchWalletBalance, 2000);
+    // Poll for updates every 5 seconds (increased from 2 seconds to reduce load)
+    setInterval(fetchWalletSummary, 5000);
 
     // Fetch exchange rates on load and update every 5 minutes
     fetchExchangeRate();
     setInterval(fetchExchangeRate, 300000); // 5 minutes
 
-    // Initial load
-    fetchWalletBalance();
-    renderTransactions();
+    // Initial load - fetch complete wallet summary
+    fetchWalletSummary();
 
-    // Add some demo data for testing
-    setTimeout(() => {
-      if (transactions.length === 0) {
-        // Simulate some initial transactions
-        currentBalance = 100;
-        updateBalance(100);
-      }
-    }, 1000);
+    // Legacy: Add some demo data for testing (removed as we now load from database)
+    // The database will be the source of truth
   </script>
 </body>
 </html>
