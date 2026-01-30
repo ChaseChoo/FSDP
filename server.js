@@ -13,15 +13,20 @@ import supportRoutes from "./routes/supportRoutes.js";
 import approvedRecipientRoutes from "./routes/approvedRecipientRoutes.js";
 import guardianQRRoutes from "./routes/guardianQRRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
+import appointmentRoutes from "./routes/appointmentRoutes.js";
 import { sessionCount } from "./services/sessionStore.js";
 import fakeLogin from "./middleware/fakeLogin.js";
 import requireSession from "./middleware/requireSession.js";
 import { getTransactionHistory } from "./controllers/transactionController.js";
+import { createAppointmentTable } from "./models/appointmentModel.js";
 
 dotenv.config();
 
 // Debug: confirm .env value
 console.log("ENV DEV_ALLOW_ALL =", process.env.DEV_ALLOW_ALL);
+
+// Initialize database tables
+await createAppointmentTable();
 
 const app = express();
 
@@ -80,6 +85,8 @@ app.use("/api", approvedRecipientRoutes);
 app.use("/api/guardian", fakeLogin, guardianQRRoutes);
 // Digital wallet transfer API
 app.use("/api", fakeLogin, requireSession, walletRoutes);
+// Bank appointment booking API
+app.use("/api", appointmentRoutes);
 
 // Transaction history API endpoint (JSON)
 app.get("/api/transactions", fakeLogin, requireSession, getTransactionHistory);
@@ -127,6 +134,14 @@ app.get("/wallet-mobile", (req, res) => {
 
 app.get("/wallet-showcase", (req, res) => {
   res.sendFile(path.resolve("public/wallet-showcase.html"));
+});
+
+app.get("/bank-appointment", (req, res) => {
+  res.sendFile(path.resolve("public/bank-appointment.html"));
+});
+
+app.get("/appointment-confirmation", (req, res) => {
+  res.sendFile(path.resolve("public/appointment-confirmation.html"));
 });
 
 // Health check

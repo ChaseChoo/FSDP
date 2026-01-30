@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import sql from 'mssql';
+import appointmentRoutes from '../routes/appointmentRoutes.js';
+import { createAppointmentTable } from '../models/appointmentModel.js';
 
 dotenv.config();
 const app = express();
@@ -127,8 +129,30 @@ app.put('/api/approved-recipients/:id', async (req, res) => {
   }
 });
 
-const port = process.env.PORT || 4000;
-getPool().catch(() => {
-  console.warn('Continuing without DB connection; endpoints will fail until DB is reachable.');
+// Bank appointment routes
+app.get('/bank-appointment', (req, res) => {
+  res.sendFile('bank-appointment.html', { root: 'public' });
 });
+
+app.get('/appointment-confirmation', (req, res) => {
+  res.sendFile('appointment-confirmation.html', { root: 'public' });
+});
+
+// Mount appointment API routes
+app.use('/api', appointmentRoutes);
+
+const port = process.env.PORT || 3000;
+
+// Initialize database and create tables
+(async () => {
+  try {
+    await getPool();
+    console.log('Database connected successfully');
+    await createAppointmentTable();
+    console.log('Appointment table ready');
+  } catch (err) {
+    console.warn('Continuing without DB connection; endpoints will fail until DB is reachable.');
+  }
+})();
+
 app.listen(port, () => console.log(`API listening on http://localhost:${port}`));
