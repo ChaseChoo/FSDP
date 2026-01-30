@@ -68,6 +68,8 @@
       if (response.ok) {
         const data = await response.json();
         balance = parseFloat(data.balance) || 0.0;
+        // Save to localStorage for consistency
+        localStorage.setItem('balance', balance.toString());
         console.log('Balance loaded:', balance);
         updateBalanceUI();
       } else {
@@ -548,6 +550,8 @@
         if (response.ok) {
           const data = await response.json();
           balance = parseFloat(data.newBalance) || balance - amt;
+          // Save to localStorage
+          localStorage.setItem('balance', balance.toString());
           updateBalanceUI();
           logBot(dict.withdrawn_now(amt, balance));
           speak(dict.withdraw_msg);
@@ -1437,6 +1441,8 @@
         if (response.ok) {
           const data = await response.json();
           balance = parseFloat(data.newBalance) || balance + amount;
+          // Save to localStorage
+          localStorage.setItem('balance', balance.toString());
           updateBalanceUI();
           logBot(`Deposit accepted. ${formatCurrency(amount)} added to your account.`);
           speak('Deposit accepted. Thank you.');
