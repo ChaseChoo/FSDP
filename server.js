@@ -25,8 +25,10 @@ dotenv.config();
 // Debug: confirm .env value
 console.log("ENV DEV_ALLOW_ALL =", process.env.DEV_ALLOW_ALL);
 
-// Initialize database tables
-await createAppointmentTable();
+// Initialize database tables (non-blocking - runs in background)
+createAppointmentTable().catch(err => {
+  console.error('Failed to initialize appointment table:', err);
+});
 
 const app = express();
 

@@ -49,10 +49,30 @@
 
     // Fetch balance from API
     async function loadBalance() {
+      // Skip balance loading on certain pages (bills.html, confirm-bill-payment.html)
+      if (window.skipBalanceAPI) {
+        console.log('Balance API skipped on this page');
+        // Still ensure balance is set in localStorage
+        const savedBalance = localStorage.getItem('balance');
+        if (!savedBalance) {
+          localStorage.setItem('balance', '1000');
+        }
+        return;
+      }
+
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          console.warn('No token found, using default balance');
+          console.warn('No token found, using localStorage balance');
+          // Use localStorage balance if available
+          const savedBalance = localStorage.getItem('balance');
+          if (savedBalance) {
+            balance = parseFloat(savedBalance);
+          } else {
+            balance = 1000.00;
+            localStorage.setItem('balance', balance.toString());
+          }
+          updateBalanceUI();
           return;
         }
 
@@ -70,13 +90,35 @@
         balance = parseFloat(data.balance) || 0.0;
         // Save to localStorage for consistency
         localStorage.setItem('balance', balance.toString());
-        console.log('Balance loaded:', balance);
+        console.log('Balance loaded from API:', balance);
         updateBalanceUI();
       } else {
-        console.error('Failed to fetch balance:', response.status);
+        console.warn('Failed to fetch balance from API:', response.status);
+        // Fallback to localStorage
+        const savedBalance = localStorage.getItem('balance');
+        if (savedBalance) {
+          balance = parseFloat(savedBalance);
+          console.log('Using localStorage balance:', balance);
+          updateBalanceUI();
+        } else {
+          balance = 1000.00;
+          localStorage.setItem('balance', balance.toString());
+          updateBalanceUI();
+        }
       }
     } catch (error) {
-      console.error('Error loading balance:', error);
+      console.warn('Error loading balance from API:', error);
+      // Fallback to localStorage
+      const savedBalance = localStorage.getItem('balance');
+      if (savedBalance) {
+        balance = parseFloat(savedBalance);
+        console.log('Using localStorage balance as fallback:', balance);
+        updateBalanceUI();
+      } else {
+        balance = 1000.00;
+        localStorage.setItem('balance', balance.toString());
+        updateBalanceUI();
+      }
     }
   }
 
@@ -468,7 +510,25 @@
           logBot(el.textContent.trim() + " – (demo) coming soon.");
         })
       );
-    });         
+    });
+
+    // Bill Scanner button - navigate to bill-scanner.html
+    document
+      .querySelectorAll("#btnScanBill")
+      .forEach((el) =>
+        el.addEventListener("click", () => {
+          window.location.href = "bill-scanner.html";
+        })
+      );
+
+    // Bill Payment button - navigate to bill-scanner.html
+    document
+      .querySelectorAll("#btnBillPayment")
+      .forEach((el) =>
+        el.addEventListener("click", () => {
+          window.location.href = "bill-scanner.html";
+        })
+      );
 
     // Balance
 
