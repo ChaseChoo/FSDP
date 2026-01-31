@@ -194,7 +194,9 @@ function calculateSpendingSummary(history) {
   history.forEach(receipt => {
     // Extract numeric value from amount string (e.g., "S$66.20" -> 66.20)
     const amountStr = receipt.amount || 'S$0';
-    const numericAmount = parseFloat(amountStr.replace(/[S$,]/g, ''));
+    // Convert to string first if it's a number
+    const amountString = typeof amountStr === 'string' ? amountStr : String(amountStr);
+    const numericAmount = parseFloat(amountString.replace(/[S$,]/g, ''));
     if (!isNaN(numericAmount)) {
       total += numericAmount;
     }
