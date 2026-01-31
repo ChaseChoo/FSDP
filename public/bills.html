@@ -125,6 +125,119 @@
       font-size: 48px;
       margin-bottom: 12px;
     }
+
+    /* Scanned Bill Payment Styles */
+    .scanned-bill-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .scanned-bill-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .scanned-bill-icon {
+      width: 60px;
+      height: 60px;
+      background: #f0e7ff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    .scanned-bill-info h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #2d3748;
+    }
+
+    .scanned-bill-info p {
+      margin: 4px 0 0 0;
+      color: #718096;
+      font-size: 14px;
+    }
+
+    .bill-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .detail-item {
+      padding: 16px;
+      background: #f7fafc;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: #718096;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .detail-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #2d3748;
+      word-break: break-all;
+    }
+
+    .detail-value.amount {
+      color: #ea2a33;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-confirm {
+      flex: 1;
+      padding: 16px;
+      background: #ea2a33;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-confirm:hover {
+      background: #d41a25;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(234, 42, 51, 0.3);
+    }
+
+    .btn-cancel {
+      flex: 1;
+      padding: 16px;
+      background: #e2e8f0;
+      color: #2d3748;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+      background: #cbd5e0;
+    }
   </style>
 </head>
 
@@ -139,52 +252,90 @@
             <div>
               <h1 class="atm-title">Bill Payment</h1>
             </div>
-            <button onclick="location.href='index.html'" class="logout-btn">
+            <button onclick="goBackToPrevious()" class="logout-btn">
               <i data-lucide="arrow-left"></i> Back
             </button>
           </div>
         </div>
         <div class="card">
-          <div id="bills-info" class="summary">
-            <strong>Your issued bills:</strong> Select a bill to pay.
-          </div>
-          <div id="bills-list" class="issued-bills-list">
-            <div class="bill-stripe" onclick="payDemoBill(1)">
-              <div class="bill-stripe-icon">⚡</div>
-              <div class="bill-stripe-content">
-                <div class="bill-stripe-header">
-                  <div>
-                    <div class="bill-stripe-provider">Demo Power Co.</div>
-                    <span class="bill-stripe-type">ELECTRICITY</span>
-                  </div>
-                  <div class="bill-stripe-amount">$50.00</div>
-                </div>
-                <div class="bill-stripe-details">
-                  <span>Acct: DEMO-0001</span>
-                  <span class="bill-stripe-duedate">📅 Due: 2026-02-28</span>
-                </div>
-              </div>
-              <div class="bill-stripe-checkbox">
-                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+          <!-- Scanned Bill Payment (shown if data from scanner) -->
+          <div id="scanned-payment-section" class="scanned-bill-container" style="display: none;">
+            <div class="scanned-bill-header">
+              <div class="scanned-bill-icon">📋</div>
+              <div class="scanned-bill-info">
+                <h2>Payment Confirmation</h2>
+                <p>Review the scanned bill details below</p>
               </div>
             </div>
-            <div class="bill-stripe" onclick="payDemoBill(2)">
-              <div class="bill-stripe-icon">💧</div>
-              <div class="bill-stripe-content">
-                <div class="bill-stripe-header">
-                  <div>
-                    <div class="bill-stripe-provider">Demo Waterworks</div>
-                    <span class="bill-stripe-type">WATER</span>
+
+            <div class="bill-details-grid">
+              <div class="detail-item">
+                <div class="detail-label">Amount</div>
+                <div class="detail-value amount" id="scanned-amount">S$0.00</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Document Type</div>
+                <div class="detail-value" id="scanned-doctype">-</div>
+              </div>
+              <div class="detail-item" style="grid-column: 1 / -1;">
+                <div class="detail-label">Reference Number</div>
+                <div class="detail-value" id="scanned-reference">-</div>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button onclick="confirmScannedPayment()" class="btn-confirm">
+                Confirm Payment
+              </button>
+              <button onclick="editScannedPayment()" class="btn-cancel">
+                Edit Details
+              </button>
+            </div>
+          </div>
+
+          <!-- Original Bill List (shown if no scanner data) -->
+          <div id="bills-list-section">
+            <div id="bills-info" class="summary">
+              <strong>Your issued bills:</strong> Select a bill to pay.
+            </div>
+            <div id="bills-list" class="issued-bills-list">
+              <div class="bill-stripe" onclick="payDemoBill(1)">
+                <div class="bill-stripe-icon">⚡</div>
+                <div class="bill-stripe-content">
+                  <div class="bill-stripe-header">
+                    <div>
+                      <div class="bill-stripe-provider">Demo Power Co.</div>
+                      <span class="bill-stripe-type">ELECTRICITY</span>
+                    </div>
+                    <div class="bill-stripe-amount">$50.00</div>
                   </div>
-                  <div class="bill-stripe-amount">$30.00</div>
+                  <div class="bill-stripe-details">
+                    <span>Acct: DEMO-0001</span>
+                    <span class="bill-stripe-duedate">📅 Due: 2026-02-28</span>
+                  </div>
                 </div>
-                <div class="bill-stripe-details">
-                  <span>Acct: DEMO-0002</span>
-                  <span class="bill-stripe-duedate">📅 Due: 2026-03-05</span>
+                <div class="bill-stripe-checkbox">
+                  <i data-lucide="check" style="width: 14px; height: 14px;"></i>
                 </div>
               </div>
-              <div class="bill-stripe-checkbox">
-                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+              <div class="bill-stripe" onclick="payDemoBill(2)">
+                <div class="bill-stripe-icon">💧</div>
+                <div class="bill-stripe-content">
+                  <div class="bill-stripe-header">
+                    <div>
+                      <div class="bill-stripe-provider">Demo Waterworks</div>
+                      <span class="bill-stripe-type">WATER</span>
+                    </div>
+                    <div class="bill-stripe-amount">$30.00</div>
+                  </div>
+                  <div class="bill-stripe-details">
+                    <span>Acct: DEMO-0002</span>
+                    <span class="bill-stripe-duedate">📅 Due: 2026-03-05</span>
+                  </div>
+                </div>
+                <div class="bill-stripe-checkbox">
+                  <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                </div>
               </div>
             </div>
           </div>
@@ -196,6 +347,84 @@
 
 <script>
   lucide.createIcons();
+
+  // Check if data was passed from bill scanner
+  function initializePaymentPage() {
+    const billAmount = sessionStorage.getItem('billAmount');
+    const billReference = sessionStorage.getItem('billReference');
+    const billDocType = sessionStorage.getItem('billDocType');
+    const billProvider = sessionStorage.getItem('billProvider');
+
+    const scannedSection = document.getElementById('scanned-payment-section');
+    const billsListSection = document.getElementById('bills-list-section');
+
+    if (billAmount) {
+      // Show scanned payment confirmation
+      scannedSection.style.display = 'block';
+      billsListSection.style.display = 'none';
+
+      // Populate scanned data
+      document.getElementById('scanned-amount').textContent = billAmount;
+      document.getElementById('scanned-reference').textContent = billReference || 'Not detected';
+      document.getElementById('scanned-doctype').textContent = billDocType || 'Document';
+
+      // Store for later use
+      window.currentScannedBill = {
+        amount: billAmount,
+        reference: billReference,
+        docType: billDocType,
+        provider: billProvider || 'Bill Payment'
+      };
+    } else {
+      // Show original bills list
+      scannedSection.style.display = 'none';
+      billsListSection.style.display = 'block';
+    }
+  }
+
+  // Go back to previous page (scanner or home)
+  function goBackToPrevious() {
+    const billAmount = sessionStorage.getItem('billAmount');
+    if (billAmount) {
+      // Clear scanner data and go back to scanner
+      sessionStorage.removeItem('billAmount');
+      sessionStorage.removeItem('billReference');
+      sessionStorage.removeItem('billDocType');
+      window.location.href = 'bill-scanner.html';
+    } else {
+      // Go back to home
+      window.location.href = 'home.html';
+    }
+  }
+
+  // Confirm payment from scanned bill
+  function confirmScannedPayment() {
+    const billAmount = sessionStorage.getItem('billAmount');
+    const billReference = sessionStorage.getItem('billReference');
+    const billDocType = sessionStorage.getItem('billDocType');
+    const billProvider = sessionStorage.getItem('billProvider');
+    
+    if (billAmount) {
+      const billData = {
+        billType: 'scanned',
+        amount: billAmount,
+        reference: billReference || 'Not detected',
+        docType: billDocType || 'Document',
+        provider: billProvider || 'Bill Payment',
+        isScanned: true
+      };
+      console.log('Storing bill data:', billData);
+      sessionStorage.setItem('billPaymentData', JSON.stringify(billData));
+      window.location.href = 'confirm-bill-payment.html';
+    } else {
+      alert('No bill data found. Please scan a bill first.');
+    }
+  }
+
+  // Edit details and go back to scanner
+  function editScannedPayment() {
+    window.location.href = 'bill-scanner.html';
+  }
 
   // Demo bill payment handler
   window.payDemoBill = function(idx) {
@@ -222,6 +451,14 @@
       window.location.href = 'confirm-bill-payment.html';
     }
   }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initializePaymentPage);
+</script>
+
+<script>
+  // Flag to prevent balance API calls on this page
+  window.skipBalanceAPI = true;
 </script>
 
 <script src="scripts/home.js"></script>

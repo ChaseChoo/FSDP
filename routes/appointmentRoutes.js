@@ -62,6 +62,44 @@ router.get("/nearby", (req, res) => {
   res.json({ banks: nearby });
 });
 
+// Aliases for /api/appointments/* to avoid route collisions
+router.get("/appointments/banks", (req, res) => {
+  res.json({ banks: OCBC_BANKS });
+});
+
+router.get("/appointments/nearby", (req, res) => {
+  const { latitude, longitude, radius = 5 } = req.query;
+
+  if (!latitude || !longitude) {
+    return res.status(400).json({ error: "latitude and longitude required" });
+  }
+
+  const userLat = parseFloat(latitude);
+  const userLng = parseFloat(longitude);
+  const radiusKm = parseFloat(radius);
+
+  function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  const nearby = OCBC_BANKS
+    .map(bank => ({
+      ...bank,
+      distance: getDistance(userLat, userLng, bank.lat, bank.lng)
+    }))
+    .filter(bank => bank.distance <= radiusKm)
+    .sort((a, b) => a.distance - b.distance);
+
+  res.json({ banks: nearby });
+});
+
 // Book a new appointment
 router.post("/book", requireSession, bookAppointment);
 

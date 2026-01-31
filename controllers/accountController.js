@@ -375,6 +375,15 @@ export async function getAppointments(req, res) {
     const externalId = req.user?.externalId;
     const userId = req.user?.userId;
 
+    if (req.user?.readonly || externalId === "ANON") {
+      return res.json({
+        success: true,
+        appointments: [],
+        count: 0,
+        readonly: true,
+      });
+    }
+
     let user;
     if (userId) {
       user = { Id: userId };
@@ -406,6 +415,14 @@ export async function getAppointments(req, res) {
     });
   } catch (err) {
     console.error("Error fetching appointments:", err);
+    if (err?.message === "Database connection not available") {
+      return res.json({
+        success: true,
+        appointments: [],
+        count: 0,
+        warning: "Database connection not available",
+      });
+    }
     return res.status(500).json({ error: "Server error fetching appointments" });
   }
 }
