@@ -42,11 +42,16 @@ export async function bookAppointment(req, res) {
       userId = user?.Id || null;
     }
 
+    // Allow dev mode to use default user ID
     if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "User not authenticated",
-      });
+      if (process.env.DEV_ALLOW_ALL === 'true') {
+        userId = 1; // Default dev user
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: "User not authenticated",
+        });
+      }
     }
 
     // Book the appointment

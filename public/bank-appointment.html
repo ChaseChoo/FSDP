@@ -262,7 +262,7 @@
             <button class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors" onclick="window.location.href='home.html#noncash'">
                 <span class="material-symbols-outlined !text-lg">support_agent</span> Virtual Teller
             </button>
-            <button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+            <button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors" onclick="window.location.href='home.html'">
                 <span class="material-symbols-outlined !text-lg">logout</span> Exit
             </button>
         </div>
@@ -444,7 +444,7 @@
                         <span class="material-symbols-outlined">arrow_back</span>
                         Back
                     </button>
-                    <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" onclick="goToPage('confirmPage')" id="confirmDateBtn" disabled>
+                    <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" onclick="goToConfirmPage()" id="confirmDateBtn" disabled>
                         Next
                         <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
@@ -520,7 +520,7 @@
                         <span class="material-symbols-outlined">arrow_back</span>
                         Back
                     </button>
-                    <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2" onclick="bookAppointment()">
+                    <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2" onclick="bookAppointment(event)">
                         <span class="material-symbols-outlined">check_circle</span>
                         Confirm Booking
                     </button>
@@ -650,6 +650,12 @@
                         'ngrok-skip-browser-warning': 'true'
                     }
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
 
                 if (data.banks && data.banks.length > 0) {
@@ -661,7 +667,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showError('Error searching for banks');
+                showError(`Error searching for banks: ${error.message}`);
             }
         }
 
@@ -697,7 +703,10 @@
         function selectBank(bankId, element) {
             document.querySelectorAll('.bank-card').forEach(e => e.classList.remove('selected'));
             element.classList.add('selected');
-            state.selectedBank = state.banks.find(b => b.id === bankId);
+            // Convert bankId to number for comparison
+            const id = parseInt(bankId);
+            state.selectedBank = state.banks.find(b => parseInt(b.id) === id);
+            console.log('Selected bank:', state.selectedBank);
             document.getElementById('selectBankBtn').disabled = false;
         }
 
@@ -731,18 +740,70 @@
 
         // Update confirmation page before showing
         function updateConfirmationPage() {
-            if (!state.selectedBank || !state.selectedDate || !state.selectedTime) {
-                return;
+            console.log('===== UPDATING CONFIRMATION PAGE =====');
+            console.log('Current state:', state);
+            
+            if (!state.selectedBank) {
+                console.error('ERROR: No bank selected!');
+                showError('Please select a bank');
+                return false;
+            }
+            if (!state.selectedDate) {
+                console.error('ERROR: No date selected!');
+                showError('Please select a date');
+                return false;
+            }
+            if (!state.selectedTime) {
+                console.error('ERROR: No time selected!');
+                showError('Please select a time');
+                return false;
             }
             
-            const dateObj = new Date(state.selectedDate);
-            const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-            
-            document.getElementById('confirmBankName').textContent = state.selectedBank.name;
-            document.getElementById('confirmBankAddress').textContent = state.selectedBank.address;
-            document.getElementById('confirmDate').textContent = formattedDate;
-            document.getElementById('confirmTime').textContent = state.selectedTime;
-            document.getElementById('confirmService').textContent = state.serviceType;
+            try {
+                const dateObj = new Date(state.selectedDate);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+                
+                const confirmBankNameEl = document.getElementById('confirmBankName');
+                const confirmBankAddressEl = document.getElementById('confirmBankAddress');
+                const confirmDateEl = document.getElementById('confirmDate');
+                const confirmTimeEl = document.getElementById('confirmTime');
+                const confirmServiceEl = document.getElementById('confirmService');
+                
+                console.log('Elements found:', {
+                    bankName: !!confirmBankNameEl,
+                    address: !!confirmBankAddressEl,
+                    date: !!confirmDateEl,
+                    time: !!confirmTimeEl,
+                    service: !!confirmServiceEl
+                });
+                
+                // Set all values
+                confirmBankNameEl.textContent = state.selectedBank.name || '-';
+                confirmBankAddressEl.textContent = state.selectedBank.address || '-';
+                confirmDateEl.textContent = formattedDate;
+                confirmTimeEl.textContent = state.selectedTime;
+                confirmServiceEl.textContent = state.serviceType || 'General Inquiry';
+                
+                console.log('✓ Confirmation page updated successfully');
+                console.log('Set values:', {
+                    bankName: state.selectedBank.name,
+                    address: state.selectedBank.address,
+                    date: formattedDate,
+                    time: state.selectedTime,
+                    service: state.serviceType
+                });
+                
+                return true;
+            } catch (error) {
+                console.error('Error updating confirmation page:', error);
+                showError('Error loading confirmation details');
+                return false;
+            }
         }
 
         // Override goToPage for confirm page
@@ -754,66 +815,63 @@
             originalGoToPage(pageId);
         };
 
-        async function bookAppointment() {
+        // Function to handle confirm page navigation
+        function goToConfirmPage() {
+            console.log('Going to confirm page. Current state:', state);
+            updateConfirmationPage();
+            goToPage('confirmPage');
+        }
+
+        async function bookAppointment(event) {
             if (!state.selectedBank || !state.selectedDate || !state.selectedTime) {
                 showError('Please complete all selections');
                 return;
             }
 
+            // Show loading state on button
+            const confirmBtn = event ? event.target : document.querySelector('.bg-primary');
+            const originalHTML = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<span class="spinner" style="border: 3px solid #fff; border-top: 3px solid transparent; width: 20px; height: 20px; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite; margin-right: 10px;"></span>Booking...';
+            confirmBtn.disabled = true;
+
             try {
-                const response = await fetch('/api/appointments/book', {
+                const response = await fetch('/api/book', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        ...(state.token ? { 'Authorization': `Bearer ${state.token}` } : {}),
                         'ngrok-skip-browser-warning': 'true'
                     },
                     credentials: 'include',
                     body: JSON.stringify({
-                        bankId: state.selectedBank.id,
+                        bankId: state.selectedBank.id.toString(),
                         bankName: state.selectedBank.name,
                         bankAddress: state.selectedBank.address,
                         appointmentDate: state.selectedDate,
                         appointmentTime: state.selectedTime,
-                        serviceType: state.serviceType
+                        serviceType: state.serviceType || 'General Banking'
                     })
                 });
 
                 const data = await response.json();
+                console.log('Booking response:', data);
 
-                if (response.ok) {
-                    // Display success page
-                    const dateObj = new Date(state.selectedDate);
-                    const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-
-                    ['successBankName', 'confirmBankName'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.textContent = state.selectedBank.name;
-                    });
-                    ['successBankAddress', 'confirmBankAddress'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.textContent = state.selectedBank.address;
-                    });
-                    ['successDate', 'confirmDate'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.textContent = formattedDate;
-                    });
-                    ['successTime', 'confirmTime'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.textContent = state.selectedTime;
-                    });
-                    ['successNumber', 'confirmNumber'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.textContent = data.appointment.id;
-                    });
-
-                    goToPage('successPage');
+                if (response.ok && data.success) {
+                    // Get appointment ID from response
+                    const appointmentId = data.appointmentId || data.appointment?.id;
+                    console.log('Appointment ID:', appointmentId);
+                    
+                    // Always redirect to confirmation page
+                    window.location.href = `/appointment-confirmation.html?id=${appointmentId}`;
                 } else {
-                    showError(data.message || data.error || 'Booking failed');
+                    confirmBtn.innerHTML = originalHTML;
+                    confirmBtn.disabled = false;
+                    showError(data.message || data.error || 'Booking failed. Please try again.');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showError('Error booking appointment');
+                console.error('Booking error:', error);
+                confirmBtn.innerHTML = originalHTML;
+                confirmBtn.disabled = false;
+                showError('Error booking appointment. Please check your connection and try again.');
             }
         }
 
