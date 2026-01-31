@@ -1448,6 +1448,51 @@
   ],
   "user-1": [
     {
+      "Id": "dev-1769840767882-0.5703310315348074",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 1,
+      "BalanceAfter": 29457,
+      "Description": "ATM deposit",
+      "CreatedAt": "2026-01-31T06:26:07.882Z"
+    },
+    {
+      "Id": "dev-1769840709637-0.17955446407793785",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 1,
+      "BalanceAfter": 29456,
+      "Description": "ATM deposit",
+      "CreatedAt": "2026-01-31T06:25:09.637Z"
+    },
+    {
+      "Id": "dev-1769840681572-0.7963417684522545",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 10,
+      "BalanceAfter": 29455,
+      "Description": "ATM deposit",
+      "CreatedAt": "2026-01-31T06:24:41.572Z"
+    },
+    {
+      "Id": "dev-1769840651859-0.8970061023119766",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 5000,
+      "BalanceAfter": 29445,
+      "Description": "ATM deposit",
+      "CreatedAt": "2026-01-31T06:24:11.859Z"
+    },
+    {
+      "Id": "dev-1769840622833-0.7637837925464175",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 5,
+      "BalanceAfter": 24445,
+      "Description": "ATM deposit",
+      "CreatedAt": "2026-01-31T06:23:42.833Z"
+    },
+    {
       "Id": "dev-1769778842442-0.7022861985804678",
       "AccountId": "dev-user-1",
       "Type": "WALLET_TRANSFER",

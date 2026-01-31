@@ -205,13 +205,13 @@
 <div style="font-size: 1.25rem; font-weight: 800; color: #1b0e0e; margin-bottom: 1rem;">WHAT JUST HAPPENED</div>
 <div style="font-size: 1.125rem; line-height: 1.8; color: #333; text-align: left;">
 <div style="margin-bottom: 0.75rem;">
-<strong id="summaryBillType">You have successfully paid a bill.</strong>
+<strong id="summaryAction">You have successfully completed your transaction.</strong>
 </div>
 <div style="margin-bottom: 0.75rem;" id="summaryDetails">
-The payment of <strong id="summaryAmount">S$0.00</strong> has been completed and processed.
+The transaction of <strong id="summaryAmount">S$0.00</strong> has been completed and processed.
 </div>
 <div style="margin-bottom: 0.75rem;">
-<strong>No further action is required.</strong> Your payment is confirmed.
+<strong>No further action is required.</strong> Your transaction is confirmed.
 </div>
 <div style="color: #666; margin-top: 1rem;">
 (See details below for reference)
@@ -222,11 +222,11 @@ The payment of <strong id="summaryAmount">S$0.00</strong> has been completed and
 <!-- === BALANCE CHANGE EXPLANATION === -->
 <!-- Purpose: Help elderly users understand why balance changed -->
 <!-- Why: Transparent, reassuring explanation prevents confusion -->
-<div class="receipt-centered" style="background-color: #fef3e2; padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border-left: 4px solid #f59e0b;">
+<div class="receipt-centered" id="balanceChangeSection" style="background-color: #fef3e2; padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border-left: 4px solid #f59e0b;">
 <div style="font-size: 1rem; font-weight: 600; color: #1b0e0e; margin-bottom: 0.5rem;">YOUR ACCOUNT BALANCE CHANGED</div>
 <div style="font-size: 1rem; line-height: 1.6; color: #333;">
-Your balance <strong>decreased by</strong> <span id="balanceChangeAmount" style="color: #ea2a33; font-weight: 700;">S$0.00</span> <br>
-because of this payment.
+Your balance <strong id="balanceChangeDirection">changed by</strong> <span id="balanceChangeAmount" style="color: #ea2a33; font-weight: 700;">S$0.00</span> <br>
+<span id="balanceChangeReason">because of this transaction.</span>
 </div>
 </div>
 
@@ -239,7 +239,7 @@ because of this payment.
 
 <!-- Amount - Large & Clear -->
 <div class="receipt-centered">
-<div style="font-size: 0.875rem; color: #999; margin-bottom: 0.5rem;">AMOUNT PAID</div>
+<div style="font-size: 0.875rem; color: #999; margin-bottom: 0.5rem;" id="amountLabel">TRANSACTION AMOUNT</div>
 <div class="receipt-amount" id="receiptAmount">S$0.00</div>
 </div>
 
@@ -273,21 +273,21 @@ REFERENCE INFORMATION BELOW
 
 </div>
 
-<!-- Bill/Payment Details Section -->
-<div class="receipt-section">
-<div style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: #1b0e0e;">PAYMENT INFORMATION</div>
+<!-- Transaction Details Section -->
+<div class="receipt-section" id="transactionInfoSection">
+<div style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: #1b0e0e;">TRANSACTION INFORMATION</div>
 
-<div class="receipt-line">
+<div class="receipt-line" id="refNumberLine">
 <span class="receipt-label">Reference Number:</span>
 <span class="receipt-value" id="receiptRefNum">—</span>
 </div>
 
-<div class="receipt-line">
-<span class="receipt-label">Biller / Provider:</span>
+<div class="receipt-line" id="providerLine">
+<span class="receipt-label" id="providerLabel">Biller / Provider:</span>
 <span class="receipt-value" id="receiptProvider">—</span>
 </div>
 
-<div class="receipt-line">
+<div class="receipt-line" id="accountLine">
 <span class="receipt-label">Account Number:</span>
 <span class="receipt-value" id="receiptAccount">—</span>
 </div>
@@ -389,6 +389,7 @@ Your session is secure. Do not share this receipt with others.
 /**
  * Parse transaction data from URL parameters or sessionStorage
  * Populates all receipt fields dynamically
+ * Supports: Bill Payment, Withdrawal, Deposit, Transfer
  */
 function initializeReceipt() {
   // Try to get data from sessionStorage first (from payment flow)
@@ -400,63 +401,127 @@ function initializeReceipt() {
       receiptData = JSON.parse(billPaymentData);
     }
   } catch (e) {
-    console.error('Error reading receipt data:', e);
+    console.error('Error parsing sessionStorage data:', e);
   }
 
-  // Also check URL parameters as fallback
-  const params = new URLSearchParams(window.location.search);
-  if (!receiptData.amount && params.get('amount')) {
-    receiptData.amount = params.get('amount');
-  }
-  if (!receiptData.refNumber && params.get('refNumber')) {
-    receiptData.refNumber = params.get('refNumber');
-  }
-  if (!receiptData.provider && params.get('provider')) {
-    receiptData.provider = decodeURIComponent(params.get('provider'));
-  }
-  if (!receiptData.docType && params.get('docType')) {
-    receiptData.docType = params.get('docType');
-  }
-
-  // Get current balance from localStorage
-  let currentBalance = 1000.00;
-  const balanceStr = localStorage.getItem('balance');
-  if (balanceStr) {
-    currentBalance = parseFloat(balanceStr);
+  // If no data in sessionStorage, try URL parameters
+  if (!receiptData || Object.keys(receiptData).length === 0) {
+    const params = new URLSearchParams(window.location.search);
+    receiptData = {
+      transactionType: params.get('type') || 'transaction',
+      amount: params.get('amount'),
+      refNumber: params.get('ref'),
+      provider: params.get('provider'),
+      docType: params.get('docType'),
+      account: params.get('account'),
+      timestamp: params.get('timestamp'),
+      previousBalance: params.get('prevBalance'),
+      currentBalance: params.get('currBalance'),
+      toAccount: params.get('toAccount'),
+      toBank: params.get('toBank'),
+      payeeName: params.get('payeeName')
+    };
   }
 
-  // Calculate previous balance (amount paid + current balance)
-  let amountPaid = 0;
-  if (receiptData.amount) {
-    const amountStr = receiptData.amount.toString().replace(/[^\d.]/g, '');
-    amountPaid = parseFloat(amountStr) || 0;
-  }
-  const previousBalance = currentBalance + amountPaid;
+  // Determine transaction type (default to bill payment for backward compatibility)
+  const transactionType = receiptData.transactionType || 
+                          (receiptData.provider ? 'bill_payment' : 'transaction');
+  
+  // Generate transaction ID
+  const txnId = receiptData.transactionId || 'TXN-' + Date.now();
+  const now = receiptData.timestamp ? new Date(receiptData.timestamp) : new Date();
 
-  // Populate Receipt Fields
+  // Get balances
+  const previousBalance = receiptData.previousBalance 
+    ? parseFloat(receiptData.previousBalance) 
+    : parseFloat(localStorage.getItem('previousBalance') || '0');
+  const currentBalance = receiptData.currentBalance 
+    ? parseFloat(receiptData.currentBalance) 
+    : parseFloat(localStorage.getItem('balance') || '0');
+
+  // Parse amount (ensure it's a string first)
+  const amountStr = receiptData.amount || 'S$0.00';
+  const amountString = typeof amountStr === 'string' ? amountStr : String(amountStr);
+  const amount = parseFloat(amountString.replace(/[S$,]/g, ''));
+  
+  // Format amount with currency and 2 decimals
+  const formattedAmount = `S$${amount.toFixed(2)}`;
+
+  // === POPULATE SUMMARY SECTION BASED ON TRANSACTION TYPE ===
+  const summaryAction = document.getElementById('summaryAction');
+  const summaryDetails = document.getElementById('summaryDetails');
+  const summaryAmountElem = document.getElementById('summaryAmount');
+  const amountLabel = document.getElementById('amountLabel');
+  const balanceChangeDirection = document.getElementById('balanceChangeDirection');
+  const balanceChangeReason = document.getElementById('balanceChangeReason');
+  const balanceChangeSection = document.getElementById('balanceChangeSection');
+
+  summaryAmountElem.textContent = formattedAmount;
+
+  switch(transactionType) {
+    case 'withdrawal':
+    case 'withdraw':
+      summaryAction.textContent = 'You have successfully withdrawn cash.';
+      summaryDetails.innerHTML = `Your withdrawal of <strong>${formattedAmount}</strong> has been completed and dispensed.`;
+      amountLabel.textContent = 'AMOUNT WITHDRAWN';
+      balanceChangeDirection.textContent = 'decreased by';
+      balanceChangeReason.textContent = 'because of this withdrawal.';
+      balanceChangeSection.style.backgroundColor = '#fef3e2';
+      balanceChangeSection.style.borderLeftColor = '#f59e0b';
+      // Hide provider/reference for withdrawals
+      hideTransactionInfoFields(['providerLine', 'refNumberLine', 'accountLine']);
+      break;
+
+    case 'deposit':
+      summaryAction.textContent = 'You have successfully deposited cash.';
+      summaryDetails.innerHTML = `Your deposit of <strong>${formattedAmount}</strong> has been received and credited.`;
+      amountLabel.textContent = 'AMOUNT DEPOSITED';
+      balanceChangeDirection.textContent = 'increased by';
+      balanceChangeReason.textContent = 'because of this deposit.';
+      balanceChangeSection.style.backgroundColor = '#e7f9ed';
+      balanceChangeSection.style.borderLeftColor = '#10b981';
+      // Hide provider/reference for deposits
+      hideTransactionInfoFields(['providerLine', 'refNumberLine', 'accountLine']);
+      break;
+
+    case 'transfer':
+      const payeeName = receiptData.payeeName || 'recipient';
+      const toAccount = receiptData.toAccount || '—';
+      summaryAction.textContent = `You have successfully transferred funds to ${payeeName}.`;
+      summaryDetails.innerHTML = `Your transfer of <strong>${formattedAmount}</strong> has been sent to account ${toAccount}.`;
+      amountLabel.textContent = 'AMOUNT TRANSFERRED';
+      balanceChangeDirection.textContent = 'decreased by';
+      balanceChangeReason.textContent = 'because of this transfer.';
+      balanceChangeSection.style.backgroundColor = '#fef3e2';
+      balanceChangeSection.style.borderLeftColor = '#f59e0b';
+      // Show transfer-specific info
+      showTransferInfo(receiptData);
+      break;
+
+    case 'bill_payment':
+    default:
+      const provider = receiptData.provider || 'Bill Payment';
+      summaryAction.textContent = `You have successfully paid your ${provider} bill.`;
+      summaryDetails.innerHTML = `The payment of <strong>${formattedAmount}</strong> has been completed and processed.`;
+      amountLabel.textContent = 'AMOUNT PAID';
+      balanceChangeDirection.textContent = 'decreased by';
+      balanceChangeReason.textContent = 'because of this payment.';
+      balanceChangeSection.style.backgroundColor = '#fef3e2';
+      balanceChangeSection.style.borderLeftColor = '#f59e0b';
+      break;
+  }
+
+  // Balance change amount (always show absolute value)
+  document.getElementById('balanceChangeAmount').textContent = formattedAmount;
+
+  // Transaction icon
+  document.getElementById('statusIcon').textContent = '✓';
+  document.getElementById('statusText').textContent = 'Transaction Successful';
+  
   // Amount
-  const displayAmount = receiptData.amount 
-    ? (isNaN(receiptData.amount) ? receiptData.amount : `S$${parseFloat(receiptData.amount).toFixed(2)}`)
-    : 'S$0.00';
-  document.getElementById('receiptAmount').textContent = displayAmount;
+  document.getElementById('receiptAmount').textContent = formattedAmount;
 
-  // === Populate Elderly-Friendly Summary Section ===
-  // Purpose: Show key information in plain language first
-  // This addresses elderly users' need for reassurance and clarity
-  document.getElementById('summaryAmount').textContent = displayAmount;
-  
-  // Populate specific bill type in summary (e.g., "Electricity", "Water", "Utility Bill Payment")
-  const provider = receiptData.provider || receiptData.account || 'bill';
-  const summaryBillType = `You have successfully paid your ${provider} bill.`;
-  document.getElementById('summaryBillType').textContent = summaryBillType;
-  
-  // Show balance change explanation
-  const balanceChangeAmount = `S$${amountPaid.toFixed(2)}`;
-  document.getElementById('balanceChangeAmount').textContent = balanceChangeAmount;
-
-  // Transaction ID (timestamp-based)
-  const now = new Date();
-  const txnId = `TXN-${now.getTime()}`;
+  // Transaction ID
   document.getElementById('receiptTxnId').textContent = txnId;
 
   // Date & Time (elderly-friendly format)
@@ -472,14 +537,18 @@ function initializeReceipt() {
   document.getElementById('receiptDateTime').textContent = dateTimeStr;
 
   // Document Type
-  const docType = receiptData.docType || 'Bill';
+  const docType = receiptData.docType || getDocTypeFromTransactionType(transactionType);
   document.getElementById('receiptDocType').textContent = docType;
 
   // Reference Number
-  const refNum = receiptData.refNumber || '—';
+  const refNum = receiptData.refNumber || receiptData.reference || '—';
   document.getElementById('receiptRefNum').textContent = refNum;
 
-  // Provider / Biller (already defined above for summary)
+  // Provider / Biller
+  const provider = receiptData.provider || 
+                   (transactionType === 'withdrawal' ? 'ATM Withdrawal' : 
+                    transactionType === 'deposit' ? 'Cash Deposit' : 
+                    transactionType === 'transfer' ? 'Fund Transfer' : '—');
   document.getElementById('receiptProvider').textContent = provider;
 
   // Account Number (if available)
@@ -492,18 +561,32 @@ function initializeReceipt() {
   // Current Balance
   document.getElementById('receiptCurrBalance').textContent = `S$${currentBalance.toFixed(2)}`;
 
-  // Set status text based on document type
+  // Set status text based on transaction type
   const statusElement = document.getElementById('statusSubtitle');
-  if (docType.toLowerCase() === 'bill') {
-    statusElement.textContent = 'Your bill payment has been processed successfully';
-  } else if (docType.toLowerCase() === 'receipt') {
-    statusElement.textContent = 'Your receipt has been recorded';
-  } else {
-    statusElement.textContent = 'Your transaction has been completed';
+  switch(transactionType) {
+    case 'withdrawal':
+    case 'withdraw':
+      statusElement.textContent = 'Your cash has been dispensed';
+      break;
+    case 'deposit':
+      statusElement.textContent = 'Your deposit has been credited to your account';
+      break;
+    case 'transfer':
+      statusElement.textContent = 'Your transfer has been sent successfully';
+      break;
+    default:
+      statusElement.textContent = 'Your transaction has been completed';
   }
 
   // Save to receipt history
-  saveToHistory(receiptData);
+  saveToHistory({
+    ...receiptData,
+    transactionType,
+    amount: amountStr,
+    timestamp: now.toISOString(),
+    previousBalance,
+    currentBalance
+  });
 
   // Clear sensitive data from sessionStorage after use
   try {
@@ -511,6 +594,59 @@ function initializeReceipt() {
   } catch (e) {
     console.error('Error clearing session data:', e);
   }
+}
+
+/**
+ * Get document type from transaction type
+ */
+function getDocTypeFromTransactionType(type) {
+  switch(type) {
+    case 'withdrawal':
+    case 'withdraw':
+      return 'Withdrawal Receipt';
+    case 'deposit':
+      return 'Deposit Receipt';
+    case 'transfer':
+      return 'Transfer Receipt';
+    case 'bill_payment':
+      return 'Bill Payment';
+    default:
+      return 'Transaction Receipt';
+  }
+}
+
+/**
+ * Hide specific transaction info fields
+ */
+function hideTransactionInfoFields(fieldIds) {
+  fieldIds.forEach(id => {
+    const elem = document.getElementById(id);
+    if (elem) elem.style.display = 'none';
+  });
+}
+
+/**
+ * Show transfer-specific information
+ */
+function showTransferInfo(data) {
+  // Update labels for transfer
+  const providerLabel = document.getElementById('providerLabel');
+  if (providerLabel) providerLabel.textContent = 'To Account:';
+  
+  const refNumLine = document.getElementById('refNumberLine');
+  if (refNumLine) {
+    refNumLine.querySelector('.receipt-label').textContent = 'Beneficiary:';
+    document.getElementById('receiptRefNum').textContent = data.payeeName || '—';
+  }
+
+  const accountLine = document.getElementById('accountLine');
+  if (accountLine) {
+    accountLine.querySelector('.receipt-label').textContent = 'Bank:';
+    document.getElementById('receiptAccount').textContent = data.toBank || '—';
+  }
+
+  document.getElementById('receiptProvider').textContent = data.toAccount || '—';
+  document.getElementById('receiptProvider').textContent = data.toAccount || '—';
 }
 
 /**
@@ -557,17 +693,18 @@ function speakReceipt() {
   }
 
   // Get receipt data for readout
-  const provider = document.getElementById('summaryBillType').textContent;
+  const summaryAction = document.getElementById('summaryAction').textContent;
   const amount = document.getElementById('summaryAmount').textContent;
-  const balanceChange = document.getElementById('balanceChangeAmount').textContent;
+  const balanceChangeAmount = document.getElementById('balanceChangeAmount').textContent;
+  const balanceChangeDirection = document.getElementById('balanceChangeDirection').textContent;
   const currentBalance = document.getElementById('receiptCurrBalance').textContent;
 
   // Compose speech text (elderly-friendly, clear)
   const speechText = `
     Receipt summary. 
-    ${provider}. 
-    Payment amount: ${amount}. 
-    Your balance decreased by ${balanceChange} because of this payment. 
+    ${summaryAction}. 
+    Transaction amount: ${amount}. 
+    Your balance ${balanceChangeDirection} ${balanceChangeAmount} because of this transaction. 
     Your current account balance is ${currentBalance}. 
     You are all done. You may safely take your card and leave the A T M.
   `;
