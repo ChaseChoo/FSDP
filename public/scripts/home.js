@@ -14,6 +14,7 @@
       activate: document.getElementById("activatePage"),
       transfer: document.getElementById("transferPage"),
       transferConfirm: document.getElementById("transferConfirmPage"),
+      bills: document.getElementById("billsPage"),
     };
 
     const chatlog = document.getElementById("chatlog");
@@ -521,14 +522,30 @@
         })
       );
 
-    // Bill Payment button - navigate to bill-scanner.html
+    // Bill Payment button - show bills page with two options
     document
       .querySelectorAll("#btnBillPayment")
       .forEach((el) =>
         el.addEventListener("click", () => {
-          window.location.href = "bill-scanner.html";
+          showPage("bills");
         })
       );
+
+    // Scan Bills button - redirect to bill scanner
+    const scanBillsBtn = document.getElementById("scanBillsBtn");
+    if (scanBillsBtn) {
+      scanBillsBtn.addEventListener("click", () => {
+        window.location.href = "bill-scanner.html";
+      });
+    }
+
+    // Pay Current Bills button - redirect to confirm bill payment
+    const payCurrentBillsBtn = document.getElementById("payCurrentBillsBtn");
+    if (payCurrentBillsBtn) {
+      payCurrentBillsBtn.addEventListener("click", () => {
+        window.location.href = "confirm-bill-payment.html";
+      });
+    }
 
     // Balance
 
@@ -1902,6 +1919,14 @@
     try{ flashAllOptions(); }catch(e){}
     // show numbered options for the main menu immediately
     try{ displayMenuOptions('main'); }catch(e){}
+    
+    // Check for hash or query parameter to load non-cash services
+    const initialView = new URLSearchParams(window.location.search).get("view");
+    const hashView = window.location.hash.replace('#', '');
+    if (initialView === "noncash" || hashView === "noncash") {
+      navHistory = ["main"];
+      showPage("noncash");
+    }
   });
 
 const btnTransactions = document.getElementById("btnTransactions");

@@ -115,10 +115,9 @@ tailwind.config = {
 <div class="max-w-[1400px] mx-auto flex items-center justify-between">
 <div class="flex items-center gap-3">
 <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
-<h1 class="text-xl font-bold hidden sm:block">Bill / Receipt Scanner</h1>
 </div>
 <div class="flex items-center gap-3">
-<button id="backBtn" class="bg-zinc-200 dark:bg-zinc-700 text-[#1b0e0e] dark:text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors">
+<button id="backBtn" class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors">
 <span class="material-symbols-outlined !text-lg">arrow_back</span> Back
 </button>
 </div>
@@ -739,11 +738,11 @@ buttons.retry.addEventListener('click', resetToInitial);
 
 // Back buttons
 buttons.back.addEventListener('click', () => {
-  window.location.href = 'home.html';
+  window.location.href = 'home.html#noncash';
 });
 
 buttons.backToHome.addEventListener('click', () => {
-  window.location.href = 'home.html';
+  window.location.href = 'home.html#noncash';
 });
 
 // Proceed to payment button

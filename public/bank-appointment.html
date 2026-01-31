@@ -259,11 +259,11 @@
             </a>
         </div>
         <div class="flex items-center gap-3">
-            <button class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors" onclick="try{ showVirtualTeller('Connecting you to a virtual teller.'); }catch(e){}">
+            <button class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors" onclick="window.location.href='home.html#noncash'">
                 <span class="material-symbols-outlined !text-lg">support_agent</span> Virtual Teller
             </button>
-            <button onclick="window.location.href='home.html'" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
-                <span class="material-symbols-outlined !text-lg">arrow_back</span> Back to Home
+            <button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+                <span class="material-symbols-outlined !text-lg">logout</span> Exit
             </button>
         </div>
     </div>
@@ -275,9 +275,15 @@
     <div id="locationPage" class="page active">
         <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
             <div class="bg-primary text-white px-8 py-6">
-                <div class="flex items-center gap-3 mb-2">
-                    <span class="material-symbols-outlined !text-3xl">location_on</span>
-                    <h1 class="text-3xl font-extrabold">Find a Bank</h1>
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined !text-3xl">location_on</span>
+                        <h1 class="text-3xl font-extrabold">Find a Bank</h1>
+                    </div>
+                    <button onclick="window.location.href='home.html#noncash'" class="text-white hover:text-white/80 flex items-center gap-2 font-medium transition-colors">
+                        <span class="material-symbols-outlined !text-lg">arrow_back</span>
+                        Back
+                    </button>
                 </div>
                 <p class="text-white/90">Search for OCBC branches near you</p>
             </div>
