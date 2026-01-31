@@ -700,8 +700,11 @@
             const coords = coordinates[location.toLowerCase()] || { lat: 1.3521, lng: 103.8198 };
 
             try {
-                const response = await fetch(`/api/appointments/nearby?latitude=${coords.lat}&longitude=${coords.lng}&radius=${radius}`, {
-                    headers: state.token ? { 'Authorization': `Bearer ${state.token}` } : {}
+                const response = await fetch(`/api/nearby?latitude=${coords.lat}&longitude=${coords.lng}&radius=${radius}`, {
+                    headers: {
+                        ...(state.token ? { 'Authorization': `Bearer ${state.token}` } : {}),
+                        'ngrok-skip-browser-warning': 'true'
+                    }
                 });
                 const data = await response.json();
 
@@ -776,7 +779,8 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        ...(state.token ? { 'Authorization': `Bearer ${state.token}` } : {})
+                        ...(state.token ? { 'Authorization': `Bearer ${state.token}` } : {}),
+                        'ngrok-skip-browser-warning': 'true'
                     },
                     credentials: 'include',
                     body: JSON.stringify({
