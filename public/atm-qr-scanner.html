@@ -310,13 +310,6 @@
       document.getElementById('startBtn').style.display = 'inline-block';
       document.getElementById('stopBtn').style.display = 'none';
     }
-          html5QrcodeScanner = null;
-        }
-      }
-      document.getElementById('cameraContainer').style.display = 'none';
-      document.getElementById('startBtn').style.display = 'inline-block';
-      document.getElementById('stopBtn').style.display = 'none';
-    }
 
     async function onScanSuccess(decodedText, decodedResult) {
       console.log('QR Code scanned:', decodedText);
