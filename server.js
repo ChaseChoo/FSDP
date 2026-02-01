@@ -146,6 +146,10 @@ app.get("/appointment-confirmation", (req, res) => {
   res.sendFile(path.resolve("public/appointment-confirmation.html"));
 });
 
+app.get("/my-bookings-mobile", (req, res) => {
+  res.sendFile(path.resolve("public/my-bookings-mobile.html"));
+});
+
 // Health check
 app.get("/health", (req, res) => {
   res.json({ ok: true, sessions: sessionCount() });
