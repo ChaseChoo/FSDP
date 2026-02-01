@@ -1,299 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My OCBC Appointments</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#ea2a33",
+            "background-light": "#f8f6f6",
+            "background-dark": "#211111",
+          },
+          fontFamily: { display: ["Public Sans", "sans-serif"] },
+          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
         }
-
+      }
+    }
+    </script>
+    
+    <style type="text/tailwindcss">
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+          font-size: 24px;
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+          background-image: linear-gradient(rgba(248, 246, 246, 0.98), rgba(248, 246, 246, 0.7)), url('sources/pexels-realcereal-15480508.jpg');
+          background-attachment: fixed;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
         }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            border-radius: 12px;
-            padding: 30px 20px;
-            margin-bottom: 30px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            color: #667eea;
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .btn-new {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 16px;
-            transition: transform 0.3s;
-        }
-
-        .btn-new:hover {
-            transform: translateY(-2px);
-        }
-
-        .appointments-list {
-            display: grid;
-            gap: 16px;
-        }
-
-        .appointment-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .appointment-card:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            transform: translateY(-2px);
-        }
-
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        .appointment-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .appointment-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .status-badge.confirmed {
-            background: rgba(76, 175, 80, 0.3);
-            color: #fff;
-        }
-
-        .status-badge.cancelled {
-            background: rgba(244, 67, 54, 0.3);
-            color: #fff;
-        }
-
-        .appointment-content {
-            padding: 20px;
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-        }
-
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #333;
-            flex: 0 0 120px;
-        }
-
-        .detail-value {
-            color: #666;
-            text-align: right;
-        }
-
-        .appointment-actions {
-            padding: 16px 20px;
-            background: #f9f9f9;
-            display: flex;
-            gap: 12px;
-            border-top: 1px solid #f0f0f0;
-        }
-
-        .btn-small {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-view {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-view:hover {
-            background: #5568d3;
-        }
-
-        .btn-cancel {
-            background: #f0f0f0;
-            color: #666;
-        }
-
-        .btn-cancel:hover {
-            background: #e0e0e0;
-        }
-
-        .btn-cancel:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .empty-state {
-            background: white;
-            border-radius: 12px;
-            padding: 60px 20px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-        }
-
-        .empty-state-title {
-            color: #333;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .empty-state-text {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 24px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: white;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .back-button {
-            display: inline-block;
-            color: white;
-            text-decoration: none;
-            margin-bottom: 20px;
-            font-weight: 600;
-            transition: opacity 0.3s;
-        }
-
-        .back-button:hover {
-            opacity: 0.8;
-        }
-
-        @media (max-width: 600px) {
-            .appointment-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-
-            .detail-row {
-                flex-direction: column;
-                gap: 4px;
-            }
-
-            .detail-label {
-                flex: 1;
-            }
-
-            .detail-value {
-                text-align: left;
-            }
-
-            .appointment-actions {
-                flex-direction: column;
-            }
+        .appointment-card {
+            animation: slideIn 0.3s ease-out;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <a href="/home.html" class="back-button">← Back to Home</a>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white min-h-screen">
 
-        <div class="header">
-            <h1>📅 My Appointments</h1>
-            <p>View and manage your OCBC bank appointments</p>
-            <button class="btn-new" onclick="newAppointment()">+ Book New Appointment</button>
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <a href="home.html" class="cursor-pointer">
+                <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8 hover:opacity-80 transition-opacity">
+            </a>
         </div>
-
-        <div id="loadingState" class="loading" style="display: none;">
-            <div class="spinner"></div>
-            <p>Loading your appointments...</p>
-        </div>
-
-        <div id="appointmentsList" class="appointments-list" style="display: none;"></div>
-
-        <div id="emptyState" class="empty-state" style="display: none;">
-            <div class="empty-state-icon">📋</div>
-            <h2 class="empty-state-title">No Appointments</h2>
-            <p class="empty-state-text">You don't have any scheduled appointments yet.</p>
-            <button class="btn-new" onclick="newAppointment()">Book Your First Appointment</button>
+        <div class="flex items-center gap-3">
+            <button class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors" onclick="newAppointment()">
+                <span class="material-symbols-outlined !text-lg">add</span> Book New
+            </button>
+            <button class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors" onclick="window.location.href='home.html'">
+                <span class="material-symbols-outlined !text-lg">home</span>
+            </button>
         </div>
     </div>
+</header>
+
+<main class="max-w-[1200px] mx-auto px-6 py-8 min-h-[calc(100vh-96px)]">
+    
+    <!-- Page Header -->
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden mb-6">
+        <div class="bg-primary text-white px-8 py-6">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined !text-3xl">event_note</span>
+                    <h1 class="text-3xl font-extrabold">My Appointments</h1>
+                </div>
+                <button onclick="window.location.href='home.html'" class="text-white hover:text-white/80 flex items-center gap-2 font-medium transition-colors">
+                    <span class="material-symbols-outlined !text-lg">arrow_back</span>
+                    Back
+                </button>
+            </div>
+            <p class="text-white/90">View and manage your OCBC bank appointments</p>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 p-12 text-center" style="display: none;">
+        <div class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
+        <p class="text-zinc-600 dark:text-zinc-400 font-medium">Loading your appointments...</p>
+    </div>
+
+    <!-- Appointments List -->
+    <div id="appointmentsList" class="grid gap-6" style="display: none;"></div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden" style="display: none;">
+        <div class="p-12 text-center">
+            <div class="text-6xl mb-4">📋</div>
+            <h2 class="text-2xl font-bold text-zinc-900 dark:text-white mb-2">No Appointments</h2>
+            <p class="text-zinc-600 dark:text-zinc-400 mb-6">You don't have any scheduled appointments yet.</p>
+            <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto" onclick="newAppointment()">
+                <span class="material-symbols-outlined">add</span>
+                Book Your First Appointment
+            </button>
+        </div>
+    </div>
+
+</main>
 
     <script>
         const token = localStorage.getItem('token');
@@ -322,22 +137,33 @@
                 const data = await response.json();
                 const appointments = data.appointments || [];
 
+                console.log('Raw appointments data:', appointments);
+                if (appointments.length > 0) {
+                    console.log('First appointment fields:', Object.keys(appointments[0]));
+                    console.log('First appointment:', appointments[0]);
+                }
+
                 loadingEl.style.display = 'none';
 
                 if (appointments.length === 0) {
                     emptyEl.style.display = 'block';
                 } else {
-                    listEl.style.display = 'block';
+                    listEl.style.display = 'grid';
                     renderAppointments(appointments);
                 }
             } catch (error) {
                 console.error('Error:', error);
                 loadingEl.style.display = 'none';
                 emptyEl.innerHTML = `
-                    <div class="empty-state-icon">❌</div>
-                    <h2 class="empty-state-title">Error Loading Appointments</h2>
-                    <p class="empty-state-text">${error.message}</p>
-                    <button class="btn-new" onclick="location.reload()">Try Again</button>
+                    <div class="p-12 text-center">
+                        <div class="text-6xl mb-4">❌</div>
+                        <h2 class="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Error Loading Appointments</h2>
+                        <p class="text-zinc-600 dark:text-zinc-400 mb-6">${error.message}</p>
+                        <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto" onclick="location.reload()">
+                            <span class="material-symbols-outlined">refresh</span>
+                            Try Again
+                        </button>
+                    </div>
                 `;
                 emptyEl.style.display = 'block';
             }
@@ -347,52 +173,101 @@
             const listEl = document.getElementById('appointmentsList');
             
             listEl.innerHTML = appointments.map(apt => {
-                const dateObj = new Date(apt.appointmentDate);
+                console.log('Processing appointment:', apt);
+                
+                // Handle PascalCase, camelCase, and lowercase field names
+                const bankName = apt.bankName || apt.BankName || apt.bankname || 'OCBC Bank';
+                const bankAddress = apt.bankAddress || apt.BankAddress || apt.bankaddress || 'Address not available';
+                const appointmentDate = apt.appointmentDate || apt.AppointmentDate || apt.appointmentdate;
+                const timeSlot = apt.timeSlot || apt.appointmentTime || apt.AppointmentTime || apt.timeslot || apt.appointmenttime || '-';
+                const serviceType = apt.serviceType || apt.ServiceType || apt.Notes || apt.notes || apt.servicetype || 'General Inquiry';
+                const confirmationId = apt.id || apt.ID || apt.appointmentId || apt.appointmentid || 'N/A';
+                const status = apt.status || apt.Status || 'confirmed';
+                
+                console.log('Extracted values:', { bankName, bankAddress, appointmentDate, timeSlot, serviceType, confirmationId, status });
+                
+                const dateObj = new Date(appointmentDate);
                 const formattedDate = dateObj.toLocaleDateString('en-US', { 
                     weekday: 'short', 
                     year: 'numeric', 
                     month: 'short', 
                     day: 'numeric' 
                 });
-                const statusLabel = apt.status || 'confirmed';
+                const statusLabel = status;
                 const statusClass = statusLabel.toLowerCase();
-                const timeSlot = apt.timeSlot || apt.appointmentTime || '-';
-                const serviceType = apt.serviceType || apt.notes || 'General Inquiry';
 
-                const isUpcoming = new Date(apt.appointmentDate) >= new Date();
+                const isUpcoming = new Date(appointmentDate) >= new Date();
                 const canCancel = statusLabel.toLowerCase() === 'confirmed' && isUpcoming;
 
+                // Status badge colors
+                let statusBadgeClass = 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
+                if (statusClass === 'cancelled') {
+                    statusBadgeClass = 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+                } else if (statusClass === 'pending') {
+                    statusBadgeClass = 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
+                }
+
                 return `
-                    <div class="appointment-card">
-                        <div class="appointment-header">
-                            <div class="appointment-title">${apt.bankName}</div>
-                            <div class="status-badge ${statusClass}">${statusLabel}</div>
-                        </div>
-                        <div class="appointment-content">
-                            <div class="detail-row">
-                                <div class="detail-label">📍 Location</div>
-                                <div class="detail-value">${apt.bankAddress}</div>
+                    <div class="appointment-card bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:shadow-xl transition-all">
+                        <div class="bg-gradient-to-r from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 px-6 py-4 flex items-center justify-between border-b border-zinc-300 dark:border-zinc-600">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-primary/10 p-2 rounded-lg">
+                                    <span class="material-symbols-outlined !text-2xl text-primary">account_balance</span>
+                                </div>
+                                <h3 class="text-lg font-bold text-zinc-900 dark:text-white">${bankName}</h3>
                             </div>
-                            <div class="detail-row">
-                                <div class="detail-label">📅 Date</div>
-                                <div class="detail-value">${formattedDate}</div>
-                            </div>
-                            <div class="detail-row">
-                                <div class="detail-label">⏰ Time</div>
-                                <div class="detail-value">${timeSlot}</div>
-                            </div>
-                            <div class="detail-row">
-                                <div class="detail-label">🎯 Service</div>
-                                <div class="detail-value">${serviceType}</div>
-                            </div>
-                            <div class="detail-row">
-                                <div class="detail-label">🔢 Confirmation</div>
-                                <div class="detail-value" style="font-family: monospace; font-weight: 600;">${apt.id}</div>
+                            <div class="px-3 py-1 rounded-full text-xs font-bold ${statusBadgeClass}">
+                                ${statusLabel.toUpperCase()}
                             </div>
                         </div>
-                        <div class="appointment-actions">
-                            <button class="btn-small btn-view" onclick="viewDetails('${apt.id}')">View Details</button>
-                            <button class="btn-small btn-cancel" ${!canCancel ? 'disabled' : ''} onclick="cancelAppointment('${apt.id}')">
+                        <div class="p-6">
+                            <div class="space-y-3">
+                                <div class="flex items-start gap-3 text-sm">
+                                    <span class="material-symbols-outlined text-zinc-400 !text-lg">location_on</span>
+                                    <div class="flex-1">
+                                        <div class="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">Location</div>
+                                        <div class="text-zinc-600 dark:text-zinc-400">${bankAddress}</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="flex items-start gap-3 text-sm">
+                                        <span class="material-symbols-outlined text-zinc-400 !text-lg">calendar_today</span>
+                                        <div class="flex-1">
+                                            <div class="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">Date</div>
+                                            <div class="text-zinc-600 dark:text-zinc-400">${formattedDate}</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3 text-sm">
+                                        <span class="material-symbols-outlined text-zinc-400 !text-lg">schedule</span>
+                                        <div class="flex-1">
+                                            <div class="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">Time</div>
+                                            <div class="text-zinc-600 dark:text-zinc-400">${timeSlot}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3 text-sm">
+                                    <span class="material-symbols-outlined text-zinc-400 !text-lg">work</span>
+                                    <div class="flex-1">
+                                        <div class="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">Service Type</div>
+                                        <div class="text-zinc-600 dark:text-zinc-400">${serviceType}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3 text-sm">
+                                    <span class="material-symbols-outlined text-zinc-400 !text-lg">confirmation_number</span>
+                                    <div class="flex-1">
+                                        <div class="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">Confirmation Number</div>
+                                        <div class="text-zinc-600 dark:text-zinc-400 font-mono font-bold">${confirmationId}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-t border-zinc-200 dark:border-zinc-700 flex gap-3">
+                            <button class="flex-1 bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2" onclick="viewDetails('${confirmationId}')">
+                                <span class="material-symbols-outlined !text-lg">visibility</span>
+                                View Details
+                            </button>
+                            <button class="flex-1 ${canCancel ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'} px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2" ${!canCancel ? 'disabled' : ''} onclick="cancelAppointment('${confirmationId}')">
+                                <span class="material-symbols-outlined !text-lg">${statusLabel.toLowerCase() === 'cancelled' ? 'block' : 'cancel'}</span>
                                 ${statusLabel.toLowerCase() === 'cancelled' ? 'Cancelled' : 'Cancel'}
                             </button>
                         </div>
@@ -402,31 +277,48 @@
         }
 
         function viewDetails(appointmentId) {
-            // Could open a modal or navigate to details page
-            alert('Appointment ID: ' + appointmentId);
+            alert('Appointment ID: ' + appointmentId + '\n\nDetailed view coming soon!');
         }
 
         async function cancelAppointment(appointmentId) {
             if (!confirm('Are you sure you want to cancel this appointment?')) return;
 
+            // Show loading state
+            const cancelBtn = event?.target?.closest('button');
+            if (cancelBtn) {
+                cancelBtn.disabled = true;
+                cancelBtn.innerHTML = '<span class="material-symbols-outlined !text-lg">hourglass_empty</span> Cancelling...';
+            }
+
             try {
                 const response = await fetch(`/api/appointments/${appointmentId}/cancel`, {
                     method: 'PUT',
                     headers: {
+                        'Content-Type': 'application/json',
                         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
                         'ngrok-skip-browser-warning': 'true'
                     }
                 });
 
-                if (response.ok) {
-                    alert('Appointment cancelled successfully');
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    alert('✅ Appointment cancelled successfully!');
                     loadAppointments();
                 } else {
-                    alert('Failed to cancel appointment');
+                    alert('❌ Failed to cancel appointment: ' + (data.message || 'Unknown error'));
+                    if (cancelBtn) {
+                        cancelBtn.disabled = false;
+                        cancelBtn.innerHTML = '<span class="material-symbols-outlined !text-lg">cancel</span> Cancel';
+                    }
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('Error cancelling appointment');
+                console.error('Error cancelling appointment:', error);
+                alert('❌ Error cancelling appointment: ' + error.message);
+                if (cancelBtn) {
+                    cancelBtn.disabled = false;
+                    cancelBtn.innerHTML = '<span class="material-symbols-outlined !text-lg">cancel</span> Cancel';
+                }
             }
         }
 

@@ -22,11 +22,18 @@ export async function createAppointmentTable() {
           appointmentDate DATE,
           appointmentTime VARCHAR(10),
           status VARCHAR(50) DEFAULT 'confirmed',
+          serviceType VARCHAR(255),
           createdAt DATETIME DEFAULT GETDATE(),
           updatedAt DATETIME DEFAULT GETDATE(),
           notes VARCHAR(MAX),
           FOREIGN KEY (userId) REFERENCES users(id)
-        )
+        );
+        
+        -- Add serviceType column if it doesn't exist
+        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('appointments') AND name = 'serviceType')
+        BEGIN
+          ALTER TABLE appointments ADD serviceType VARCHAR(255);
+        END
       `);
     console.log("✅ Appointments table created or already exists");
   } catch (err) {
@@ -59,10 +66,11 @@ export async function bookAppointment(userId, appointmentData) {
       .input("bankAddress", mssql.VarChar(500), bankAddress)
       .input("appointmentDate", mssql.Date, appointmentDate)
       .input("appointmentTime", mssql.VarChar(10), appointmentTime)
+      .input("serviceType", mssql.VarChar(255), serviceType || notes || null)
       .input("notes", mssql.VarChar(mssql.MAX), notes || serviceType || null)
       .query(`
-        INSERT INTO appointments (userId, bankId, bankName, bankAddress, appointmentDate, appointmentTime, status, notes, createdAt, updatedAt)
-        VALUES (@userId, @bankId, @bankName, @bankAddress, @appointmentDate, @appointmentTime, 'confirmed', @notes, GETDATE(), GETDATE());
+        INSERT INTO appointments (userId, bankId, bankName, bankAddress, appointmentDate, appointmentTime, status, serviceType, notes, createdAt, updatedAt)
+        VALUES (@userId, @bankId, @bankName, @bankAddress, @appointmentDate, @appointmentTime, 'confirmed', @serviceType, @notes, GETDATE(), GETDATE());
         
         SELECT SCOPE_IDENTITY() as id;
       `);

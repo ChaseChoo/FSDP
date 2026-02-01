@@ -311,6 +311,16 @@ function confirmPayment() {
     sessionStorage.removeItem('billReference');
     sessionStorage.removeItem('billDocType');
 
+    // Mark bill as paid if it has an ID
+    if (currentBillData.id || currentBillData.accountNumber) {
+      const billId = currentBillData.id || currentBillData.accountNumber;
+      const paidBills = JSON.parse(localStorage.getItem('paidBills') || '[]');
+      if (!paidBills.includes(billId)) {
+        paidBills.push(billId);
+        localStorage.setItem('paidBills', JSON.stringify(paidBills));
+      }
+    }
+
     // Redirect to receipt page
     window.location.href = 'receipt.html';
   }, 1200);

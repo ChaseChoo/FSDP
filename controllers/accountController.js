@@ -398,13 +398,20 @@ export async function getAppointments(req, res) {
 
     const appointments = await getUserAppointments(user.Id);
     const normalized = appointments.map((apt) => {
-      const statusRaw = (apt.status || "confirmed").toString();
+      const statusRaw = (apt.Status || apt.status || "confirmed").toString();
       const statusLabel = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1).toLowerCase();
       return {
-        ...apt,
-        timeSlot: apt.timeSlot || apt.appointmentTime,
-        serviceType: apt.serviceType || apt.notes || "General Inquiry",
+        id: apt.id || apt.ID,
+        bankId: apt.BankID || apt.bankId,
+        bankName: apt.BankName || apt.bankName,
+        bankAddress: apt.BankAddress || apt.bankAddress,
+        appointmentDate: apt.AppointmentDate || apt.appointmentDate,
+        appointmentTime: apt.AppointmentTime || apt.appointmentTime,
+        timeSlot: apt.AppointmentTime || apt.appointmentTime,
+        serviceType: apt.ServiceType || apt.Notes || apt.notes || "General Inquiry",
         status: statusLabel,
+        createdAt: apt.CreatedAt || apt.createdAt,
+        updatedAt: apt.UpdatedAt || apt.updatedAt,
       };
     });
 

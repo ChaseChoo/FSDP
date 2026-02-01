@@ -571,11 +571,11 @@
       });
     }
 
-    // Pay Current Bills button - redirect to confirm bill payment
+    // Pay Current Bills button - redirect to bills page
     const payCurrentBillsBtn = document.getElementById("payCurrentBillsBtn");
     if (payCurrentBillsBtn) {
       payCurrentBillsBtn.addEventListener("click", () => {
-        window.location.href = "confirm-bill-payment.html";
+        window.location.href = "bills.html";
       });
     }
 

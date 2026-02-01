@@ -1,353 +1,153 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html class="light" lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EasyATM — Bill Payment</title>
-
-  <!-- ATM Homepage UI Styles -->
-  <link rel="stylesheet" href="styles/home.css">
-
-  <!-- Bill Payment form styles -->
-  <link rel="stylesheet" href="styles.css">
-
-  <!-- Impersonation Guard Styles -->
-  <link rel="stylesheet" href="impersonation-guard.css">
-
-  <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <style>
-    .issued-bills-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCBC - Bill Payment</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#ea2a33",
+            "background-light": "#f8f6f6",
+            "background-dark": "#211111",
+          },
+          fontFamily: { display: ["Public Sans", "sans-serif"] },
+          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+        }
+      }
     }
-
-    .bill-stripe {
-      display: flex;
-      align-items: center;
-      padding: 16px;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: white;
-    }
-
-    .bill-stripe:hover {
-      border-color: #667eea;
-      background: #f7fafc;
-      transform: translateX(4px);
-    }
-
-    .bill-stripe.selected {
-      border-color: #667eea;
-      background: linear-gradient(135deg, #eef2ff 0%, #f0e7ff 100%);
-    }
-
-    .bill-stripe-icon {
-      font-size: 32px;
-      margin-right: 16px;
-      min-width: 40px;
-    }
-
-    .bill-stripe-content {
-      flex: 1;
-    }
-
-    .bill-stripe-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-
-    .bill-stripe-provider {
-      font-weight: 600;
-      color: #2d3748;
-      font-size: 14px;
-    }
-
-    .bill-stripe-type {
-      font-size: 11px;
-      background: #edf2f7;
-      color: #2d3748;
-      padding: 2px 8px;
-      border-radius: 4px;
-      display: inline-block;
-    }
-
-    .bill-stripe-amount {
-      font-weight: 600;
-      color: #667eea;
-      font-size: 16px;
-    }
-
-    .bill-stripe-details {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #718096;
-      margin-top: 4px;
-    }
-
-    .bill-stripe-duedate {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .bill-stripe-checkbox {
-      width: 20px;
-      height: 20px;
-      border: 2px solid #cbd5e0;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: 12px;
-    }
-
-    .bill-stripe.selected .bill-stripe-checkbox {
-      background: #667eea;
-      border-color: #667eea;
-      color: white;
-    }
-
-    .no-bills-message {
-      text-align: center;
-      padding: 40px 20px;
-      color: #718096;
-    }
-
-    .no-bills-message-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-    }
-
-    /* Scanned Bill Payment Styles */
-    .scanned-bill-container {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .scanned-bill-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid #e2e8f0;
-    }
-
-    .scanned-bill-icon {
-      width: 60px;
-      height: 60px;
-      background: #f0e7ff;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-    }
-
-    .scanned-bill-info h2 {
-      margin: 0;
-      font-size: 24px;
-      color: #2d3748;
-    }
-
-    .scanned-bill-info p {
-      margin: 4px 0 0 0;
-      color: #718096;
-      font-size: 14px;
-    }
-
-    .bill-details-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin: 24px 0;
-    }
-
-    .detail-item {
-      padding: 16px;
-      background: #f7fafc;
-      border-radius: 8px;
-      border-left: 4px solid #667eea;
-    }
-
-    .detail-label {
-      font-size: 12px;
-      color: #718096;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-      font-weight: 600;
-    }
-
-    .detail-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: #2d3748;
-      word-break: break-all;
-    }
-
-    .detail-value.amount {
-      color: #ea2a33;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .btn-confirm {
-      flex: 1;
-      padding: 16px;
-      background: #ea2a33;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-confirm:hover {
-      background: #d41a25;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(234, 42, 51, 0.3);
-    }
-
-    .btn-cancel {
-      flex: 1;
-      padding: 16px;
-      background: #e2e8f0;
-      color: #2d3748;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-cancel:hover {
-      background: #cbd5e0;
-    }
-  </style>
+    </script>
+    
+    <style type="text/tailwindcss">
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+          font-size: 24px;
+        }
+        body {
+          background-image: linear-gradient(rgba(248, 246, 246, 0.98), rgba(248, 246, 246, 0.7)), url('sources/pexels-realcereal-15480508.jpg');
+          background-attachment: fixed;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .bill-card {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
 </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white min-h-screen">
 
-<body class="atm-body">
-
-<main class="atm-shell">
-  <section class="atm-card">
-    <div class="atm-layout">
-      <div class="atm-left">
-        <div class="atm-header">
-          <div class="header-content">
-            <div>
-              <h1 class="atm-title">Bill Payment</h1>
-            </div>
-            <button onclick="goBackToPrevious()" class="logout-btn">
-              <i data-lucide="arrow-left"></i> Back
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <a href="home.html" class="cursor-pointer">
+                <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8 hover:opacity-80 transition-opacity">
+            </a>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors" onclick="goBackToPrevious()">
+                <span class="material-symbols-outlined !text-lg">arrow_back</span> Back
             </button>
-          </div>
         </div>
-        <div class="card">
-          <!-- Scanned Bill Payment (shown if data from scanner) -->
-          <div id="scanned-payment-section" class="scanned-bill-container" style="display: none;">
-            <div class="scanned-bill-header">
-              <div class="scanned-bill-icon">📋</div>
-              <div class="scanned-bill-info">
-                <h2>Payment Confirmation</h2>
-                <p>Review the scanned bill details below</p>
-              </div>
-            </div>
-
-            <div class="bill-details-grid">
-              <div class="detail-item">
-                <div class="detail-label">Amount</div>
-                <div class="detail-value amount" id="scanned-amount">S$0.00</div>
-              </div>
-              <div class="detail-item">
-                <div class="detail-label">Document Type</div>
-                <div class="detail-value" id="scanned-doctype">-</div>
-              </div>
-              <div class="detail-item" style="grid-column: 1 / -1;">
-                <div class="detail-label">Reference Number</div>
-                <div class="detail-value" id="scanned-reference">-</div>
-              </div>
-            </div>
-
-            <div class="action-buttons">
-              <button onclick="confirmScannedPayment()" class="btn-confirm">
-                Confirm Payment
-              </button>
-              <button onclick="editScannedPayment()" class="btn-cancel">
-                Edit Details
-              </button>
-            </div>
-          </div>
-
-          <!-- Original Bill List (shown if no scanner data) -->
-          <div id="bills-list-section">
-            <div id="bills-info" class="summary">
-              <strong>Your issued bills:</strong> Select a bill to pay.
-            </div>
-            <div id="bills-list" class="issued-bills-list">
-              <div class="bill-stripe" onclick="payDemoBill(1)">
-                <div class="bill-stripe-icon">⚡</div>
-                <div class="bill-stripe-content">
-                  <div class="bill-stripe-header">
-                    <div>
-                      <div class="bill-stripe-provider">Demo Power Co.</div>
-                      <span class="bill-stripe-type">ELECTRICITY</span>
-                    </div>
-                    <div class="bill-stripe-amount">$50.00</div>
-                  </div>
-                  <div class="bill-stripe-details">
-                    <span>Acct: DEMO-0001</span>
-                    <span class="bill-stripe-duedate">📅 Due: 2026-02-28</span>
-                  </div>
-                </div>
-                <div class="bill-stripe-checkbox">
-                  <i data-lucide="check" style="width: 14px; height: 14px;"></i>
-                </div>
-              </div>
-              <div class="bill-stripe" onclick="payDemoBill(2)">
-                <div class="bill-stripe-icon">💧</div>
-                <div class="bill-stripe-content">
-                  <div class="bill-stripe-header">
-                    <div>
-                      <div class="bill-stripe-provider">Demo Waterworks</div>
-                      <span class="bill-stripe-type">WATER</span>
-                    </div>
-                    <div class="bill-stripe-amount">$30.00</div>
-                  </div>
-                  <div class="bill-stripe-details">
-                    <span>Acct: DEMO-0002</span>
-                    <span class="bill-stripe-duedate">📅 Due: 2026-03-05</span>
-                  </div>
-                </div>
-                <div class="bill-stripe-checkbox">
-                  <i data-lucide="check" style="width: 14px; height: 14px;"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-  </section>
+</header>
+
+<main class="max-w-[1200px] mx-auto px-6 py-8 min-h-[calc(100vh-96px)]">
+    
+    <!-- Page Header -->
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden mb-6">
+        <div class="bg-gradient-to-r from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined !text-3xl text-zinc-800 dark:text-white">receipt_long</span>
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-zinc-900 dark:text-white">Bill Payment</h1>
+                        <p class="text-zinc-600 dark:text-zinc-300 text-sm mt-1">Pay your bills quickly and securely</p>
+                    </div>
+                </div>
+                <button onclick="window.location.href='bill-scanner.html'" class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                    <span class="material-symbols-outlined">qr_code_scanner</span>
+                    Scan Bill
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scanned Bill Payment Section -->
+    <div id="scanned-payment-section" class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden" style="display: none;">
+        <div class="p-8">
+            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-200 dark:border-zinc-700">
+                <div class="bg-primary/10 p-4 rounded-2xl">
+                    <span class="material-symbols-outlined !text-4xl text-primary">document_scanner</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-zinc-900 dark:text-white">Payment Confirmation</h2>
+                    <p class="text-zinc-600 dark:text-zinc-400">Review the scanned bill details below</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-6 border-l-4 border-primary">
+                    <div class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-2">Amount</div>
+                    <div class="text-3xl font-bold text-primary" id="scanned-amount">S$0.00</div>
+                </div>
+                <div class="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-6 border-l-4 border-blue-500">
+                    <div class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-2">Document Type</div>
+                    <div class="text-xl font-bold text-zinc-900 dark:text-white" id="scanned-doctype">-</div>
+                </div>
+                <div class="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-6 border-l-4 border-green-500 md:col-span-2">
+                    <div class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-2">Reference Number</div>
+                    <div class="text-lg font-bold text-zinc-900 dark:text-white break-all" id="scanned-reference">-</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="editScannedPayment()" class="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white px-6 py-3 rounded-xl font-bold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">edit</span>
+                    Edit Details
+                </button>
+                <button onclick="confirmScannedPayment()" class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Confirm Payment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bill List Section -->
+    <div id="bills-list-section">
+        <div class="mb-6">
+            <h2 class="text-xl font-bold text-zinc-900 dark:text-white mb-2">Available Bills</h2>
+            <p class="text-zinc-600 dark:text-zinc-400 text-sm">Select a bill to proceed with payment</p>
+        </div>
+
+        <div id="bills-list" class="grid gap-4">
+            <!-- Bills will be loaded dynamically -->
+        </div>
+
+        <!-- No Bills Message -->
+        <div id="no-bills-message" class="text-center py-12" style="display: none;">
+            <span class="material-symbols-outlined !text-6xl text-zinc-400 dark:text-zinc-600 mb-4">receipt_long</span>
+            <h3 class="text-xl font-bold text-zinc-700 dark:text-zinc-300 mb-2">All bills paid!</h3>
+            <p class="text-zinc-600 dark:text-zinc-400">You have no outstanding bills at the moment.</p>
+        </div>
+    </div>
+
 </main>
 
 <script>
-  lucide.createIcons();
-
   // Check if data was passed from bill scanner
   function initializePaymentPage() {
     const billAmount = sessionStorage.getItem('billAmount');
@@ -426,37 +226,168 @@
     window.location.href = 'bill-scanner.html';
   }
 
-  // Demo bill payment handler
-  window.payDemoBill = function(idx) {
-    let bill;
-    if (idx === 1) {
-      bill = {
-        billType: 'electricity',
-        provider: 'Demo Power Co.',
-        accountNumber: 'DEMO-0001',
-        amount: 50.00,
-        dueDate: '2026-02-28'
-      };
-    } else if (idx === 2) {
-      bill = {
-        billType: 'water',
-        provider: 'Demo Waterworks',
-        accountNumber: 'DEMO-0002',
-        amount: 30.00,
-        dueDate: '2026-03-05'
-      };
+  // Demo bill data
+  const DEMO_BILLS = [
+    {
+      id: 'DEMO-0001',
+      billType: 'electricity',
+      provider: 'Demo Power Co.',
+      accountNumber: 'DEMO-0001',
+      amount: 50.00,
+      dueDate: '2026-02-28',
+      icon: 'bolt',
+      iconColor: 'yellow'
+    },
+    {
+      id: 'DEMO-0002',
+      billType: 'water',
+      provider: 'Demo Waterworks',
+      accountNumber: 'DEMO-0002',
+      amount: 30.00,
+      dueDate: '2026-03-05',
+      icon: 'water_drop',
+      iconColor: 'blue'
+    },
+    {
+      id: 'DEMO-0003',
+      billType: 'electricity',
+      provider: 'SP Group',
+      accountNumber: 'DEMO-0003',
+      amount: 85.50,
+      dueDate: '2026-02-15',
+      icon: 'bolt',
+      iconColor: 'yellow'
+    },
+    {
+      id: 'DEMO-0004',
+      billType: 'insurance',
+      provider: 'NTUC Income',
+      accountNumber: 'DEMO-0004',
+      amount: 120.00,
+      dueDate: '2026-02-20',
+      icon: 'health_and_safety',
+      iconColor: 'purple'
     }
+  ];
+
+  // Get paid bills from localStorage
+  function getPaidBills() {
+    const paid = localStorage.getItem('paidBills');
+    return paid ? JSON.parse(paid) : [];
+  }
+
+  // Mark bill as paid
+  function markBillAsPaid(billId) {
+    const paidBills = getPaidBills();
+    if (!paidBills.includes(billId)) {
+      paidBills.push(billId);
+      localStorage.setItem('paidBills', JSON.stringify(paidBills));
+    }
+  }
+
+  // Check if bill is paid
+  function isBillPaid(billId) {
+    return getPaidBills().includes(billId);
+  }
+
+  // Render bills
+  function renderBills() {
+    const billsList = document.getElementById('bills-list');
+    const noBillsMessage = document.getElementById('no-bills-message');
+    const paidBills = getPaidBills();
+    
+    // Filter out paid bills
+    const unpaidBills = DEMO_BILLS.filter(bill => !paidBills.includes(bill.id));
+
+    if (unpaidBills.length === 0) {
+      billsList.style.display = 'none';
+      noBillsMessage.style.display = 'block';
+      return;
+    }
+
+    billsList.style.display = 'grid';
+    noBillsMessage.style.display = 'none';
+    billsList.innerHTML = '';
+
+    unpaidBills.forEach(bill => {
+      const billCard = createBillCard(bill);
+      billsList.appendChild(billCard);
+    });
+  }
+
+  // Create bill card element
+  function createBillCard(bill) {
+    const card = document.createElement('div');
+    card.className = 'bill-card bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border-2 border-zinc-200 dark:border-zinc-800 overflow-hidden hover:shadow-xl hover:border-primary transition-all';
+    
+    let iconColorClass = 'text-yellow-600 dark:text-yellow-500';
+    let billTypeText = bill.billType.charAt(0).toUpperCase() + bill.billType.slice(1) + ' Bill';
+    
+    if (bill.iconColor === 'yellow') {
+      iconColorClass = 'text-yellow-600 dark:text-yellow-500';
+    } else if (bill.iconColor === 'blue') {
+      iconColorClass = 'text-blue-600 dark:text-blue-500';
+    } else if (bill.iconColor === 'purple') {
+      iconColorClass = 'text-purple-600 dark:text-purple-500';
+    }
+    
+    const dueDate = new Date(bill.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    card.innerHTML = `
+      <div class="bg-gradient-to-r from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 px-6 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined ${iconColorClass}">${bill.icon}</span>
+            <span class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase">${billTypeText}</span>
+          </div>
+          <span class="text-xs text-zinc-600 dark:text-zinc-400">Due: ${dueDate}</span>
+        </div>
+      </div>
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-zinc-900 dark:text-white mb-1">${bill.provider}</h3>
+            <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <span class="material-symbols-outlined !text-base">tag</span>
+              <span>Account: ${bill.accountNumber}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-zinc-600 dark:text-zinc-400 mb-1">Amount Due</div>
+            <div class="text-3xl font-extrabold text-primary">$${bill.amount.toFixed(2)}</div>
+          </div>
+        </div>
+        <button class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2" onclick="payBill('${bill.id}')">
+          <span class="material-symbols-outlined">payments</span>
+          Pay Now
+        </button>
+      </div>
+    `;
+
+    return card;
+  }
+
+  // Pay bill handler
+  window.payBill = function(billId) {
+    const bill = DEMO_BILLS.find(b => b.id === billId);
     if (bill) {
       sessionStorage.setItem('billPaymentData', JSON.stringify(bill));
       window.location.href = 'confirm-bill-payment.html';
     }
   }
 
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', initializePaymentPage);
-</script>
+  // Legacy function for backwards compatibility
+  window.payDemoBill = function(idx) {
+    const billId = idx === 1 ? 'DEMO-0001' : 'DEMO-0002';
+    payBill(billId);
+  }
 
-<script>
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    initializePaymentPage();
+    renderBills();
+  });
+
   // Flag to prevent balance API calls on this page
   window.skipBalanceAPI = true;
 </script>
