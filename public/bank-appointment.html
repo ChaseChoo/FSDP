@@ -358,7 +358,7 @@
     </div>
 </header>
 
-<main class="max-w-[1000px] mx-auto px-6 py-8 h-[calc(100vh-96px)] overflow-hidden">
+<main class="max-w-[1000px] mx-auto px-6 py-8 min-h-[calc(100vh-96px)]">
     
     <!-- Step 1: Location Search -->
     <div id="locationPage" class="page active">
@@ -435,7 +435,7 @@
     </div>
 
     <!-- Step 2: Select Bank -->
-    <div id="bankPage" class="page h-full">
+    <div id="bankPage" class="page h-[calc(100vh-96px)]">
         <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bank-page-card">
             <div class="bg-primary text-white px-8 py-5 bank-page-header">
                 <div class="flex items-center gap-3 mb-1">
@@ -479,6 +479,7 @@
                         <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
                 </div>
+            </div>
         </div>
     </div>
 
