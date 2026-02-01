@@ -122,7 +122,7 @@
         .step-indicator {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 32px;
+            margin-bottom: 28px;
             position: relative;
         }
         .step-indicator::before {
@@ -168,12 +168,47 @@
         }
         .bank-card {
             border: 2px solid #e5e5e5;
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 20px 24px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             background: white;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .nearest-badge {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: linear-gradient(135deg, #ea2a33 0%, #c71d24 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(234, 42, 51, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .second-nearest-badge {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         .bank-card:hover {
             border-color: #ea2a33;
@@ -209,6 +244,60 @@
             display: flex;
             align-items: center;
             gap: 4px;
+        }
+        .bank-page-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .bank-page-header {
+            flex-shrink: 0;
+        }
+        .bank-page-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            padding: 32px 40px;
+        }
+        .bank-list-frame {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 12px 8px 0 0;
+            margin: 0 -8px 20px 0;
+            min-height: 0;
+        }
+        .bank-list-frame::-webkit-scrollbar {
+            width: 8px;
+        }
+        .bank-list-frame::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .bank-list-frame::-webkit-scrollbar-thumb {
+            background: #d4d4d8;
+            border-radius: 4px;
+        }
+        .bank-list-frame::-webkit-scrollbar-thumb:hover {
+            background: #a1a1aa;
+        }
+        .dark .bank-list-frame::-webkit-scrollbar-thumb {
+            background: #52525b;
+        }
+        .dark .bank-list-frame::-webkit-scrollbar-thumb:hover {
+            background: #71717a;
+        }
+        .bank-page-footer {
+            flex-shrink: 0;
+            background: white;
+            padding: 24px 40px 28px;
+            border-top: 1px solid #e5e5e5;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .dark .bank-page-footer {
+            background: #18181b;
+            border-top-color: #27272a;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3);
         }
         .slot-grid {
             display: grid;
@@ -269,7 +358,7 @@
     </div>
 </header>
 
-<main class="max-w-[1000px] mx-auto px-6 py-8">
+<main class="max-w-[1000px] mx-auto px-6 py-8 h-[calc(100vh-96px)] overflow-hidden">
     
     <!-- Step 1: Location Search -->
     <div id="locationPage" class="page active">
@@ -315,9 +404,15 @@
 
                 <div class="mb-6">
                     <label class="block font-bold mb-2 text-[#1b0e0e] dark:text-zinc-100">Search Location</label>
-                    <div class="relative">
-                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">search</span>
-                        <input type="text" id="locationInput" placeholder='e.g., "Bukit Timah", "Marina Bay"' value="Bukit Timah" class="w-full pl-12 pr-4 py-3 border-2 border-zinc-300 dark:border-zinc-600 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-zinc-800 dark:text-white transition-all">
+                    <div class="flex gap-3">
+                        <div class="relative flex-1">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">location_on</span>
+                            <input type="text" id="locationInput" placeholder='e.g., "Orchard", "Tampines"' class="w-full pl-12 pr-4 py-3 border-2 border-zinc-300 dark:border-zinc-600 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-zinc-800 dark:text-white transition-all">
+                        </div>
+                        <button onclick="useMyLocation()" class="bg-primary/10 text-primary px-4 py-3 rounded-xl font-bold hover:bg-primary/20 transition-all flex items-center gap-2 whitespace-nowrap" title="Use my current location">
+                            <span class="material-symbols-outlined">my_location</span>
+                            <span class="hidden sm:inline">Use My Location</span>
+                        </button>
                     </div>
                 </div>
 
@@ -340,17 +435,17 @@
     </div>
 
     <!-- Step 2: Select Bank -->
-    <div id="bankPage" class="page">
-        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-            <div class="bg-primary text-white px-8 py-6">
-                <div class="flex items-center gap-3 mb-2">
+    <div id="bankPage" class="page h-full">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bank-page-card">
+            <div class="bg-primary text-white px-8 py-5 bank-page-header">
+                <div class="flex items-center gap-3 mb-1">
                     <span class="material-symbols-outlined !text-3xl">account_balance</span>
-                    <h1 class="text-3xl font-extrabold">Select a Bank</h1>
+                    <h1 class="text-2xl font-extrabold">Select a Bank</h1>
                 </div>
-                <p class="text-white/90">Choose your preferred OCBC branch</p>
+                <p class="text-white/90 text-sm">Choose your preferred OCBC branch</p>
             </div>
             
-            <div class="p-8">
+            <div class="bank-page-content">
                 <div class="step-indicator">
                     <div class="step completed">
                         <div class="step-number">✓</div>
@@ -370,8 +465,10 @@
                     </div>
                 </div>
 
-                <div id="bankList" class="mb-8"></div>
+                <div id="bankList" class="bank-list-frame"></div>
+            </div>
 
+            <div class="bank-page-footer">
                 <div class="grid grid-cols-2 gap-4">
                     <button class="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white px-6 py-3 rounded-xl font-bold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center justify-center gap-2" onclick="goToPage('locationPage')">
                         <span class="material-symbols-outlined">arrow_back</span>
@@ -382,7 +479,6 @@
                         <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
                 </div>
-            </div>
         </div>
     </div>
 
@@ -606,7 +702,8 @@
             selectedTime: null,
             serviceType: 'General Inquiry',
             banks: [],
-            token: localStorage.getItem('token')
+            token: localStorage.getItem('token'),
+            userCoords: null
         };
 
         // Initialize
@@ -623,28 +720,38 @@
             window.scrollTo(0, 0);
         }
 
-        async function searchBanks() {
-            const location = document.getElementById('locationInput').value;
-            const radius = document.getElementById('radiusSelect').value;
-
-            if (!location) {
-                showError('Please enter a location');
+        async function useMyLocation() {
+            if (!navigator.geolocation) {
+                showError('Geolocation is not supported by your browser');
                 return;
             }
 
-            // Hardcoded coordinates for Bukit Timah area (can be extended with geocoding)
-            const coordinates = {
-                'bukit timah': { lat: 1.3523, lng: 103.7744 },
-                'marina bay': { lat: 1.2757, lng: 103.8502 },
-                'orchard': { lat: 1.3047, lng: 103.8350 },
-                'tampines': { lat: 1.3521, lng: 103.9450 },
-                'jurong': { lat: 1.3345, lng: 103.7880 }
-            };
+            const locationBtn = event.currentTarget;
+            locationBtn.disabled = true;
+            locationBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span><span class="hidden sm:inline">Getting location...</span>';
 
-            const coords = coordinates[location.toLowerCase()] || { lat: 1.3521, lng: 103.8198 };
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    document.getElementById('locationInput').value = `My Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+                    state.userCoords = { lat: latitude, lng: longitude };
+                    locationBtn.disabled = false;
+                    locationBtn.innerHTML = '<span class="material-symbols-outlined">my_location</span><span class="hidden sm:inline">Use My Location</span>';
+                    await searchBanksWithCoords(latitude, longitude);
+                },
+                (error) => {
+                    locationBtn.disabled = false;
+                    locationBtn.innerHTML = '<span class="material-symbols-outlined">my_location</span><span class="hidden sm:inline">Use My Location</span>';
+                    showError('Unable to get your location. Please enter manually.');
+                    console.error('Geolocation error:', error);
+                }
+            );
+        }
 
+        async function searchBanksWithCoords(lat, lng) {
             try {
-                const response = await fetch(`/api/nearby?latitude=${coords.lat}&longitude=${coords.lng}&radius=${radius}`, {
+                // Use large radius to get all branches
+                const response = await fetch(`/api/nearby?latitude=${lat}&longitude=${lng}&radius=100`, {
                     headers: {
                         ...(state.token ? { 'Authorization': `Bearer ${state.token}` } : {}),
                         'ngrok-skip-browser-warning': 'true'
@@ -663,7 +770,7 @@
                     renderBanks(data.banks);
                     goToPage('bankPage');
                 } else {
-                    showError('No banks found in that area. Try a larger radius.');
+                    showError('No banks found. Please try again.');
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -671,33 +778,75 @@
             }
         }
 
+        async function searchBanks() {
+            const location = document.getElementById('locationInput').value.trim();
+            const radius = document.getElementById('radiusSelect').value;
+
+            // If user has used their location already, use those coords
+            if (state.userCoords) {
+                return searchBanksWithCoords(state.userCoords.lat, state.userCoords.lng);
+            }
+
+            if (!location) {
+                showError('Please enter a location or use "Use My Location" button');
+                return;
+            }
+
+            // Common Singapore locations
+            const coordinates = {
+                'orchard': { lat: 1.3047, lng: 103.8350 },
+                'tampines': { lat: 1.3521, lng: 103.9450 },
+                'jurong': { lat: 1.3345, lng: 103.7880 },
+                'bukit timah': { lat: 1.3523, lng: 103.7744 },
+                'marina bay': { lat: 1.2757, lng: 103.8502 },
+                'woodlands': { lat: 1.4370, lng: 103.7860 },
+                'bedok': { lat: 1.3236, lng: 103.9273 },
+                'ang mo kio': { lat: 1.3691, lng: 103.8454 },
+                'serangoon': { lat: 1.3502, lng: 103.8682 },
+                'choa chu kang': { lat: 1.3840, lng: 103.7470 }
+            };
+
+            const coords = coordinates[location.toLowerCase()] || { lat: 1.3521, lng: 103.8198 };
+            await searchBanksWithCoords(coords.lat, coords.lng);
+        }
+
         function renderBanks(banks) {
             const list = document.getElementById('bankList');
-            list.innerHTML = banks.map(bank => `
-                <div class="bank-card" data-id="${bank.id}" onclick="selectBank(${bank.id}, this)">
-                    <div class="flex items-start gap-4">
-                        <div class="bg-primary/10 p-3 rounded-xl">
-                            <span class="material-symbols-outlined text-primary !text-2xl">account_balance</span>
+            list.innerHTML = banks.map((bank, index) => {
+                let badge = '';
+                if (index === 0 && bank.distance !== undefined) {
+                    badge = '<div class="nearest-badge"><span class="material-symbols-outlined" style="font-size: 14px;">star</span>Nearest Branch</div>';
+                } else if (index === 1 && bank.distance !== undefined) {
+                    badge = '<div class="second-nearest-badge"><span class="material-symbols-outlined" style="font-size: 14px;">distance</span>2nd Nearest</div>';
+                }
+                
+                return `
+                    <div class="bank-card" data-id="${bank.id}" onclick="selectBank(${bank.id}, this)">
+                        ${badge}
+                        <div class="flex items-start gap-4">
+                            <div class="bg-primary/10 p-3 rounded-xl">
+                                <span class="material-symbols-outlined text-primary !text-2xl">account_balance</span>
+                            </div>
+                            <div class="flex-1">
+                                <h3>${bank.name}</h3>
+                                <p class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined !text-base text-zinc-400">location_on</span>
+                                    ${bank.address}
+                                </p>
+                                <p class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined !text-base text-zinc-400">schedule</span>
+                                    ${bank.openHours}
+                                </p>
+                                ${bank.distance !== undefined ? `<div class="distance">
+                                    <span class="material-symbols-outlined !text-sm">directions</span>
+                                    ${bank.distance.toFixed(1)} km away
+                                </div>` : ''}
+                            </div>
+                            <span class="material-symbols-outlined text-zinc-400 hidden-check">check_circle</span>
                         </div>
-                        <div class="flex-1">
-                            <h3>${bank.name}</h3>
-                            <p class="flex items-center gap-2">
-                                <span class="material-symbols-outlined !text-base text-zinc-400">location_on</span>
-                                ${bank.address}
-                            </p>
-                            <p class="flex items-center gap-2">
-                                <span class="material-symbols-outlined !text-base text-zinc-400">schedule</span>
-                                ${bank.openHours}
-                            </p>
-                            ${bank.distance ? `<div class="distance">
-                                <span class="material-symbols-outlined !text-sm">directions</span>
-                                ${bank.distance.toFixed(1)} km away
-                            </div>` : ''}
-                        </div>
-                        <span class="material-symbols-outlined text-zinc-400 hidden-check">check_circle</span>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function selectBank(bankId, element) {

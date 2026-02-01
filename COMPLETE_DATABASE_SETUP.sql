@@ -391,6 +391,98 @@ BEGIN
 END
 GO
 
+-- ============================================================================
+-- STEP 11: CREATE BANK LOCATIONS TABLE
+-- ============================================================================
+IF OBJECT_ID(N'dbo.BankLocations', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.BankLocations (
+        Id INT IDENTITY(1,1) PRIMARY KEY,
+        BankId NVARCHAR(100) NOT NULL,
+        BankName NVARCHAR(255) NOT NULL,
+        BankAddress NVARCHAR(500) NOT NULL,
+        Region NVARCHAR(100) NULL,
+        Latitude DECIMAL(9,6) NULL,
+        Longitude DECIMAL(9,6) NULL,
+        OpenHours NVARCHAR(50) NULL,
+        CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        UpdatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT UQ_BankLocations_BankId UNIQUE (BankId)
+    );
+    PRINT 'Created table dbo.BankLocations';
+END
+ELSE
+BEGIN
+    PRINT 'Table dbo.BankLocations already exists';
+END
+GO
+
+-- Seed OCBC bank locations with coordinates (safe to re-run)
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_centre_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_centre_001', N'OCBC Centre', N'65 Chulia St, Singapore 049513', N'Central / Downtown', 1.283611, 103.851111, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_harbourfront_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_harbourfront_001', N'OCBC Bank | HarbourFront Centre', N'1 Maritime Square, #02-99/100, Singapore 099253', N'Central / Downtown', 1.264167, 103.820278, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_north_bridge_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_north_bridge_001', N'OCBC Bank | North Bridge Rd', N'460 North Bridge Rd, Singapore 188734', N'Central / Downtown', 1.298056, 103.855278, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_centre_south_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_centre_south_001', N'OCBC Centre South', N'18 Church St, B1-03, Singapore 049479', N'Central / Downtown', 1.283333, 103.849722, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_wisma_atria_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_wisma_atria_001', N'OCBC Bank | Wisma Atria', N'435 Orchard Rd, #04-01, Singapore 238877', N'Central / Downtown', 1.303889, 103.833056, N'Mon-Fri 09:30-19:00, Sat 09:30-13:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_nex_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_nex_001', N'OCBC Bank | NEX', N'23 Serangoon Central, NEX, Singapore 556083', N'North / North-East', 1.350833, 103.872222, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_ang_mo_kio_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_ang_mo_kio_001', N'OCBC Bank | Ang Mo Kio Central', N'#B1-32/33 Ang Mo Kio, Singapore 569933', N'North / North-East', 1.369444, 103.849167, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_jurong_point_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_jurong_point_001', N'OCBC Bank | Jurong Point', N'1 Jurong West Central 2, Jurong Point, Singapore 648886', N'West / Jurong', 1.339722, 103.706944, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_jem_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_jem_001', N'OCBC Bank | JEM', N'50 Jurong Gateway Rd, Jem, Singapore 608549', N'West / Jurong', 1.333611, 103.742778, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_bedok_north_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_bedok_north_001', N'OCBC Bank | Bedok North Street 1', N'204 Bedok North St 1, Singapore 460204', N'East / Bedok / Tampines', 1.327222, 103.929167, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_marine_parade_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_marine_parade_001', N'OCBC Bank | Marine Parade Central', N'83 Marine Parade Central, Singapore 440083', N'East / Bedok / Tampines', 1.303056, 103.905556, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_cpf_tampines_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_cpf_tampines_001', N'OCBC Bank | CPF Tampines Building', N'1 Tampines Central 5, Singapore 529508', N'East / Bedok / Tampines', 1.353056, 103.943889, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_causeway_point_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_causeway_point_001', N'OCBC Bank | Causeway Point', N'1 Woodlands Sq, Causeway Point, Singapore 738099', N'North-West & Others', 1.436944, 103.786111, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_choa_chu_kang_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_choa_chu_kang_001', N'OCBC Bank | Choa Chu Kang Ave 4', N'304 Choa Chu Kang Ave 4, Singapore 680304', N'North-West & Others', 1.378333, 103.745278, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_united_square_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_united_square_001', N'OCBC Bank | United Square', N'101 Thomson Rd, United Square, Singapore 307591', N'North-West & Others', 1.317222, 103.843056, N'Mon-Fri 09:30-17:00');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.BankLocations WHERE BankId = N'ocbc_upper_thomson_001')
+    INSERT INTO dbo.BankLocations (BankId, BankName, BankAddress, Region, Latitude, Longitude, OpenHours)
+    VALUES (N'ocbc_upper_thomson_001', N'OCBC Bank – Upper Thomson', N'181 Upper Thomson Rd, Singapore 574331', N'North-West & Others', 1.354722, 103.831389, N'Mon-Fri 09:30-17:00');
+GO
+
 -- Create indexes for Appointments
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes WHERE name = N'IX_Appointments_UserId' AND object_id = OBJECT_ID('Appointments')

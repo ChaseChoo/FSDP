@@ -10,6 +10,7 @@ import {
   getAvailableTimeSlots,
   getAppointmentsByRange,
 } from "../controllers/appointmentController.js";
+import { getAllBankLocations } from "../models/bankLocationModel.js";
 
 const router = express.Router();
 
@@ -23,13 +24,30 @@ const OCBC_BANKS = [
   { id: 6, name: "OCBC Jurong", address: "1 Science Park Road, Singapore 117528", lat: 1.3345, lng: 103.7880, openHours: "09:00-18:00" }
 ];
 
+async function loadBanks() {
+  const dbBanks = await getAllBankLocations();
+  return dbBanks.length > 0 ? dbBanks : OCBC_BANKS;
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 // Get all banks
-router.get("/banks", (req, res) => {
-  res.json({ banks: OCBC_BANKS });
+router.get("/banks", async (req, res) => {
+  const banks = await loadBanks();
+  res.json({ banks });
 });
 
 // Get nearby banks
-router.get("/nearby", (req, res) => {
+router.get("/nearby", async (req, res) => {
   const { latitude, longitude, radius = 5 } = req.query;
   
   if (!latitude || !longitude) {
@@ -40,34 +58,34 @@ router.get("/nearby", (req, res) => {
   const userLng = parseFloat(longitude);
   const radiusKm = parseFloat(radius);
 
-  function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+  const banks = await loadBanks();
+  const hasCoords = banks.some(
+    (bank) => Number.isFinite(bank.lat) && Number.isFinite(bank.lng)
+  );
+
+  if (!hasCoords) {
+    return res.json({ banks });
   }
 
-  const nearby = OCBC_BANKS
-    .map(bank => ({
+  const nearby = banks
+    .filter((bank) => Number.isFinite(bank.lat) && Number.isFinite(bank.lng))
+    .map((bank) => ({
       ...bank,
-      distance: getDistance(userLat, userLng, bank.lat, bank.lng)
+      distance: getDistance(userLat, userLng, bank.lat, bank.lng),
     }))
-    .filter(bank => bank.distance <= radiusKm)
+    .filter((bank) => bank.distance <= radiusKm)
     .sort((a, b) => a.distance - b.distance);
 
   res.json({ banks: nearby });
 });
 
 // Aliases for /api/appointments/* to avoid route collisions
-router.get("/appointments/banks", (req, res) => {
-  res.json({ banks: OCBC_BANKS });
+router.get("/appointments/banks", async (req, res) => {
+  const banks = await loadBanks();
+  res.json({ banks });
 });
 
-router.get("/appointments/nearby", (req, res) => {
+router.get("/appointments/nearby", async (req, res) => {
   const { latitude, longitude, radius = 5 } = req.query;
 
   if (!latitude || !longitude) {
@@ -78,23 +96,22 @@ router.get("/appointments/nearby", (req, res) => {
   const userLng = parseFloat(longitude);
   const radiusKm = parseFloat(radius);
 
-  function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+  const banks = await loadBanks();
+  const hasCoords = banks.some(
+    (bank) => Number.isFinite(bank.lat) && Number.isFinite(bank.lng)
+  );
+
+  if (!hasCoords) {
+    return res.json({ banks });
   }
 
-  const nearby = OCBC_BANKS
-    .map(bank => ({
+  const nearby = banks
+    .filter((bank) => Number.isFinite(bank.lat) && Number.isFinite(bank.lng))
+    .map((bank) => ({
       ...bank,
-      distance: getDistance(userLat, userLng, bank.lat, bank.lng)
+      distance: getDistance(userLat, userLng, bank.lat, bank.lng),
     }))
-    .filter(bank => bank.distance <= radiusKm)
+    .filter((bank) => bank.distance <= radiusKm)
     .sort((a, b) => a.distance - b.distance);
 
   res.json({ banks: nearby });
