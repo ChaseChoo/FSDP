@@ -541,10 +541,13 @@ export async function verifyCardPIN(req, res) {
         }
         
         console.log('🔍 Verifying PIN for user:', userId || externalId);
+        console.log('🔍 DEV_ALLOW_ALL:', process.env.DEV_ALLOW_ALL);
+        console.log('🔍 PIN entered:', pin);
+        console.log('🔍 Card number from token:', cardNumber);
         
         // DEV mode: accept any 4-digit PIN for demo purposes
         if (process.env.DEV_ALLOW_ALL === 'true') {
-            console.log('✅ PIN verification successful (dev mode)');
+            console.log('✅ PIN verification successful (dev mode) - accepting PIN:', pin);
             
             // Log the verification attempt
             try {
