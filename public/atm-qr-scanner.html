@@ -161,7 +161,18 @@
     <div class="scanner-controls">
       <button id="startBtn" class="scanner-btn primary" onclick="startScanning()">Start Camera</button>
       <button id="stopBtn" class="scanner-btn secondary" onclick="stopScanning()" style="display: none;">Stop Camera</button>
+      <button class="scanner-btn secondary" onclick="showManualEntry()">Manual Entry</button>
       <button class="scanner-btn secondary" onclick="goBack()">Back to Home</button>
+    </div>
+
+    <div id="manualEntrySection" style="display: none; margin-top: 20px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <h3 style="margin-top: 0;">Enter Action ID Manually</h3>
+      <p style="color: #666; font-size: 0.9rem;">Paste the action ID from the Guardian QR code URL</p>
+      <input type="text" id="manualActionId" placeholder="Enter action ID here..." style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin: 10px 0;">
+      <div style="display: flex; gap: 10px;">
+        <button class="scanner-btn primary" onclick="validateManualEntry()">Validate</button>
+        <button class="scanner-btn secondary" onclick="hideManualEntry()">Cancel</button>
+      </div>
     </div>
 
     <div id="transactionDetails" class="transaction-details">
@@ -180,6 +191,60 @@
     let html5QrcodeScanner = null;
     let scannedActionId = null;
     let transactionData = null;
+
+    function showManualEntry() {
+      document.getElementById('manualEntrySection').style.display = 'block';
+      document.getElementById('manualActionId').focus();
+    }
+
+    function hideManualEntry() {
+      document.getElementById('manualEntrySection').style.display = 'none';
+      document.getElementById('manualActionId').value = '';
+    }
+
+    async function validateManualEntry() {
+      const input = document.getElementById('manualActionId').value.trim();
+      if (!input) {
+        showStatus('Please enter an action ID', 'error');
+        return;
+      }
+
+      // Extract actionId from URL if needed
+      let actionId = input;
+      try {
+        const url = new URL(input);
+        const actionParam = url.searchParams.get('action');
+        if (actionParam) {
+          actionId = actionParam;
+          console.log('Extracted actionId from URL:', actionId);
+        }
+      } catch (e) {
+        // Not a URL, use as-is
+        console.log('Using raw value as actionId:', actionId);
+      }
+
+      scannedActionId = actionId;
+      showStatus('Validating action ID...', 'info');
+
+      try {
+        const response = await fetch(`/api/guardian/validate-action/${scannedActionId}`);
+        
+        if (!response.ok) {
+          throw new Error('Invalid or expired QR code');
+        }
+        
+        const data = await response.json();
+        transactionData = data;
+        
+        displayTransactionDetails(data);
+        hideStatus();
+        hideManualEntry();
+      } catch (error) {
+        console.error('Error validating action:', error);
+        showStatus(error.message, 'error');
+        scannedActionId = null;
+      }
+    }
 
     function showStatus(message, type = 'info') {
       const statusEl = document.getElementById('statusMessage');
@@ -217,7 +282,13 @@
         showStatus('Camera active - scan the QR code now', 'info');
       } catch (error) {
         console.error('Error starting camera:', error);
-        showStatus('Failed to start camera: ' + error.message, 'error');
+        
+        // Clean up on error
+        if (html5QrcodeScanner) {
+          html5QrcodeScanner = null;
+        }
+        
+        showStatus('Camera failed to start. Please refresh and allow camera access.', 'error');
         document.getElementById('cameraContainer').style.display = 'none';
         document.getElementById('startBtn').style.display = 'inline-block';
         document.getElementById('stopBtn').style.display = 'none';
@@ -227,11 +298,17 @@
     async function stopScanning() {
       if (html5QrcodeScanner) {
         try {
-          await html5QrcodeScanner.stop();
+          // Check if scanner is actually running before stopping
+          const state = html5QrcodeScanner.getState();
+          if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+            await html5QrcodeScanner.stop();
+          }
           html5QrcodeScanner.clear();
           html5QrcodeScanner = null;
         } catch (error) {
-          console.error('Error stopping camera:', error);
+          // Ignore errors when stopping (scanner might not be running)
+          console.log('Note: Scanner stop called when not running');
+          html5QrcodeScanner = null;
         }
       }
       document.getElementById('cameraContainer').style.display = 'none';
@@ -245,7 +322,21 @@
       // Stop scanning immediately
       await stopScanning();
       
-      scannedActionId = decodedText;
+      // Extract actionId from URL if it's a full URL, otherwise use as-is
+      let actionId = decodedText;
+      try {
+        const url = new URL(decodedText);
+        const actionParam = url.searchParams.get('action');
+        if (actionParam) {
+          actionId = actionParam;
+          console.log('Extracted actionId from URL:', actionId);
+        }
+      } catch (e) {
+        // Not a URL, use decodedText as-is
+        console.log('Using raw QR code value as actionId:', actionId);
+      }
+      
+      scannedActionId = actionId;
       showStatus('QR Code detected - fetching transaction details...', 'info');
       
       // Fetch action details

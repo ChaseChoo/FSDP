@@ -131,6 +131,8 @@ export async function validateActionQR(req, res) {
   try {
     const { actionId } = req.params;
     
+    console.log('[Guardian QR] Validating actionId:', actionId);
+    
     const validation = validatePreConfiguredAction(actionId);
     
     if (!validation.valid) {
