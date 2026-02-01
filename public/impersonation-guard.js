@@ -312,14 +312,20 @@ if (window.__impersonation_guard_loaded) {
     const pin = pinInput.value;
     const pinError = document.getElementById('pin-error');
     
+    console.log('[ImpersonationGuard] PIN input value:', pin);
+    console.log('[ImpersonationGuard] PIN length:', pin?.length);
+    
     // Basic validation
     if (!/^\d{4}$/.test(pin)) {
+      console.log('[ImpersonationGuard] PIN validation failed - not 4 digits');
       pinError.textContent = 'PIN must be exactly 4 digits';
       pinError.style.display = 'block';
       pinInput.value = '';
       pinInput.focus();
       return;
     }
+    
+    console.log('[ImpersonationGuard] PIN validation passed, proceeding with API call');
     
     // Show loading state
     const verifyBtn = document.getElementById('verify-pin-btn');
@@ -341,6 +347,8 @@ if (window.__impersonation_guard_loaded) {
         return;
       }
       
+      console.log('[ImpersonationGuard] Sending request to /api/card/verify-pin');
+      
       const response = await fetch('/api/card/verify-pin', {
         method: 'POST',
         headers: {
@@ -350,7 +358,26 @@ if (window.__impersonation_guard_loaded) {
         body: JSON.stringify({ pin })
       });
       
-      const result = await response.json();
+      console.log('[ImpersonationGuard] Response status:', response.status);
+      console.log('[ImpersonationGuard] Response ok:', response.ok);
+      
+      // Get response text first to see what we're getting
+      const responseText = await response.text();
+      console.log('[ImpersonationGuard] Response text:', responseText);
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log('[ImpersonationGuard] Response data:', result);
+      } catch (e) {
+        console.error('[ImpersonationGuard] Failed to parse response as JSON:', e);
+        console.error('[ImpersonationGuard] Raw response:', responseText);
+        pinError.textContent = 'Server error. Please try again.';
+        pinError.style.display = 'block';
+        verifyBtn.textContent = 'Verify PIN & Continue';
+        verifyBtn.disabled = false;
+        return;
+      }
       
       if (response.ok && result.valid) {
         // PIN correct - unlock transaction
@@ -358,7 +385,9 @@ if (window.__impersonation_guard_loaded) {
         closeModal();
       } else {
         // PIN incorrect
-        pinError.textContent = 'Incorrect PIN. Please try again.';
+        const errorMsg = result.error || 'Incorrect PIN. Please try again.';
+        console.log('[ImpersonationGuard] Error message:', errorMsg);
+        pinError.textContent = errorMsg;
         pinError.style.display = 'block';
         pinInput.value = '';
         pinInput.focus();
