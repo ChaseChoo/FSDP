@@ -22,7 +22,7 @@ import {
  */
 export async function createActionQR(req, res) {
   try {
-    const { actionType, amount, recipientAccountNumber, description, maxUses, expiryDays } = req.body;
+    const { actionType, amount, recipientAccountNumber, description, maxUses, expiryDays, guardianExternalId } = req.body;
     
     // Get authenticated user info - use fallback for demo mode
     let externalId = req.user?.externalId;
@@ -30,14 +30,15 @@ export async function createActionQR(req, res) {
     let guardianInfo;
     
     if (!externalId) {
-      // Fallback for demo mode - use the same ID as fakeLogin middleware
-      console.log('[Guardian QR] No authenticated user, using demo mode');
-      externalId = 'FAKE_USER'; // Same as fakeLogin middleware
+      // Fallback for demo mode - use guardianExternalId from request or default
+      const demoId = guardianExternalId || 'FAKE_USER';
+      console.log('[Guardian QR] No authenticated user, using demo mode with ID:', demoId);
+      
       guardianInfo = {
-        externalId: externalId,
+        externalId: demoId,
         userId: null,
         cardNumber: '5555 **** **** 2222',
-        name: 'Demo User'
+        name: demoId
       };
     } else {
       // For card-based auth, construct the balance key using userId
@@ -129,6 +130,8 @@ export async function createActionQR(req, res) {
 export async function validateActionQR(req, res) {
   try {
     const { actionId } = req.params;
+    
+    console.log('[Guardian QR] Validating actionId:', actionId);
     
     const validation = validatePreConfiguredAction(actionId);
     
