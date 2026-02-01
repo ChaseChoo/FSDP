@@ -175,7 +175,7 @@
     <div id="loginSection" class="login-section">
       <div class="form-group">
         <label for="guardianId">Guardian ID</label>
-        <input type="text" id="guardianId" placeholder="Enter your Guardian ID" value="guardian-user">
+        <input type="text" id="guardianId" placeholder="Enter your Guardian ID" value="user-1">
       </div>
       <button onclick="login()">Login as Guardian</button>
       <button onclick="showMyQR()" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); margin-top: 10px;">Show My QR Code</button>
@@ -256,6 +256,50 @@
     let guardianToken = null;
     let currentQRCode = null;
     let currentGuardianId = null;
+
+    function getBaseUrl() {
+      const { protocol, hostname, port } = window.location;
+      if (port && port !== '80' && port !== '443') {
+        return `${protocol}//${hostname}:${port}`;
+      }
+      return `${protocol}//${hostname}`;
+    }
+
+    // Fetch current logged-in user on page load
+    async function initializeUser() {
+      try {
+        const response = await fetch('/api/balance', {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Extract user ID from session or response
+          const userId = data.user?.userId || data.externalId || sessionStorage.getItem('userId');
+          if (userId) {
+            // Format user ID properly (add "user-" prefix if needed for dev mode)
+            let guardianId = userId;
+            if (String(userId).startsWith('user-')) {
+              guardianId = userId;
+            } else if (!isNaN(userId)) {
+              // If it's a number, keep it as is (card number)
+              guardianId = userId;
+            }
+            document.getElementById('guardianId').value = guardianId;
+            console.log('[Guardian Mobile] Pre-filled Guardian ID:', guardianId, 'from response:', data);
+          }
+        } else {
+          console.log('[Guardian Mobile] Not logged in or session expired');
+        }
+      } catch (error) {
+        console.log('[Guardian Mobile] Could not fetch user info:', error);
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initializeUser);
 
     function login() {
       const guardianId = document.getElementById('guardianId').value.trim();
@@ -347,7 +391,8 @@
         const response = await fetch('/api/guardian/create-action-qr', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
           },
           body: JSON.stringify(requestBody)
         });
@@ -360,8 +405,11 @@
         const data = await response.json();
         
         // Save the QR code to localStorage for this guardian
+        const qrUrl = `${getBaseUrl()}/assisted-qr-login.html?action=${data.actionId}`;
+
         localStorage.setItem(`guardian_qr_${currentGuardianId}`, JSON.stringify({
           actionId: data.actionId,
+          qrUrl,
           action: action,
           amount: amount,
           maxUses: maxUses,
@@ -374,7 +422,7 @@
         
         // Generate new QR code with the action ID
         currentQRCode = new QRCode(document.getElementById('qrcode'), {
-          text: data.actionId,
+          text: qrUrl,
           width: 256,
           height: 256,
           colorDark: '#000000',
@@ -388,7 +436,8 @@
           Action: <strong>${action}</strong><br>
           ${amount > 0 ? `Amount: <strong>$${amount.toFixed(2)}</strong><br>` : ''}
           Max Uses: <strong>${maxUses}</strong><br>
-          Expires: <strong>${expiryDays} day(s)</strong>
+          Expires: <strong>${expiryDays} day(s)</strong><br>
+          Mobile URL: <strong>${qrUrl}</strong>
         `;
 
         successDiv.textContent = 'QR Code generated successfully!';
@@ -427,6 +476,7 @@
       }
 
       const qrData = JSON.parse(storedData);
+      const qrUrl = qrData.qrUrl || `${getBaseUrl()}/assisted-qr-login.html?action=${qrData.actionId}`;
       
       // Hide login section, show QR section
       document.getElementById('loginSection').style.display = 'none';
@@ -435,7 +485,7 @@
       // Clear and generate QR code
       document.getElementById('storedQRCode').innerHTML = '';
       new QRCode(document.getElementById('storedQRCode'), {
-        text: qrData.actionId,
+        text: qrUrl,
         width: 256,
         height: 256,
         colorDark: '#000000',
@@ -449,7 +499,8 @@
         Action: <strong>${qrData.action}</strong><br>
         ${qrData.amount > 0 ? `Amount: <strong>$${qrData.amount.toFixed(2)}</strong><br>` : ''}
         Max Uses: <strong>${qrData.maxUses}</strong><br>
-        Created: <strong>${new Date(qrData.createdAt).toLocaleString()}</strong>
+        Created: <strong>${new Date(qrData.createdAt).toLocaleString()}</strong><br>
+        Mobile URL: <strong>${qrUrl}</strong>
       `;
     }
 

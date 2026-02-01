@@ -549,7 +549,11 @@
         
         async function validateAndShowAction(actionId) {
             try {
-                const response = await fetch(`/api/guardian/validate-action/${actionId}`);
+                const response = await fetch(`/api/guardian/validate-action/${actionId}`, {
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
                 const data = await response.json();
                 
                 if (!response.ok || !data.valid) {
@@ -622,7 +626,8 @@
                 const response = await fetch('/api/guardian/execute-action', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
                     },
                     body: JSON.stringify({
                         actionId: scannedActionId

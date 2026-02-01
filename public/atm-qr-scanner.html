@@ -227,7 +227,11 @@
       showStatus('Validating action ID...', 'info');
 
       try {
-        const response = await fetch(`/api/guardian/validate-action/${scannedActionId}`);
+        const response = await fetch(`/api/guardian/validate-action/${scannedActionId}`, {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
         
         if (!response.ok) {
           throw new Error('Invalid or expired QR code');
@@ -365,7 +369,11 @@
       
       // Fetch action details
       try {
-        const response = await fetch(`/api/guardian/validate-action/${scannedActionId}`);
+        const response = await fetch(`/api/guardian/validate-action/${scannedActionId}`, {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
         
         if (!response.ok) {
           throw new Error('Invalid or expired QR code');
@@ -443,7 +451,8 @@
         const response = await fetch('/api/guardian/execute-action', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
           },
           body: JSON.stringify({
             actionId: scannedActionId
