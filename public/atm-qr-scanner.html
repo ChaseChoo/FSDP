@@ -140,7 +140,19 @@
         try {
           await html5QrCode.start(
             { facingMode: "user" },
-            { fps: 10, qrbox: { width: 300, height: 300 } },
+            { 
+              fps: 60, 
+              qrbox: function(viewfinderWidth, viewfinderHeight) {
+                let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                let qrboxSize = Math.floor(minEdgeSize * 0.8);
+                return { width: qrboxSize, height: qrboxSize };
+              },
+              aspectRatio: 1.0,
+              disableFlip: false,
+              experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+              }
+            },
             onScanSuccess
           );
           cameraStarted = true;
@@ -150,7 +162,19 @@
           try {
             await html5QrCode.start(
               { facingMode: "environment" },
-              { fps: 10, qrbox: { width: 300, height: 300 } },
+              { 
+                fps: 60, 
+                qrbox: function(viewfinderWidth, viewfinderHeight) {
+                  let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                  let qrboxSize = Math.floor(minEdgeSize * 0.8);
+                  return { width: qrboxSize, height: qrboxSize };
+                },
+                aspectRatio: 1.0,
+                disableFlip: false,
+                experimentalFeatures: {
+                  useBarCodeDetectorIfSupported: true
+                }
+              },
               onScanSuccess
             );
             cameraStarted = true;
@@ -161,7 +185,19 @@
             if (cameras && cameras.length > 0) {
               await html5QrCode.start(
                 cameras[0].id,
-                { fps: 10, qrbox: { width: 300, height: 300 } },
+                { 
+                  fps: 60, 
+                  qrbox: function(viewfinderWidth, viewfinderHeight) {
+                    let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                    let qrboxSize = Math.floor(minEdgeSize * 0.8);
+                    return { width: qrboxSize, height: qrboxSize };
+                  },
+                  aspectRatio: 1.0,
+                  disableFlip: false,
+                  experimentalFeatures: {
+                    useBarCodeDetectorIfSupported: true
+                  }
+                },
                 onScanSuccess
               );
               cameraStarted = true;
@@ -214,27 +250,34 @@
         }
 
         console.log("Extracted actionId:", actionId);
+        
+        if (!actionId || actionId.trim().length === 0) {
+          showStatus('❌ Invalid QR code: No action ID found', 'error');
+          return;
+        }
+        
         showStatus('QR code detected - validating...', 'info');
 
-        const response = await fetch('/api/guardian-qr/validate-action', {
-          method: 'POST',
+        const response = await fetch(`/api/guardian/validate-action/${encodeURIComponent(actionId)}`, {
+          method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ actionId }),
           credentials: 'include'
         });
 
         const result = await response.json();
 
         if (response.ok) {
-          currentActionData = result.action;
+          currentActionData = { id: actionId, ...result.action };
           displayTransactionDetails(result.action);
-          showStatus('QR code validated successfully!', 'success');
+          showStatus('✅ QR code validated successfully!', 'success');
         } else {
-          showStatus(result.message || 'Invalid or expired QR code', 'error');
+          const errorMsg = result.error || result.message || 'Invalid or expired QR code';
+          console.error('Validation error:', result);
+          showStatus(`❌ ${errorMsg}`, 'error');
         }
       } catch (err) {
         console.error("Scan processing error:", err);
-        showStatus('Error processing QR code', 'error');
+        showStatus(`❌ Error processing QR code: ${err.message}`, 'error');
       }
     }
 
@@ -244,7 +287,7 @@
         <div class="space-y-4">
           <div class="flex justify-between items-center py-3 border-b border-zinc-200 dark:border-zinc-700">
             <span class="text-zinc-600 dark:text-zinc-400 font-medium">Action Type</span>
-            <span class="font-bold text-zinc-900 dark:text-zinc-100">${action.action}</span>
+            <span class="font-bold text-zinc-900 dark:text-zinc-100">${action.type || 'N/A'}</span>
           </div>
           ${action.amount ? `
           <div class="flex justify-between items-center py-3 border-b border-zinc-200 dark:border-zinc-700">
@@ -254,7 +297,7 @@
           ` : ''}
           <div class="flex justify-between items-center py-3 border-b border-zinc-200 dark:border-zinc-700">
             <span class="text-zinc-600 dark:text-zinc-400 font-medium">Guardian</span>
-            <span class="font-bold text-zinc-900 dark:text-zinc-100">${action.guardianExternalId}</span>
+            <span class="font-bold text-zinc-900 dark:text-zinc-100">${action.guardianName || action.guardianExternalId || 'N/A'}</span>
           </div>
           <div class="flex justify-between items-center py-3 border-b border-zinc-200 dark:border-zinc-700">
             <span class="text-zinc-600 dark:text-zinc-400 font-medium">Max Uses</span>
@@ -275,7 +318,7 @@
       try {
         showStatus('Processing transaction...', 'info');
 
-        const response = await fetch('/api/guardian-qr/execute-action', {
+        const response = await fetch('/api/guardian/execute-action', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ actionId: currentActionData.id }),

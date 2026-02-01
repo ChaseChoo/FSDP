@@ -189,6 +189,15 @@
   ],
   "FAKE_USER": [
     {
+      "Id": "dev-1769953331966-0.32796750429255606",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WITHDRAWAL",
+      "Amount": 50,
+      "BalanceAfter": 11185,
+      "Description": "Test QR Code",
+      "CreatedAt": "2026-02-01T13:42:11.966Z"
+    },
+    {
       "Id": "dev-1769927753315-0.5647541923746364",
       "AccountId": "dev-FAKE_USER",
       "Type": "WITHDRAWAL",
@@ -1491,6 +1500,51 @@
     }
   ],
   "user-1": [
+    {
+      "Id": "dev-1769953722861-0.4825425289963592",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 100,
+      "BalanceAfter": 29621,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-02-01T13:48:42.861Z"
+    },
+    {
+      "Id": "dev-1769953654042-0.28632331586258264",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 29521,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-01T13:47:34.042Z"
+    },
+    {
+      "Id": "dev-1769953574802-0.17456539955398376",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 100,
+      "BalanceAfter": 29621,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-02-01T13:46:14.802Z"
+    },
+    {
+      "Id": "dev-1769953504625-0.4185664403659888",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 10,
+      "BalanceAfter": 29521,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-01T13:45:04.625Z"
+    },
+    {
+      "Id": "dev-1769953432798-0.9476822469757848",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 100,
+      "BalanceAfter": 29531,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-02-01T13:43:52.798Z"
+    },
     {
       "Id": "dev-1769932164758-0.6221076766429838",
       "AccountId": "dev-user-1",
