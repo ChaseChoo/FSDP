@@ -430,17 +430,22 @@
     }
 
     function showPage(name) {
+      const previousPage = navHistory[navHistory.length - 1];
       Object.values(pages).forEach((el) => el && el.classList.remove("active"));
       const target = pages[name];
       if (!target) return;
       target.classList.add("active");
+      // Check if this is the initial load to main menu BEFORE pushing to navHistory
+      const isInitialMainLoad = (name === 'main' && navHistory.length === 1 && navHistory[0] === 'main');
       navHistory.push(name);
       updatePageVisibility();
-      // Reset chat log for neatness when entering a new page
-      try{
-        if(chatlog) chatlog.innerHTML = '';
-        if(window.speechSynthesis && window.speechSynthesis.cancel) window.speechSynthesis.cancel();
-      }catch(e){}
+      // Only clear chat when navigating between pages (not on initial load to main menu)
+      if (!isInitialMainLoad) {
+        try{
+          if(chatlog && previousPage !== name) chatlog.innerHTML = '';
+          if(window.speechSynthesis && window.speechSynthesis.cancel) window.speechSynthesis.cancel();
+        }catch(e){}
+      }
       // Announce numeric options for the page (ATM numeric-pad friendly)
       displayMenuOptions(name);
       // notify other widgets/pages that page changed
@@ -1986,17 +1991,11 @@
       const section = document.getElementById('favoriteBillsSection');
       const list = document.getElementById('favoriteBillsList');
       
-      // Hide section if no payment history at all
-      if (history.length === 0) {
-        section.classList.add('hidden');
-        return;
-      }
-      
-      // Show section if there's payment history
+      // Show section (always visible now)
       section.classList.remove('hidden');
       list.innerHTML = '';
       
-      if (favorites.length === 0) {
+      if (favorites.length === 0 || history.length === 0) {
         // Show prompt to add favorites
         list.innerHTML = `
           <div class="col-span-full bg-gradient-to-r from-primary/5 to-primary/10 border-2 border-dashed border-primary/30 rounded-xl p-6 text-center">
@@ -2022,7 +2021,7 @@
      */
     function createFavoriteMerchantCard(merchant) {
       const card = document.createElement('button');
-      card.className = 'favorite-bill-card flex items-center gap-3 bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/30 p-4 rounded-xl hover:from-primary/10 hover:to-primary/20 hover:border-primary/50 hover:shadow-lg transition-all text-left group';
+      card.className = 'favorite-bill-card flex items-center gap-3 bg-gradient-to-br from-primary/20 to-primary/30 border-2 border-primary/40 p-4 rounded-xl hover:from-primary/30 hover:to-primary/40 hover:border-primary/60 hover:shadow-lg transition-all text-left group';
       
       // Get historical data
       const history = getMerchantHistory(merchant.name);
@@ -2235,13 +2234,16 @@
   loadBalance();
   loadFavoriteMerchants(); // Load favorite merchants
 
-    logBot(
-      'ATM ready.'
-    );
+    // Initial welcome message
+    setTimeout(() => {
+      logBot('Welcome to OCBC ATM! I\'m your AI assistant.');
+      logBot('How can I help you today?');
+      // show numbered options for the main menu immediately
+      try{ displayMenuOptions('main'); }catch(e){}
+    }, 100);
+    
     // visually flash main options so users notice available buttons after ready
     try{ flashAllOptions(); }catch(e){}
-    // show numbered options for the main menu immediately
-    try{ displayMenuOptions('main'); }catch(e){}
     
     // Check for hash or query parameter to load non-cash services
     const initialView = new URLSearchParams(window.location.search).get("view");
