@@ -232,5 +232,41 @@
     "expiresAt": 1770015040844,
     "usedAt": 1769928651885,
     "lastUsedAt": 1769928651885
+  },
+  "3e8306e1fefa0b4768fc261cecf4f8bff8946991be2b98f27c894824f4d73871": {
+    "id": "3e8306e1fefa0b4768fc261cecf4f8bff8946991be2b98f27c894824f4d73871",
+    "guardianExternalId": "user-1",
+    "guardianCardNumber": "N/A",
+    "guardianName": "user-1",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769929096754,
+    "expiresAt": 1770015496754,
+    "usedAt": 1769929107213,
+    "lastUsedAt": 1769929107213
+  },
+  "c7dda9c3b59092e106dafeae87cb45ba672e6f018bde4d8d0e9bd9922c91568f": {
+    "id": "c7dda9c3b59092e106dafeae87cb45ba672e6f018bde4d8d0e9bd9922c91568f",
+    "guardianExternalId": "user-1",
+    "guardianCardNumber": "N/A",
+    "guardianName": "user-1",
+    "action": {
+      "type": "DEPOSIT",
+      "amount": 10000,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured deposit"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769929161925,
+    "expiresAt": 1770015561925,
+    "usedAt": 1769929178584,
+    "lastUsedAt": 1769929178584
   }
 }
