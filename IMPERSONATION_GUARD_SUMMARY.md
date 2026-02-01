@@ -28,7 +28,7 @@ A cutting-edge ATM security system that uses real-time voice detection to identi
    - Alert sound notification
 
 3. **PIN Re-Verification** 🔐
-   - Secure 6-digit PIN entry to unlock transaction
+   - Secure 4-digit PIN entry to unlock transaction (same as login PIN)
    - Backend validation against database
    - Security event logging
 
@@ -135,7 +135,7 @@ A cutting-edge ATM security system that uses real-time voice detection to identi
 │  • Banks NEVER ask for transfers via phone              │
 │  • Police DON'T collect fines through ATMs              │
 │                                                          │
-│  Enter 6-digit PIN to proceed:                          │
+│  Enter 4-digit PIN to proceed:                          │
 │  [______] PIN                                           │
 │                                                          │
 │  [Verify PIN & Continue] [Cancel Transaction]           │

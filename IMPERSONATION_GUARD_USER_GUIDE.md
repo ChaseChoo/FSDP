@@ -101,10 +101,10 @@
 ║  └──────────────────────────────────────────────────────────┘    ║
 ║                                                                    ║
 ║  To proceed with this transaction, you must verify your           ║
-║  identity by entering your 6-digit card PIN.                      ║
+║  identity by entering your 4-digit login PIN.                     ║
 ║                                                                    ║
-║               Enter 6-digit PIN:                                   ║
-║              [● ● ● ● ● ●]                                        ║
+║               Enter 4-digit PIN:                                   ║
+║              [● ● ● ●]                                            ║
 ║                                                                    ║
 ║  ┌───────────────────────┐  ┌──────────────────────┐            ║
 ║  │ Verify PIN & Continue │  │ Cancel Transaction   │            ║
@@ -147,7 +147,7 @@
 ║                                                                    ║
 ║              [Previous content...]                                 ║
 ║                                                                    ║
-║               Enter 6-digit PIN:                                   ║
+║               Enter 4-digit PIN:                                   ║
 ║              [______]                                              ║
 ║              ❌ Incorrect PIN. Please try again.                  ║
 ║                 ↑ RED ERROR MESSAGE                                ║
@@ -426,7 +426,7 @@ Works on:
 │ Enable: Click green button          │
 │ Status: Check color indicator       │
 │ Alert: Read warnings carefully      │
-│ Unlock: Enter your 6-digit PIN      │
+│ Unlock: Enter your 4-digit PIN      │
 │ Cancel: Click red button            │
 │ Help: Call 1800-BANK-HELP          │
 └─────────────────────────────────────┘
