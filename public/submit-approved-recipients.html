@@ -69,7 +69,8 @@
           const resp = await fetch('/api/approved-recipients', {
             headers: {
               'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true'
             },
             credentials: 'include'
           });
@@ -156,7 +157,8 @@
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true'
             },
             credentials: 'include'
           });
@@ -168,6 +170,7 @@
               method: 'DELETE',
               headers: {
                 'Authorization': `Bearer ${token}`,
+                'ngrok-skip-browser-warning': 'true',
                 'Content-Type': 'application/json'
               },
               credentials: 'include'
@@ -183,7 +186,8 @@
                 method: 'PUT', 
                 headers: { 
                   'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json' 
+                  'Content-Type': 'application/json',
+                  'ngrok-skip-browser-warning': 'true'
                 }, 
                 credentials: 'include',
                 body: JSON.stringify({ value: it.value }) 
@@ -194,7 +198,8 @@
                 method: 'POST', 
                 headers: { 
                   'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json' 
+                  'Content-Type': 'application/json',
+                  'ngrok-skip-browser-warning': 'true'
                 }, 
                 credentials: 'include',
                 body: JSON.stringify({ value: it.value }) 
