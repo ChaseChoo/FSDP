@@ -213,15 +213,16 @@ Back
 </div>
 </button>
 
-<button id="btnTransfer" class="tile-card flex items-center gap-4 bg-primary/5 border border-primary/20 p-4 rounded-xl hover:bg-primary/10 transition-all group">
-<div class="bg-primary/20 p-2 rounded-lg group-hover:bg-primary/30">
-<span class="material-symbols-outlined !text-xl text-primary">payments</span>
-</div>
-<div class="text-left">
-<p class="tile-title font-bold text-sm text-primary">Transfer Funds</p>
-<p class="tile-sub text-xs text-zinc-500">Immediate or non-immediate</p>
-</div>
-</button>
+    <button id="btnTransfer" class="tile-card group flex items-center gap-4">
+      <div class="tile-icon">
+        <span class="material-symbols-outlined !text-xl">payments</span>
+      </div>
+      <div class="flex-1">
+        <p class="tile-title">Transfer Funds</p>
+        <p class="tile-sub">Immediate or non-immediate</p>
+      </div>
+      <span class="material-symbols-outlined tile-chevron">chevron_right</span>
+    </button>
 
 <button id="btnDigitalWallet" class="tile-card flex items-center gap-4 bg-primary/5 border border-primary/20 p-4 rounded-xl hover:bg-primary/10 transition-all group" onclick="window.location.href='/wallet-transfer'">
 <div class="bg-primary/20 p-2 rounded-lg group-hover:bg-primary/30">

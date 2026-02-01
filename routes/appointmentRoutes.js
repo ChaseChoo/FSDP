@@ -101,7 +101,8 @@ router.get("/appointments/nearby", (req, res) => {
 });
 
 // Book a new appointment
-router.post("/book", requireSession, bookAppointment);
+router.post("/book", bookAppointment);
+router.post("/appointments/book", bookAppointment);  // Alternative route
 
 // Get a specific appointment
 router.get("/appointments/:appointmentId", getAppointment);

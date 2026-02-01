@@ -1448,15 +1448,6 @@
   ],
   "user-1": [
     {
-      "Id": "dev-1769876806373-0.9529716664403627",
-      "AccountId": "dev-user-1",
-      "Type": "DEPOSIT",
-      "Amount": 1000,
-      "BalanceAfter": 30457,
-      "Description": "ATM deposit",
-      "CreatedAt": "2026-01-31T16:26:46.373Z"
-    },
-    {
       "Id": "dev-1769840767882-0.5703310315348074",
       "AccountId": "dev-user-1",
       "Type": "DEPOSIT",

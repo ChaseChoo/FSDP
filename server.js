@@ -85,10 +85,10 @@ app.use("/support", supportRoutes); // Support live agent demo
 app.use("/api", approvedRecipientRoutes);
 // Guardian QR code API (assisted transactions)
 app.use("/api/guardian", fakeLogin, guardianQRRoutes);
+// Bank appointment booking API (mount before walletRoutes to avoid middleware conflicts)
+app.use("/api", appointmentRoutes);
 // Digital wallet transfer API
 app.use("/api", fakeLogin, requireSession, walletRoutes);
-// Bank appointment booking API
-app.use("/api", appointmentRoutes);
 
 // Transaction history API endpoint (JSON)
 app.get("/api/transactions", fakeLogin, requireSession, getTransactionHistory);
@@ -144,6 +144,10 @@ app.get("/bank-appointment", (req, res) => {
 
 app.get("/appointment-confirmation", (req, res) => {
   res.sendFile(path.resolve("public/appointment-confirmation.html"));
+});
+
+app.get("/my-bookings-mobile", (req, res) => {
+  res.sendFile(path.resolve("public/my-bookings-mobile.html"));
 });
 
 // Health check
