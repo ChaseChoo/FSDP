@@ -552,14 +552,22 @@ export async function verifyCardPIN(req, res) {
         console.log('🔍 PIN entered:', pin);
         console.log('🔍 Card number from token:', cardNumber);
         
-        // DEV mode: accept any 4-digit PIN for demo purposes (check FIRST before database)
+        // DEV mode: verify PIN matches the login PIN (1234)
         if (process.env.DEV_ALLOW_ALL === 'true') {
-            console.log('✅ PIN verification successful (dev mode) - accepting PIN:', pin);
+            console.log('🔍 DEV mode - checking PIN against login PIN (1234)');
             
-            // Skip database logging in dev mode to avoid connection issues
+            if (pin !== '1234') {
+                console.log('❌ Incorrect PIN in dev mode');
+                return res.status(200).json({
+                    valid: false,
+                    error: 'Incorrect PIN. Please try again.'
+                });
+            }
+            
+            console.log('✅ PIN verification successful (dev mode)');
             return res.status(200).json({
                 valid: true,
-                message: 'PIN verified successfully (dev mode)'
+                message: 'PIN verified successfully'
             });
         }
         
