@@ -21,34 +21,46 @@ import {
  * Requires authentication
  */
 export async function createActionQR(req, res) {
+  console.log('[Guardian QR] ========== CREATE ACTION QR REQUEST ==========');
+  console.log('[Guardian QR] Request body:', req.body);
+  console.log('[Guardian QR] Request user:', req.user);
+  
   try {
     const { actionType, amount, recipientAccountNumber, description, maxUses, expiryDays, guardianExternalId } = req.body;
     
-    // Get authenticated user info - use fallback for demo mode
-    let externalId = req.user?.externalId;
-    let userId = req.user?.userId; // Get userId for card-based auth
+    // PRIORITY: Use guardianExternalId from request body if provided (for guardian mobile app)
+    // Otherwise fall back to authenticated user from req.user
     let guardianInfo;
     
-    if (!externalId) {
-      // Fallback for demo mode - use guardianExternalId from request or default
-      const demoId = guardianExternalId || 'FAKE_USER';
-      console.log('[Guardian QR] No authenticated user, using demo mode with ID:', demoId);
-      
+    if (guardianExternalId) {
+      // Guardian mobile app explicitly provides the guardian ID
+      console.log('[Guardian QR] Using guardianExternalId from request:', guardianExternalId);
       guardianInfo = {
-        externalId: demoId,
+        externalId: guardianExternalId,
         userId: null,
-        cardNumber: '5555 **** **** 2222',
-        name: demoId
+        cardNumber: 'N/A',
+        name: guardianExternalId
       };
-    } else {
-      // For card-based auth, construct the balance key using userId
-      const balanceKey = userId ? `user-${userId}` : externalId;
+    } else if (req.user?.externalId) {
+      // Authenticated session - use user from session
+      const userId = req.user.userId;
+      const balanceKey = userId ? `user-${userId}` : req.user.externalId;
+      console.log('[Guardian QR] Using authenticated user:', balanceKey);
       
       guardianInfo = {
-        externalId: balanceKey, // Use the same key as the account controller
+        externalId: balanceKey,
         userId: userId,
         cardNumber: req.user.cardNumber || 'N/A',
         name: req.user.name || req.user.fullName || 'Guardian User'
+      };
+    } else {
+      // No guardian ID and no authenticated user - use default
+      console.log('[Guardian QR] No guardian ID or auth, using FAKE_USER');
+      guardianInfo = {
+        externalId: 'FAKE_USER',
+        userId: null,
+        cardNumber: '5555 **** **** 2222',
+        name: 'FAKE_USER'
       };
     }
     

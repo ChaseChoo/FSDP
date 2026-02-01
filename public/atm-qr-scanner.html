@@ -260,6 +260,7 @@
     async function startScanning() {
       try {
         hideStatus();
+        showStatus('Starting camera...', 'info');
         document.getElementById('cameraContainer').style.display = 'block';
         document.getElementById('startBtn').style.display = 'none';
         document.getElementById('stopBtn').style.display = 'inline-block';
@@ -268,16 +269,44 @@
         
         const config = {
           fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0
+          qrbox: { width: 250, height: 250 }
         };
 
-        await html5QrcodeScanner.start(
-          { facingMode: "environment" },
-          config,
-          onScanSuccess,
-          onScanError
-        );
+        // Try to use any available camera (desktop or mobile)
+        try {
+          // First try: use any available camera
+          await html5QrcodeScanner.start(
+            { facingMode: "user" }, // Front camera (works better on desktop)
+            config,
+            onScanSuccess,
+            onScanError
+          );
+        } catch (e1) {
+          console.log('Front camera failed, trying environment camera...', e1);
+          try {
+            // Second try: back camera
+            await html5QrcodeScanner.start(
+              { facingMode: "environment" },
+              config,
+              onScanSuccess,
+              onScanError
+            );
+          } catch (e2) {
+            console.log('Environment camera failed, trying default camera...', e2);
+            // Third try: just use default camera
+            const devices = await Html5Qrcode.getCameras();
+            if (devices && devices.length > 0) {
+              await html5QrcodeScanner.start(
+                devices[0].id,
+                config,
+                onScanSuccess,
+                onScanError
+              );
+            } else {
+              throw new Error('No cameras found');
+            }
+          }
+        }
 
         showStatus('Camera active - scan the QR code now', 'info');
       } catch (error) {
@@ -428,8 +457,13 @@
         
         const result = await response.json();
         
+        // Get balance from the correct location in response
+        const newBalance = result.account?.balance || result.transaction?.newBalance || result.newBalance || 0;
+        const actionType = result.actionExecuted?.type || result.transaction?.action || 'Transaction';
+        const amount = result.actionExecuted?.amount || result.transaction?.amount;
+        
         showStatus(
-          `Transaction successful! ${result.action} ${result.amount ? '$' + result.amount.toFixed(2) : ''} - New balance: $${result.newBalance.toFixed(2)}`,
+          `Transaction successful! ${actionType} ${amount ? '$' + parseFloat(amount).toFixed(2) : ''} - New balance: $${parseFloat(newBalance).toFixed(2)}`,
           'success'
         );
         

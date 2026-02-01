@@ -43,9 +43,11 @@ function loadActionsFromFile() {
 function saveActionsToFile() {
   try {
     const data = Object.fromEntries(preConfiguredActions);
-    fs.writeFileSync(ACTIONS_FILE, JSON.stringify(data, null, 2));
+    const json = JSON.stringify(data, null, 2);
+    fs.writeFileSync(ACTIONS_FILE, json);
+    console.log(`[PreConfigured Action] Saved ${preConfiguredActions.size} actions to file`);
   } catch (error) {
-    console.error('[PreConfigured Action] Error saving actions to file:', error);
+    console.error('[PreConfigured Action] ERROR saving actions to file:', error);
   }
 }
 

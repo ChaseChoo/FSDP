@@ -11,8 +11,8 @@ import requireSession from "../middleware/requireSession.js";
 
 const router = express.Router();
 
-// Create a new pre-configured action QR code (requires authentication)
-router.post("/create-action-qr", requireSession, createActionQR);
+// Create a new pre-configured action QR code (demo mode - no auth required for testing)
+router.post("/create-action-qr", createActionQR);
 
 // Validate a pre-configured action QR code (public - for ATM to check)
 router.get("/validate-action/:actionId", validateActionQR);

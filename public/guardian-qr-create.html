@@ -495,8 +495,16 @@
             clearAlert();
             
             try {
-                // Get auth token from localStorage (same as other pages)
-                const token = localStorage.getItem('token');
+                // Get auth token from localStorage (use authToken, not token)
+                const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+                
+                console.log('Creating QR code with token:', token ? 'Present' : 'Missing');
+                
+                // Get guardianExternalId from form if present, otherwise use user-1
+                const guardianIdInput = document.getElementById('guardian-id');
+                const guardianExternalId = guardianIdInput ? guardianIdInput.value : 'user-1';
+                
+                console.log('Guardian External ID:', guardianExternalId);
                 
                 // Create the QR code
                 const response = await fetch('/api/guardian/create-action-qr', {
@@ -512,7 +520,8 @@
                         recipientAccountNumber: recipient,
                         description,
                         maxUses,
-                        expiryDays
+                        expiryDays,
+                        guardianExternalId
                     })
                 });
                 

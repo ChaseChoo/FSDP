@@ -329,18 +329,27 @@
       }
 
       try {
+        console.log('=== GENERATING QR CODE ===');
+        console.log('currentGuardianId:', currentGuardianId);
+        console.log('action:', action);
+        console.log('amount:', amount);
+        
+        const requestBody = {
+          guardianExternalId: currentGuardianId,
+          actionType: action,
+          amount: (action === 'WITHDRAW' || action === 'DEPOSIT') ? amount : undefined,
+          maxUses,
+          expiryDays
+        };
+        
+        console.log('Request body:', JSON.stringify(requestBody, null, 2));
+        
         const response = await fetch('/api/guardian/create-action-qr', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            guardianExternalId: currentGuardianId,
-            actionType: action,
-            amount: (action === 'WITHDRAW' || action === 'DEPOSIT') ? amount : undefined,
-            maxUses,
-            expiryDays
-          })
+          body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {

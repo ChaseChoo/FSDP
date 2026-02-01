@@ -189,6 +189,51 @@
   ],
   "FAKE_USER": [
     {
+      "Id": "dev-1769927753315-0.5647541923746364",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 11235,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-01T06:35:53.315Z"
+    },
+    {
+      "Id": "dev-1769927668323-0.7593879678582398",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 11335,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-01T06:34:28.323Z"
+    },
+    {
+      "Id": "dev-1769927474637-0.8582627884749934",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 11435,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-01T06:31:14.637Z"
+    },
+    {
+      "Id": "dev-1769927377326-0.8853544217770644",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 11535,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-01T06:29:37.326Z"
+    },
+    {
+      "Id": "dev-1769927325060-0.18356650294764543",
+      "AccountId": "dev-FAKE_USER",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 11635,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-01T06:28:45.060Z"
+    },
+    {
       "Id": "dev-1769777924745-0.3611348365105427",
       "AccountId": "dev-FAKE_USER",
       "Type": "WALLET_TRANSFER",
@@ -1447,6 +1492,15 @@
     }
   ],
   "user-1": [
+    {
+      "Id": "dev-1769928651883-0.3552267860459597",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 29357,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-01T06:50:51.884Z"
+    },
     {
       "Id": "dev-1769840767882-0.5703310315348074",
       "AccountId": "dev-user-1",
