@@ -394,7 +394,11 @@ export function authenticateCardToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
     
+    console.log('🔐 authenticateCardToken - Auth header present:', !!authHeader);
+    console.log('🔐 authenticateCardToken - Token extracted:', !!token);
+    
     if (!token) {
+        console.log('❌ No token provided in Authorization header');
         return res.status(401).json({
             success: false,
             error: 'Access token required'
@@ -403,18 +407,21 @@ export function authenticateCardToken(req, res, next) {
     
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
+        console.log('✅ Token decoded successfully:', { userId: decoded.userId, sessionType: decoded.sessionType });
         
         // Ensure it's a card-based session
         if (decoded.sessionType !== 'ATM_CARD') {
+            console.log('❌ Invalid session type:', decoded.sessionType);
             return res.status(401).json({
                 success: false,
-                error: 'Invalid session type'
+                error: 'Invalid session type. Expected ATM_CARD session.'
             });
         }
         
         req.user = decoded;
         next();
     } catch (error) {
+        console.log('❌ Token verification failed:', error.message);
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({
                 success: false,
@@ -503,13 +510,14 @@ export async function getDemoBalances(req, res) {
 /**
  * POST /api/card/verify-pin
  * Verify card PIN for Impersonation Guard transaction unlock
- * This endpoint validates the user's PIN without full re-authentication
+ * This endpoint validates the user's 4-digit login PIN without full re-authentication
  */
 export async function verifyCardPIN(req, res) {
     try {
         const { pin } = req.body;
         
         console.log('🔐 PIN Verification Request');
+        console.log('🔍 DEV_ALLOW_ALL:', process.env.DEV_ALLOW_ALL);
         
         // Input validation
         if (!pin) {
@@ -519,19 +527,20 @@ export async function verifyCardPIN(req, res) {
             });
         }
         
-        // Validate PIN format (6 digits)
-        if (!/^\d{6}$/.test(pin)) {
+        // Validate PIN format (4 digits - matching login PIN)
+        if (!/^\d{4}$/.test(pin)) {
             return res.status(400).json({
                 valid: false,
-                error: 'PIN must be exactly 6 digits'
+                error: 'PIN must be exactly 4 digits'
             });
         }
         
         // Get user info from token/session
         const userId = req.user?.userId;
         const cardNumber = req.user?.cardNumber;
+        const externalId = req.user?.externalId;
         
-        if (!userId && !cardNumber) {
+        if (!userId && !cardNumber && !externalId) {
             console.log('❌ No user session found');
             return res.status(401).json({
                 valid: false,
@@ -539,29 +548,18 @@ export async function verifyCardPIN(req, res) {
             });
         }
         
-        console.log('🔍 Verifying PIN for user:', userId);
+        console.log('🔍 Verifying PIN for user:', userId || externalId);
+        console.log('🔍 PIN entered:', pin);
+        console.log('🔍 Card number from token:', cardNumber);
         
-        // DEV mode: accept any 6-digit PIN for demo purposes
+        // DEV mode: accept any 4-digit PIN for demo purposes (check FIRST before database)
         if (process.env.DEV_ALLOW_ALL === 'true') {
-            console.log('✅ PIN verification successful (dev mode)');
+            console.log('✅ PIN verification successful (dev mode) - accepting PIN:', pin);
             
-            // Log the verification attempt
-            try {
-                await logCardTransaction(
-                    userId,
-                    cardNumber || 'unknown',
-                    'PIN_VERIFY',
-                    null,
-                    'SUCCESS',
-                    'Impersonation Guard PIN verification (dev)'
-                );
-            } catch (e) {
-                console.warn('Dev PIN verify: logCardTransaction failed', e.message);
-            }
-            
-            return res.json({
+            // Skip database logging in dev mode to avoid connection issues
+            return res.status(200).json({
                 valid: true,
-                message: 'PIN verified successfully'
+                message: 'PIN verified successfully (dev mode)'
             });
         }
         

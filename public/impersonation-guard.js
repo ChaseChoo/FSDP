@@ -268,14 +268,14 @@ if (window.__impersonation_guard_loaded) {
           <span class="reminder-item">✗ HANG UP if feeling pressured or threatened</span>
         </p>
       </div>
-      <p class="pin-instruction">Enter your 6-digit card PIN to continue:</p>
+      <p class="pin-instruction">Enter your 4-digit login PIN to continue:</p>
       <div class="pin-input-container">
         <input 
           type="password" 
           id="pin-verification-input"
-          maxlength="6"
-          pattern="[0-9]{6}"
-          placeholder="••••••"
+          maxlength="4"
+          pattern="[0-9]{4}"
+          placeholder="••••"
           autocomplete="off"
         />
         <div id="pin-error">❌ Incorrect PIN. Please try again.</div>
@@ -313,8 +313,8 @@ if (window.__impersonation_guard_loaded) {
     const pinError = document.getElementById('pin-error');
     
     // Basic validation
-    if (!/^\d{6}$/.test(pin)) {
-      pinError.textContent = 'PIN must be exactly 6 digits';
+    if (!/^\d{4}$/.test(pin)) {
+      pinError.textContent = 'PIN must be exactly 4 digits';
       pinError.style.display = 'block';
       pinInput.value = '';
       pinInput.focus();
@@ -329,11 +329,23 @@ if (window.__impersonation_guard_loaded) {
     try {
       // Call backend to verify PIN
       const token = localStorage.getItem('token');
+      console.log('[ImpersonationGuard] Token present:', !!token);
+      console.log('[ImpersonationGuard] Token preview:', token ? token.substring(0, 20) + '...' : 'null');
+      
+      if (!token) {
+        console.error('[ImpersonationGuard] No token found in localStorage!');
+        pinError.textContent = 'Session expired. Please login again.';
+        pinError.style.display = 'block';
+        verifyBtn.textContent = 'Verify PIN & Continue';
+        verifyBtn.disabled = false;
+        return;
+      }
+      
       const response = await fetch('/api/card/verify-pin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ pin })
       });

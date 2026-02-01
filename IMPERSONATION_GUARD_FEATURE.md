@@ -35,7 +35,7 @@ When suspicious phrases are detected:
 To unlock a frozen transaction, users must:
 1. Review the detected suspicious phrases
 2. Read security warnings about common scams
-3. Enter their 6-digit card PIN
+3. Enter their 4-digit login PIN (same PIN used for card login)
 4. PIN is verified against backend database
 5. Transaction unlocks only if PIN is correct
 
@@ -76,7 +76,7 @@ Main detection engine with:
 ```
 POST /api/card/verify-pin
 ```
-- Validates 6-digit PIN format
+- Validates 4-digit PIN format (same as login PIN)
 - Authenticates against database (or dev mode)
 - Logs verification attempts for security audit
 - Returns success/failure response
@@ -138,7 +138,7 @@ DEV_ALLOW_ALL=true
    - System should lock transaction and show PIN modal
 
 3. **Test PIN Verification**:
-   - In dev mode, any 6-digit PIN works
+   - In dev mode, any 4-digit PIN works
    - In production, PIN must match database
 
 4. **Browser Console Logs**:
@@ -280,7 +280,7 @@ if (localStorage.getItem('impersonation_guard_auto_enable') === 'true') {
 
 ### "PIN verification failed"
 - **Solution**:
-  1. Check you're entering correct 6-digit PIN
+  1. Check you're entering correct 4-digit PIN
   2. Verify you're logged in with card authentication
   3. Check console for error messages
   4. Ensure backend server is running
