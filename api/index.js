@@ -50,7 +50,7 @@ app.use("/api/support", supportRoutes);
 app.use("/api/approved-recipients", approvedRecipientRoutes);
 app.use("/api/guardian", fakeLogin, guardianQRRoutes);
 app.use("/api/appointments", appointmentRoutes);
-app.use("/api/wallet", fakeLogin, walletRoutes);
+app.use("/api/wallet", walletRoutes);
 
 // HTML Routes
 app.get("/home", (req, res) => {
