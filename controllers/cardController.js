@@ -498,7 +498,7 @@ export async function getDemoBalances(req, res) {
 /**
  * POST /api/card/verify-pin
  * Verify card PIN for Impersonation Guard transaction unlock
- * This endpoint validates the user's PIN without full re-authentication
+ * This endpoint validates the user's 4-digit login PIN without full re-authentication
  */
 export async function verifyCardPIN(req, res) {
     try {
@@ -514,19 +514,20 @@ export async function verifyCardPIN(req, res) {
             });
         }
         
-        // Validate PIN format (6 digits)
-        if (!/^\d{6}$/.test(pin)) {
+        // Validate PIN format (4 digits - matching login PIN)
+        if (!/^\d{4}$/.test(pin)) {
             return res.status(400).json({
                 valid: false,
-                error: 'PIN must be exactly 6 digits'
+                error: 'PIN must be exactly 4 digits'
             });
         }
         
         // Get user info from token/session
         const userId = req.user?.userId;
         const cardNumber = req.user?.cardNumber;
+        const externalId = req.user?.externalId;
         
-        if (!userId && !cardNumber) {
+        if (!userId && !cardNumber && !externalId) {
             console.log('❌ No user session found');
             return res.status(401).json({
                 valid: false,
@@ -534,9 +535,9 @@ export async function verifyCardPIN(req, res) {
             });
         }
         
-        console.log('🔍 Verifying PIN for user:', userId);
+        console.log('🔍 Verifying PIN for user:', userId || externalId);
         
-        // DEV mode: accept any 6-digit PIN for demo purposes
+        // DEV mode: accept any 4-digit PIN for demo purposes
         if (process.env.DEV_ALLOW_ALL === 'true') {
             console.log('✅ PIN verification successful (dev mode)');
             
