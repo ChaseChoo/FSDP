@@ -1850,3 +1850,10 @@ if (btnTransactions) {
     window.location.href = "transactions.html";
   });
 }
+
+const btnGuardianQR = document.getElementById("btnGuardianQR");
+if (btnGuardianQR) {
+  btnGuardianQR.addEventListener("click", () => {
+    window.location.href = "atm-qr-scanner.html";
+  });
+}
