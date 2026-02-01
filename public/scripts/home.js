@@ -47,6 +47,8 @@
     let voiceMuted = false; // Mute voice reading
     let assistantRespondingShown = false; // Track if we've shown the responding indicator
     let lastMenuReadTime = 0; // Prevent duplicate menu reads
+    let lastMenuPage = null;
+    let initialMenuShown = false;
   let tempOtpToken = null;
   let lastOtpIdentifier = null;
     let pendingWithdrawal = null; // { amount: number }
@@ -469,6 +471,7 @@
       if (!isInitialMainLoad) {
         setTimeout(() => {
           displayMenuOptions(name);
+          initialMenuShown = true;
         }, 150);
       }
       
@@ -480,10 +483,6 @@
       if (navHistory.length > 1) navHistory.pop();
       const prev = navHistory.pop() || "main";
       showPage(prev);
-      // Display options after going back
-      setTimeout(() => {
-        displayMenuOptions(prev);
-      }, 200);
     }
 
     document
@@ -751,6 +750,12 @@
 
     function displayMenuOptions(page) {
       currentMenuPage = page || "main";
+      const now = Date.now();
+      if (currentMenuPage === lastMenuPage && now - lastMenuReadTime < 500) {
+        return;
+      }
+      lastMenuPage = currentMenuPage;
+      lastMenuReadTime = now;
       const opts = menuMap[currentMenuPage] || menuMap.main;
       if (!opts || !opts.length) return;
       // Log numbered options to the chat so user can press numbers on keypad
@@ -797,11 +802,6 @@
       } catch (e) {
         console.error(e);
       }
-      // Display menu options after page change
-      setTimeout(() => {
-        const newPage = getCurrentActivePage();
-        displayMenuOptions(newPage);
-      }, 300);
       return true;
     }
 
@@ -2312,7 +2312,9 @@
     // Initial welcome message
     setTimeout(() => {
       // show numbered options for the main menu immediately
-      try{ displayMenuOptions('main'); }catch(e){}
+      if (!initialMenuShown) {
+        try{ displayMenuOptions('main'); initialMenuShown = true; }catch(e){}
+      }
       
       // Add hover-tts class to all transaction buttons so they can be read on hover
       document.querySelectorAll('.transaction-card, .tile-card, [id^="btn"]').forEach(el => {
@@ -2348,3 +2350,15 @@ if (btnGuardianQR) {
     window.location.href = "atm-qr-scanner.html";
   });
 }
+
+// Mobile Wallet chat suggestion button
+document.addEventListener('DOMContentLoaded', () => {
+  const walletButtons = document.querySelectorAll('.chat-suggestion');
+  walletButtons.forEach(btn => {
+    if (btn.textContent.trim() === 'Mobile Wallet') {
+      btn.addEventListener('click', () => {
+        window.location.href = 'wallet-transfer.html';
+      });
+    }
+  });
+});

@@ -1,231 +1,308 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html class="light" lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EasyATM — PayNow</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OCBC ATM - PayNow</title>
 
-  <!-- ATM Homepage UI Styles -->
-  <link rel="stylesheet" href="styles/home.css">
-
-  <!-- PayNow form styles -->
-  <link rel="stylesheet" href="styles.css">
-
-  <!-- Impersonation Guard Styles -->
-  <link rel="stylesheet" href="impersonation-guard.css">
-
-  <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="impersonation-guard.css">
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#ea2a33",
+        "background-light": "#f8f6f6",
+        "background-dark": "#211111",
+      },
+      fontFamily: { display: ["Public Sans", "sans-serif"] },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+    }
+  }
+}
+</script>
+<style type="text/tailwindcss">
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 32px;
+}
+.page {
+  display: none;
+}
+.page.active {
+  display: block;
+}
+/* Hide scrollbar but keep scrolling functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+body {
+  background-image: linear-gradient(rgba(248, 246, 246, 0.98), rgba(248, 246, 246, 0.7)), url('sources/pexels-realcereal-15480508.jpg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+</style>
 </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white h-screen flex flex-col overflow-hidden">
 
-<body class="atm-body">
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<a href="home.html" class="cursor-pointer">
+<img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8 hover:opacity-80 transition-opacity">
+</a>
+</div>
+<div class="flex items-center gap-3">
+<button id="muteBtn" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors" title="Mute voice reading">
+<span class="material-symbols-outlined !text-lg">volume_up</span>
+</button>
+<button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+<span class="material-symbols-outlined !text-lg">logout</span> Exit
+</button>
+</div>
+</div>
+</header>
 
-<main class="atm-shell">
-  <section class="atm-card">
-    <div class="atm-layout">
+<main class="flex-1 flex flex-row max-w-[1400px] mx-auto w-full px-6 py-8 gap-8 overflow-hidden min-h-0">
 
-      <!-- ========================================= -->
-      <!-- LEFT SIDE: PayNow Form                    -->
-      <!-- ========================================= -->
-      <div class="atm-left">
+<!-- Left: Main Sections -->
+<div class="flex-1 flex flex-col overflow-y-auto min-h-0 hide-scrollbar">
 
-        <!-- Header -->
-        <div class="atm-header">
-          <div class="header-content">
-            <div>
-              <h1 class="atm-title">PayNow Transfer</h1>
-            </div>
-            <button onclick="location.href='index.html'" class="logout-btn">
-              <i data-lucide="arrow-left"></i> Back
-            </button>
-          </div>
-        </div>
-        <!-- PayNow Form (Your EXACT functionality preserved) -->
-        <div class="card">
-          <form action="confirm-paynow.html" method="get" aria-describedby="before-send">
-
-            <div class="grid-2">
-              <div class="row">
-                <label for="method">PayNow Method</label>
-                <select id="method" name="method">
-                  <option>Mobile Number</option>
-                </select>
-              </div>
-
-              <div class="row">
-                <label for="recipient">Recipient</label>
-                <input id="recipient" name="recipient" type="tel" 
-                       inputmode="numeric" pattern="\d*" 
-                       class="numeric-only" required
-                       placeholder="e.g., 91234567" />
-                <div class="hint">Digits only. Safe Mode limits to approved contacts.</div>
-              </div>
-            </div>
-
-            <div class="grid-2">
-              <div class="row">
-                <label for="amount">Amount (SGD)</label>
-                <input id="amount" name="amount" type="number" 
-                       inputmode="numeric" min="1" class="numeric-only"
-                       placeholder="Enter amount" required />
-
-                <div class="chips">
-                  <span class="chip" data-amt="10">$10</span>
-                  <span class="chip" data-amt="20">$20</span>
-                  <span class="chip" data-amt="50">$50</span>
-                  <span class="chip" data-amt="100">$100</span>
-                </div>
-              </div>
-            </div>
-
-            <div id="before-send" class="summary">
-              <strong>Before you send:</strong> You will confirm the recipient on the next screen.
-            </div>
-
-            <!-- Impersonation Guard Status -->
-            <div class="impersonation-guard-panel">
-              <div class="guard-header">
-                <div class="guard-status">
-                  <span id="mic-status-indicator" class="status-badge status-inactive">
-                    🎤 Monitoring Inactive
-                  </span>
-                  <span class="guard-subtitle">Impersonation Guard™</span>
-                </div>
-                <button type="button" id="toggle-impersonation-guard" class="guard-toggle-btn guard-enable">
-                  Enable
-                </button>
-              </div>
-              <div class="guard-info">
-                🛡️ Detects scam phrases and blocks suspicious transactions
-              </div>
-            </div>
-
-            <div class="actions">
-              <button type="reset" class="btn btn-ghost">Clear</button>
-              <button type="submit" class="btn btn-primary btn-lg">Continue</button>
-            </div>
-          </form>
-        </div>
-
-      </div>
-
-      <!-- ========================================= -->
-      <!-- RIGHT SIDE: Chatbot                       -->
-      <!-- ========================================= -->
-      <aside class="atm-right">
-
-        <div class="topbar">
-  <div class="top-right-controls">
-
-    <select class="lang-select">
-      <option>English</option>
-    </select>
-
-    <div class="divider"></div>
-
-    <!-- ✅ COMPACT SAFE MODE -->
-    <div class="safe safe-compact" role="group" aria-label="Safe Mode">
-      <input id="safemode" type="checkbox" aria-label="Enable Safe Mode" checked />
-      <label for="safemode">Safe Mode</label>
-    </div>
-
-    <div class="divider"></div>
-
-    <button onclick="location.href='home.html'" class="exit-btn hover-tts">
-      <i data-lucide="log-out" class="icon"></i>
-      <span>Exit</span>
-    </button>
-
-  </div>
+<!-- PayNow Section (as a page) -->
+<div id="paynowPage" class="page active">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-3xl font-extrabold">PayNow Transfer</h2>
+<p class="text-zinc-500 dark:text-zinc-400 text-sm mt-2">Instant payment to registered mobile numbers</p>
+</div>
+<button onclick="history.back()" class="backBtn text-primary hover:text-red-700 flex items-center gap-2 font-medium transition-colors">
+<span class="material-symbols-outlined !text-lg">arrow_back</span>
+Back
+</button>
 </div>
 
-
-        <div class="chat-shell">
-          <div id="chatlog" class="chat-log"></div>
-          <div class="chat-input-row">
-            <input id="userInput" class="chat-input" placeholder="How can I assist?" />
-            <button id="sendBtn" class="chat-send hover-tts">
-              <i data-lucide="send" class="icon-xs"></i>
-            </button>
-          </div>
-          <div class="chat-footer">
-            <div class="chat-tip">Tip: “PayNow 50 to 91234567”</div>
-          </div>
-        </div>
-
-      </aside>
-
+<!-- PayNow Form -->
+<div class="bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 rounded-2xl p-8">
+<form action="confirm-paynow.html" method="get" class="space-y-6">
+  
+  <!-- Payment Method -->
+  <div>
+    <label class="block text-sm font-bold text-zinc-900 dark:text-white mb-3">Payment Method</label>
+    <div class="bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl p-4 text-zinc-600 dark:text-zinc-300 font-medium">
+      📱 Mobile Number
     </div>
-  </section>
+  </div>
+
+  <!-- Recipient Mobile -->
+  <div>
+    <label for="recipient" class="block text-sm font-bold text-zinc-900 dark:text-white mb-3">Recipient Mobile Number</label>
+    <input 
+      id="recipient" 
+      name="recipient" 
+      type="tel" 
+      inputmode="numeric" 
+      pattern="\d*"
+      class="numeric-only w-full bg-white dark:bg-zinc-800 border-2 border-zinc-300 dark:border-zinc-600 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl px-4 py-3 text-lg font-semibold transition-all dark:text-white"
+      placeholder="e.g., 91234567"
+      required 
+    />
+    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2">📝 Digits only (8 digits for Singapore numbers)</p>
+  </div>
+
+  <!-- Amount Selection -->
+  <div>
+    <label for="amount" class="block text-sm font-bold text-zinc-900 dark:text-white mb-3">Transfer Amount (SGD)</label>
+    <div class="relative">
+      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-zinc-400">S$</span>
+      <input 
+        id="amount" 
+        name="amount" 
+        type="number" 
+        inputmode="numeric" 
+        min="1" 
+        class="numeric-only w-full pl-14 pr-4 py-4 bg-white dark:bg-zinc-800 border-2 border-zinc-300 dark:border-zinc-600 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-2xl font-bold transition-all dark:text-white"
+        placeholder="0.00"
+        required 
+      />
+    </div>
+  </div>
+
+  <!-- Quick Amount Chips -->
+  <div>
+    <label class="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-4 uppercase tracking-wide">Quick Amounts</label>
+    <div class="grid grid-cols-5 gap-3">
+      <button type="button" class="quick-amount bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 hover:border-primary rounded-2xl p-4 font-bold text-sm transition-all hover:shadow-lg hover:scale-105" data-amt="10">
+        <div class="flex flex-col items-center gap-1">
+          <span class="material-symbols-outlined text-primary text-xl">payments</span>
+          <span>S$10</span>
+        </div>
+      </button>
+      <button type="button" class="quick-amount bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 hover:border-primary rounded-2xl p-4 font-bold text-sm transition-all hover:shadow-lg hover:scale-105" data-amt="20">
+        <div class="flex flex-col items-center gap-1">
+          <span class="material-symbols-outlined text-primary text-xl">payments</span>
+          <span>S$20</span>
+        </div>
+      </button>
+      <button type="button" class="quick-amount bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 hover:border-primary rounded-2xl p-4 font-bold text-sm transition-all hover:shadow-lg hover:scale-105" data-amt="50">
+        <div class="flex flex-col items-center gap-1">
+          <span class="material-symbols-outlined text-primary text-xl">payments</span>
+          <span>S$50</span>
+        </div>
+      </button>
+      <button type="button" class="quick-amount bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 hover:border-primary rounded-2xl p-4 font-bold text-sm transition-all hover:shadow-lg hover:scale-105" data-amt="100">
+        <div class="flex flex-col items-center gap-1">
+          <span class="material-symbols-outlined text-primary text-xl">payments</span>
+          <span>S$100</span>
+        </div>
+      </button>
+      <button type="button" class="quick-amount bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 hover:border-primary rounded-2xl p-4 font-bold text-sm transition-all hover:shadow-lg hover:scale-105" data-amt="200">
+        <div class="flex flex-col items-center gap-1">
+          <span class="material-symbols-outlined text-primary text-xl">payments</span>
+          <span>S$200</span>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Info Box -->
+  <div class="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4">
+    <p class="text-sm text-blue-900 dark:text-blue-100 font-medium">
+      ✓ You will confirm the recipient details on the next screen before the payment is sent.
+    </p>
+  </div>
+
+  <!-- Impersonation Guard -->
+  <div class="impersonation-guard-panel">
+    <div class="guard-header">
+      <div class="guard-status">
+        <span id="mic-status-indicator" class="status-badge status-inactive">🎤 Monitoring Inactive</span>
+        <span class="guard-subtitle">Impersonation Guard™</span>
+      </div>
+      <button type="button" id="toggle-impersonation-guard" class="guard-toggle-btn guard-enable">Enable</button>
+    </div>
+    <div class="guard-info">🛡️ Detects scam phrases and blocks suspicious transactions</div>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex gap-3 pt-4">
+    <button type="reset" class="flex-1 bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white px-6 py-3 rounded-xl font-bold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all">
+      Clear
+    </button>
+    <button type="submit" class="flex-1 bg-gradient-to-r from-primary to-red-800 text-white px-6 py-3 rounded-xl font-bold hover:from-red-700 hover:to-red-900 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+      Continue
+      <span class="material-symbols-outlined">arrow_forward</span>
+    </button>
+  </div>
+</form>
+</div>
+
+</div>
+
+</div>
+
+<!-- Right: AI Chat Assistant -->
+<aside class="w-full max-w-[360px] flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-lg overflow-hidden shrink-0 h-[70vh] md:h-[78vh] max-h-[80vh]">
+<div class="bg-primary p-5 flex items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="bg-white/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-white !text-2xl">smart_toy</span>
+</div>
+<div>
+<h3 class="text-white font-bold text-base leading-none">OCBC AI Assistant</h3>
+<span class="text-white/70 text-xs font-medium" id="assistantStatus">Online & Ready to Help</span>
+</div>
+</div>
+<label id="micToggleLabel" class="p-2.5 bg-white/20 rounded-full hover:bg-white/30 transition-all cursor-pointer flex items-center justify-center" title="Click to activate voice input">
+<input id="micToggle" type="checkbox" class="sr-only"/>
+<span class="material-symbols-outlined text-white !text-xl">mic</span>
+</label>
+</div>
+<div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-zinc-50 dark:bg-zinc-950/20" id="chatlog"></div>
+<div class="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+<div class="flex items-center gap-2">
+<input id="userInput" class="flex-1 bg-zinc-100 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-full py-3.5 px-5 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all dark:placeholder:text-zinc-500" placeholder="Type a message..." type="text"/>
+<button id="sendBtn" class="flex-shrink-0 w-11 h-11 bg-primary text-white rounded-full hover:bg-red-700 active:scale-95 transition-all shadow-md hover:shadow-lg flex items-center justify-center group">
+<span class="material-symbols-outlined !text-xl group-hover:scale-110 transition-transform">send</span>
+</button>
+</div>
+<p class="text-[10px] text-zinc-400 text-center mt-3 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined !text-[12px]">security</span>
+Private & Secure Conversation
+</p>
+</div>
+</aside>
+
 </main>
 
-<script src="https://unpkg.com/lucide@latest"></script>
-<script>
-  lucide.createIcons();
-</script>
-
 <script src="scripts/home.js"></script>
-<script src="app.js"></script>
 <script src="fraud-detection-system.js"></script>
 <script src="impersonation-guard.js"></script>
 
-
 <script>
-(function () {
-  function enforceDigits(el) {
-    if (!el) return;
-    el.addEventListener('input', function () {
-      el.value = el.value.replace(/\D+/g, '');
+document.addEventListener('DOMContentLoaded', function() {
+  // Enforce numeric-only input
+  document.querySelectorAll('.numeric-only').forEach(el => {
+    el.addEventListener('input', function() {
+      this.value = this.value.replace(/\D+/g, '');
     });
-    el.addEventListener('paste', function (e) {
+    el.addEventListener('paste', function(e) {
       e.preventDefault();
       let txt = (e.clipboardData || window.clipboardData).getData('text') || '';
-      el.value = (el.value + txt.replace(/\D+/g, ''));
+      this.value = (this.value + txt.replace(/\D+/g, '')).slice(0, 20);
     });
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.numeric-only').forEach(enforceDigits);
-    
-    // Initialize Impersonation Guard toggle button
-    const toggleBtn = document.getElementById('toggle-impersonation-guard');
-    const statusBadge = document.getElementById('mic-status-indicator');
-    let isEnabled = false;
-    
-    if (toggleBtn && window.ImpersonationGuard) {
-      toggleBtn.addEventListener('click', function() {
-        if (!isEnabled) {
-          // Start monitoring
-          window.ImpersonationGuard.startMonitoring();
-          toggleBtn.textContent = 'Disable';
-          toggleBtn.classList.remove('guard-enable');
-          toggleBtn.classList.add('guard-disable');
-          isEnabled = true;
-        } else {
-          // Stop monitoring
-          window.ImpersonationGuard.stopMonitoring();
-          toggleBtn.textContent = 'Enable';
-          toggleBtn.classList.remove('guard-disable');
-          toggleBtn.classList.add('guard-enable');
-          isEnabled = false;
-        }
-      });
-      
-      // Check transaction lock status before form submission
-      const form = document.querySelector('form');
-      if (form) {
-        form.addEventListener('submit', function(e) {
-          if (window.ImpersonationGuard && window.ImpersonationGuard.isLocked()) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            alert('⚠️ Transaction is locked due to suspicious activity. Please verify your PIN to proceed.');
-            return false;
-          }
-        }, true); // Use capture phase to run before fraud-detection-system.js
-      }
-    }
   });
-})();
+
+  // Quick amount buttons
+  document.querySelectorAll('.quick-amount').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('amount').value = btn.dataset.amt;
+    });
+  });
+
+  // Impersonation Guard
+  const toggleBtn = document.getElementById('toggle-impersonation-guard');
+  let isEnabled = false;
+  
+  if (toggleBtn && window.ImpersonationGuard) {
+    toggleBtn.addEventListener('click', function() {
+      if (!isEnabled) {
+        window.ImpersonationGuard.startMonitoring();
+        toggleBtn.textContent = 'Disable';
+        toggleBtn.classList.remove('guard-enable');
+        toggleBtn.classList.add('guard-disable');
+        isEnabled = true;
+      } else {
+        window.ImpersonationGuard.stopMonitoring();
+        toggleBtn.textContent = 'Enable';
+        toggleBtn.classList.remove('guard-disable');
+        toggleBtn.classList.add('guard-enable');
+        isEnabled = false;
+      }
+    });
+
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        if (window.ImpersonationGuard && window.ImpersonationGuard.isLocked()) {
+          e.preventDefault();
+          alert('⚠️ Transaction locked due to suspicious activity.');
+          return false;
+        }
+      }, true);
+    }
+  }
+});
 </script>
 
 </body>
