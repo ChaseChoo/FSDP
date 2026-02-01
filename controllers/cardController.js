@@ -510,6 +510,7 @@ export async function verifyCardPIN(req, res) {
         const { pin } = req.body;
         
         console.log('🔐 PIN Verification Request');
+        console.log('🔍 DEV_ALLOW_ALL:', process.env.DEV_ALLOW_ALL);
         
         // Input validation
         if (!pin) {
@@ -541,31 +542,17 @@ export async function verifyCardPIN(req, res) {
         }
         
         console.log('🔍 Verifying PIN for user:', userId || externalId);
-        console.log('🔍 DEV_ALLOW_ALL:', process.env.DEV_ALLOW_ALL);
         console.log('🔍 PIN entered:', pin);
         console.log('🔍 Card number from token:', cardNumber);
         
-        // DEV mode: accept any 4-digit PIN for demo purposes
+        // DEV mode: accept any 4-digit PIN for demo purposes (check FIRST before database)
         if (process.env.DEV_ALLOW_ALL === 'true') {
             console.log('✅ PIN verification successful (dev mode) - accepting PIN:', pin);
             
-            // Log the verification attempt
-            try {
-                await logCardTransaction(
-                    userId,
-                    cardNumber || 'unknown',
-                    'PIN_VERIFY',
-                    null,
-                    'SUCCESS',
-                    'Impersonation Guard PIN verification (dev)'
-                );
-            } catch (e) {
-                console.warn('Dev PIN verify: logCardTransaction failed', e.message);
-            }
-            
-            return res.json({
+            // Skip database logging in dev mode to avoid connection issues
+            return res.status(200).json({
                 valid: true,
-                message: 'PIN verified successfully'
+                message: 'PIN verified successfully (dev mode)'
             });
         }
         
