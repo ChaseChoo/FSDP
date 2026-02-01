@@ -275,22 +275,30 @@
     function displayTransactionDetails(data) {
       const detailsContent = document.getElementById('detailsContent');
       
+      // Handle both old and new response formats
+      const actionType = data.action?.type || data.action;
+      const guardianName = data.action?.guardianName || data.guardianExternalId || 'Guardian';
+      const amount = data.action?.amount || data.amount;
+      const maxUses = data.action?.maxUses || data.maxUses || 1;
+      const currentUses = data.action?.currentUses || data.currentUses || 0;
+      const expiresAt = data.action?.expiresAt || data.expiresAt;
+      
       let html = `
         <div class="detail-row">
           <span class="detail-label">Action:</span>
-          <span class="detail-value">${data.action}</span>
+          <span class="detail-value">${actionType}</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Guardian:</span>
-          <span class="detail-value">${data.guardianExternalId}</span>
+          <span class="detail-value">${guardianName}</span>
         </div>
       `;
       
-      if (data.amount) {
+      if (amount) {
         html += `
           <div class="detail-row">
             <span class="detail-label">Amount:</span>
-            <span class="detail-value">$${parseFloat(data.amount).toFixed(2)}</span>
+            <span class="detail-value">$${parseFloat(amount).toFixed(2)}</span>
           </div>
         `;
       }
@@ -298,11 +306,11 @@
       html += `
         <div class="detail-row">
           <span class="detail-label">Uses Remaining:</span>
-          <span class="detail-value">${data.usesRemaining || data.maxUses} of ${data.maxUses}</span>
+          <span class="detail-value">${maxUses - currentUses} of ${maxUses}</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Expires:</span>
-          <span class="detail-value">${new Date(data.expiresAt).toLocaleString()}</span>
+          <span class="detail-value">${new Date(expiresAt).toLocaleString()}</span>
         </div>
       `;
       
