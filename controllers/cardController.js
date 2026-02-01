@@ -394,7 +394,11 @@ export function authenticateCardToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
     
+    console.log('🔐 authenticateCardToken - Auth header present:', !!authHeader);
+    console.log('🔐 authenticateCardToken - Token extracted:', !!token);
+    
     if (!token) {
+        console.log('❌ No token provided in Authorization header');
         return res.status(401).json({
             success: false,
             error: 'Access token required'
@@ -403,18 +407,21 @@ export function authenticateCardToken(req, res, next) {
     
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
+        console.log('✅ Token decoded successfully:', { userId: decoded.userId, sessionType: decoded.sessionType });
         
         // Ensure it's a card-based session
         if (decoded.sessionType !== 'ATM_CARD') {
+            console.log('❌ Invalid session type:', decoded.sessionType);
             return res.status(401).json({
                 success: false,
-                error: 'Invalid session type'
+                error: 'Invalid session type. Expected ATM_CARD session.'
             });
         }
         
         req.user = decoded;
         next();
     } catch (error) {
+        console.log('❌ Token verification failed:', error.message);
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({
                 success: false,

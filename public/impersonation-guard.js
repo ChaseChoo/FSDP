@@ -329,11 +329,23 @@ if (window.__impersonation_guard_loaded) {
     try {
       // Call backend to verify PIN
       const token = localStorage.getItem('token');
+      console.log('[ImpersonationGuard] Token present:', !!token);
+      console.log('[ImpersonationGuard] Token preview:', token ? token.substring(0, 20) + '...' : 'null');
+      
+      if (!token) {
+        console.error('[ImpersonationGuard] No token found in localStorage!');
+        pinError.textContent = 'Session expired. Please login again.';
+        pinError.style.display = 'block';
+        verifyBtn.textContent = 'Verify PIN & Continue';
+        verifyBtn.disabled = false;
+        return;
+      }
+      
       const response = await fetch('/api/card/verify-pin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ pin })
       });
