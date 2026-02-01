@@ -1,135 +1,173 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html class="light" lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EasyATM — Transfers</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OCBC ATM - Transfer Services</title>
 
-  <link rel="stylesheet" href="styles/home.css">
-  <link rel="stylesheet" href="styles.css">
-
-  <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#ea2a33",
+        "background-light": "#f8f6f6",
+        "background-dark": "#211111",
+      },
+      fontFamily: { display: ["Public Sans", "sans-serif"] },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+    }
+  }
+}
+</script>
+<style type="text/tailwindcss">
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 32px;
+}
+.tile-card {
+  @apply bg-white dark:bg-zinc-900 border-2 border-transparent rounded-2xl shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all;
+}
+.chat-bubble-ai {
+  @apply bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl rounded-tl-none p-4 text-sm shadow-sm;
+}
+body {
+  background-image: linear-gradient(rgba(248, 246, 246, 0.98), rgba(248, 246, 246, 0.7)), url('sources/pexels-realcereal-15480508.jpg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+</style>
 </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white h-screen flex flex-col overflow-hidden">
 
-<body class="atm-body">
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50 shadow-sm">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<a href="home.html" class="cursor-pointer">
+<img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8 hover:opacity-80 transition-opacity">
+</a>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors" onclick="location.href='home.html#noncash'">
+<span class="material-symbols-outlined !text-lg">support_agent</span> Virtual Teller
+</button>
+<button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+<span class="material-symbols-outlined !text-lg">logout</span> Exit
+</button>
+</div>
+</div>
+</header>
 
-<main class="atm-shell">
-  <section class="atm-card">
-    <div class="atm-layout">
+<main class="flex-1 flex flex-row max-w-[1400px] mx-auto w-full px-6 py-6 gap-8 overflow-hidden min-h-0">
 
-      <!-- ========== LEFT ========== -->
-      <div class="atm-left">
+<!-- Left: Main Content -->
+<div class="flex-1 flex flex-col overflow-y-auto pr-2 min-h-0">
 
-        <div class="atm-header">
-  <div class="header-content">
-    
-    <!-- LEFT: TITLE -->
-    <div>
-      <h1 class="atm-title">Transfer Services</h1>
-    </div>
-
-    <!-- RIGHT: BACK BUTTON (same style as PayNow) -->
-    <button onclick="location.href='home.html'" class="logout-btn">
-      <i data-lucide="arrow-left"></i> Back
-    </button>
-
-  </div>
+<div class="flex items-center justify-between mb-6">
+<div>
+<h1 class="text-4xl font-extrabold mb-3 text-[#1b0e0e] dark:text-zinc-100 tracking-tight">Transfer Services</h1>
+<p class="text-zinc-600 dark:text-zinc-400 text-lg">Select a transfer option to continue</p>
+</div>
+<button onclick="location.href='home.html#noncash'" class="text-primary hover:text-red-700 flex items-center gap-2 font-medium transition-colors">
+<span class="material-symbols-outlined !text-lg">arrow_back</span>
+Back
+</button>
 </div>
 
-        <!-- Scam banner -->
-        <div class="banner card" style="margin-bottom:20px;">
-          <div>⚠️</div>
-          <div>
-            <strong>Scam Warning:</strong> Never transfer money on instruction from a caller or stranger.
-            <div class="tip">If unsure, stop and call your bank’s hotline.</div>
-          </div>
-        </div>
+<div class="mb-6 p-5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-l-4 border-amber-500 rounded-xl flex items-start gap-4 shadow-sm">
+<span class="material-symbols-outlined text-amber-600 dark:text-amber-400 !text-3xl flex-shrink-0">warning</span>
+<div>
+<p class="font-bold text-amber-900 dark:text-amber-200 mb-2 text-base">⚠️ Scam Warning</p>
+<p class="text-sm text-amber-800 dark:text-amber-300 font-medium">Never transfer money on instruction from a caller or stranger.</p>
+<p class="text-xs text-amber-700 dark:text-amber-400 mt-2">If unsure, stop and call your bank's hotline immediately.</p>
+</div>
+</div>
 
-        <!-- Main options -->
-        <div class="quick-grid">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          <button onclick="location.href='paynow.html'" class="tile-card hover-tts">
-            <div class="tile-row">
-              <div class="tile-icon"><i data-lucide="send" class="icon"></i></div>
-              <div>
-                <p class="tile-title">PayNow</p>
-                <p class="tile-sub">Mobile, NRIC, UEN, QR</p>
-              </div>
-            </div>
-          </button>
+<button onclick="location.href='paynow.html'" class="tile-card flex items-center gap-5 p-6 hover:border-primary/50 group">
+<div class="bg-gradient-to-br from-primary/20 to-primary/10 p-4 rounded-2xl group-hover:from-primary/30 group-hover:to-primary/20 transition-all">
+<span class="material-symbols-outlined !text-3xl text-primary">send</span>
+</div>
+<div class="text-left flex-1">
+<p class="font-extrabold text-base text-[#1b0e0e] dark:text-zinc-100 mb-1">PayNow</p>
+<p class="text-xs text-zinc-500 dark:text-zinc-400">Mobile, NRIC, UEN, QR</p>
+</div>
+<span class="material-symbols-outlined text-zinc-300 group-hover:text-primary transition-colors">chevron_right</span>
+</button>
 
-          <button onclick="location.href='bills.html'" class="tile-card hover-tts">
-            <div class="tile-row">
-              <div class="tile-icon"><i data-lucide="file-text" class="icon"></i></div>
-              <div>
-                <p class="tile-title">Bill Payment</p>
-                <p class="tile-sub">Utilities, Town Council etc.</p>
-              </div>
-            </div>
-          </button>
+<button onclick="location.href='bills.html'" class="tile-card flex items-center gap-5 p-6 hover:border-primary/50 group">
+<div class="bg-gradient-to-br from-primary/20 to-primary/10 p-4 rounded-2xl group-hover:from-primary/30 group-hover:to-primary/20 transition-all">
+<span class="material-symbols-outlined !text-3xl text-primary">receipt</span>
+</div>
+<div class="text-left flex-1">
+<p class="font-extrabold text-base text-[#1b0e0e] dark:text-zinc-100 mb-1">Bill Payment</p>
+<p class="text-xs text-zinc-500 dark:text-zinc-400">Utilities, Town Council etc.</p>
+</div>
+<span class="material-symbols-outlined text-zinc-300 group-hover:text-primary transition-colors">chevron_right</span>
+</button>
 
-          <button onclick="location.href='guardian-qr-create.html'" class="tile-card hover-tts">
-            <div class="tile-row">
-              <div class="tile-icon"><i data-lucide="shield-check" class="icon"></i></div>
-              <div>
-                <p class="tile-title">Guardian QR</p>
-                <p class="tile-sub">Pre-program ATM actions</p>
-              </div>
-            </div>
-          </button>
+<button id="btnDigitalWallet" onclick="location.href='wallet-transfer'" class="tile-card flex items-center gap-5 p-6 hover:border-primary/50 group">
+<div class="bg-gradient-to-br from-primary/20 to-primary/10 p-4 rounded-2xl group-hover:from-primary/30 group-hover:to-primary/20 transition-all">
+<span class="material-symbols-outlined !text-3xl text-primary">smartphone</span>
+</div>
+<div class="text-left flex-1">
+<p class="font-extrabold text-base text-[#1b0e0e] dark:text-zinc-100 mb-1">Digital Wallet</p>
+<p class="text-xs text-zinc-500 dark:text-zinc-400">Transfer to Alipay, GrabPay & more</p>
+</div>
+<span class="material-symbols-outlined text-zinc-300 group-hover:text-primary transition-colors">chevron_right</span>
+</button>
 
-          <button onclick="location.href='wallet-transfer'" class="tile-card hover-tts" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-            <div class="tile-row">
-              <div class="tile-icon"><i data-lucide="smartphone" class="icon"></i></div>
-              <div>
-                <p class="tile-title" style="color: white;">Digital Wallet</p>
-                <p class="tile-sub" style="color: rgba(255,255,255,0.9);">Transfer to mobile wallets</p>
-              </div>
-            </div>
-          </button>
+</div>
 
-        </div>
+</div>
 
-      </div>
+<!-- Right: AI Chat Assistant -->
+<aside class="w-full max-w-[400px] flex flex-col bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden shrink-0 h-[calc(100vh-180px)] max-h-[700px]">
+<div class="bg-gradient-to-r from-primary to-red-700 p-6 flex items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+<span class="material-symbols-outlined text-white !text-2xl">smart_toy</span>
+</div>
+<div>
+<h3 class="text-white font-extrabold text-lg leading-tight">OCBC AI Assistant</h3>
+<span class="text-white/80 text-xs font-medium" id="assistantStatus">Online & Ready to Help</span>
+</div>
+</div>
+<label id="micToggleLabel" class="p-3 bg-white/20 rounded-xl hover:bg-white/30 transition-all cursor-pointer flex items-center justify-center backdrop-blur-sm" title="Click to activate voice input">
+<input id="micToggle" type="checkbox" class="sr-only"/>
+<span class="material-symbols-outlined text-white !text-xl">mic</span>
+</label>
+</div>
+<div class="flex-1 overflow-y-auto p-5 flex flex-col gap-4 bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950/20 dark:to-zinc-900" id="chatlog">
+<!-- Welcome message -->
+<div class="chat-bubble-ai">
+<p class="text-zinc-700 dark:text-zinc-300">👋 Hello! I'm your AI assistant. How can I help you with your transfer today?</p>
+</div>
+</div>
+<div class="p-5 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+<div class="relative flex items-center gap-2">
+<input id="userInput" class="flex-1 bg-zinc-100 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-full py-3.5 px-5 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all dark:placeholder:text-zinc-500" placeholder="Type a message..." type="text"/>
+<button id="sendBtn" class="flex-shrink-0 w-11 h-11 bg-primary text-white rounded-full hover:bg-red-700 active:scale-95 transition-all shadow-md hover:shadow-lg flex items-center justify-center group">
+<span class="material-symbols-outlined !text-xl group-hover:scale-110 transition-transform">send</span>
+</button>
+</div>
+<p class="text-[10px] text-zinc-400 text-center mt-3 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined !text-[12px]">security</span>
+Private & Secure Conversation
+</p>
+</div>
+</aside>
 
-      <!-- ========== RIGHT ========== -->
-      <aside class="atm-right">
-
-        <div class="topbar">
-          <div class="top-right-controls">
-            <select class="lang-select">
-              <option>English</option>
-            </select>
-            <div class="divider"></div>
-            <button class="exit-btn hover-tts">
-              <i data-lucide="log-out" class="icon"></i>
-              <span>Exit</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="chat-shell">
-          <div class="chat-log"></div>
-          <div class="chat-input-row">
-            <input class="chat-input" placeholder="How can I assist?" />
-            <button class="chat-send hover-tts">
-              <i data-lucide="send" class="icon-xs"></i>
-            </button>
-          </div>
-          <div class="chat-footer">
-            <div class="chat-tip">Tip: “PayNow 50 to 91234567”</div>
-          </div>
-        </div>
-
-      </aside>
-
-    </div>
-  </section>
 </main>
 
-<script>lucide.createIcons();</script>
-
-<script src="app.js"></script>
+<script src="scripts/home.js"></script>
 <script src="fraud-detection-system.js"></script>
 
 </body>

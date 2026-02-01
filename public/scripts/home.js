@@ -14,6 +14,7 @@
       activate: document.getElementById("activatePage"),
       transfer: document.getElementById("transferPage"),
       transferConfirm: document.getElementById("transferConfirmPage"),
+      bills: document.getElementById("billsPage"),
     };
 
     const chatlog = document.getElementById("chatlog");
@@ -49,10 +50,30 @@
 
     // Fetch balance from API
     async function loadBalance() {
+      // Skip balance loading on certain pages (bills.html, confirm-bill-payment.html)
+      if (window.skipBalanceAPI) {
+        console.log('Balance API skipped on this page');
+        // Still ensure balance is set in localStorage
+        const savedBalance = localStorage.getItem('balance');
+        if (!savedBalance) {
+          localStorage.setItem('balance', '1000');
+        }
+        return;
+      }
+
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          console.warn('No token found, using default balance');
+          console.warn('No token found, using localStorage balance');
+          // Use localStorage balance if available
+          const savedBalance = localStorage.getItem('balance');
+          if (savedBalance) {
+            balance = parseFloat(savedBalance);
+          } else {
+            balance = 1000.00;
+            localStorage.setItem('balance', balance.toString());
+          }
+          updateBalanceUI();
           return;
         }
 
@@ -68,13 +89,37 @@
       if (response.ok) {
         const data = await response.json();
         balance = parseFloat(data.balance) || 0.0;
-        console.log('Balance loaded:', balance);
+        // Save to localStorage for consistency
+        localStorage.setItem('balance', balance.toString());
+        console.log('Balance loaded from API:', balance);
         updateBalanceUI();
       } else {
-        console.error('Failed to fetch balance:', response.status);
+        console.warn('Failed to fetch balance from API:', response.status);
+        // Fallback to localStorage
+        const savedBalance = localStorage.getItem('balance');
+        if (savedBalance) {
+          balance = parseFloat(savedBalance);
+          console.log('Using localStorage balance:', balance);
+          updateBalanceUI();
+        } else {
+          balance = 1000.00;
+          localStorage.setItem('balance', balance.toString());
+          updateBalanceUI();
+        }
       }
     } catch (error) {
-      console.error('Error loading balance:', error);
+      console.warn('Error loading balance from API:', error);
+      // Fallback to localStorage
+      const savedBalance = localStorage.getItem('balance');
+      if (savedBalance) {
+        balance = parseFloat(savedBalance);
+        console.log('Using localStorage balance as fallback:', balance);
+        updateBalanceUI();
+      } else {
+        balance = 1000.00;
+        localStorage.setItem('balance', balance.toString());
+        updateBalanceUI();
+      }
     }
   }
 
@@ -466,7 +511,41 @@
           logBot(el.textContent.trim() + " – (demo) coming soon.");
         })
       );
-    });         
+    });
+
+    // Bill Scanner button - navigate to bill-scanner.html
+    document
+      .querySelectorAll("#btnScanBill")
+      .forEach((el) =>
+        el.addEventListener("click", () => {
+          window.location.href = "bill-scanner.html";
+        })
+      );
+
+    // Bill Payment button - show bills page with two options
+    document
+      .querySelectorAll("#btnBillPayment")
+      .forEach((el) =>
+        el.addEventListener("click", () => {
+          showPage("bills");
+        })
+      );
+
+    // Scan Bills button - redirect to bill scanner
+    const scanBillsBtn = document.getElementById("scanBillsBtn");
+    if (scanBillsBtn) {
+      scanBillsBtn.addEventListener("click", () => {
+        window.location.href = "bill-scanner.html";
+      });
+    }
+
+    // Pay Current Bills button - redirect to confirm bill payment
+    const payCurrentBillsBtn = document.getElementById("payCurrentBillsBtn");
+    if (payCurrentBillsBtn) {
+      payCurrentBillsBtn.addEventListener("click", () => {
+        window.location.href = "confirm-bill-payment.html";
+      });
+    }
 
     // Balance
 
@@ -535,6 +614,15 @@
       // Call API to process withdrawal
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          logBot('Session expired - please login again');
+          speak('Please login again');
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 2000);
+          return;
+        }
+        
         const response = await fetch('/account/withdraw', {
           method: 'POST',
           headers: {
@@ -548,17 +636,36 @@
         if (response.ok) {
           const data = await response.json();
           balance = parseFloat(data.newBalance) || balance - amt;
+          // Save to localStorage
+          localStorage.setItem('balance', balance.toString());
           updateBalanceUI();
-          logBot(dict.withdrawn_now(amt, balance));
-          speak(dict.withdraw_msg);
-          // show a brief on-screen success confirmation
-          try{ showSuccessBanner('Withdraw successful — ' + formatCurrency(amt)); }catch(e){}
-          // hide pending banner if present
-          try{ hidePendingBanner(); }catch(e){}
-          // after a short delay return to main menu so user sees confirmation
-          setTimeout(()=>{ showPage("main"); }, 900);
+          
+          // Prepare receipt data
+          const receiptData = {
+            transactionType: 'withdrawal',
+            amount: formatCurrency(amt),
+            previousBalance: (balance + amt).toFixed(2),
+            currentBalance: balance.toFixed(2),
+            timestamp: new Date().toISOString(),
+            transactionId: 'TXN-' + Date.now()
+          };
+          
+          // Store in sessionStorage and redirect to receipt
+          sessionStorage.setItem('billPaymentData', JSON.stringify(receiptData));
+          window.location.href = 'receipt.html';
         } else {
           const error = await response.json();
+          
+          // Handle 401 Unauthorized
+          if (response.status === 401) {
+            logBot('Session expired - please login again');
+            speak('Session expired');
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 2000);
+            return;
+          }
+          
           logBot(`Error: ${error.error || 'Withdrawal failed'}`);
           speak('Transaction failed. Please try again.');
         }
@@ -851,6 +958,9 @@
       }catch(e){ console.error(e); }
     }
 
+    // Expose function globally so onclick handlers can access it
+    window.showVirtualTeller = showVirtualTeller;
+
     function closeVirtualTeller(){
       try{ 
         const overlay = document.getElementById('virtualTellerOverlay'); 
@@ -958,6 +1068,16 @@
           /(balance|余额|baki|இருப்பு|semakan baki|check balance)/i,
         transfer:
           /(transfer|转账|汇款|pindah|pindahan|பரிமாற்றம்)/i,
+        wallet:
+          /(digital wallet|wallet transfer|transfer to wallet|send to wallet|wallet|alipay|weixin|wechat|touchngo|touch n go|grabpay|电子钱包|钱包)/i,
+        alipay:
+          /(alipay|支付宝|ali pay)/i,
+        wechat:
+          /(wechat|weixin|微信|weixin pay|wechat pay)/i,
+        touchngo:
+          /(touchngo|touch n go|touch and go|tng)/i,
+        grabpay:
+          /(grabpay|grab pay|grab)/i,
         history:
           /(history|transactions|transaction history|recent transactions|recent activity|交易记录|最近交易|交易历史|transaksi|sejarah transaksi)/i,
         activate:
@@ -1117,6 +1237,68 @@
         speak(i18n[currentLang].balance_is(balance));
         updateBalanceUI();
         showPage("balance");
+        return;
+      }
+
+      // Digital wallet transfer handling
+      if (intents.wallet.test(lower)) {
+        // Determine which wallet type is mentioned
+        let walletType = 'alipay'; // default
+        let walletName = 'Alipay';
+        
+        if (intents.wechat.test(lower)) {
+          walletType = 'wechat';
+          walletName = 'Weixin Pay';
+        } else if (intents.touchngo.test(lower)) {
+          walletType = 'touchngo';
+          walletName = 'Touch n Go';
+        } else if (intents.grabpay.test(lower)) {
+          walletType = 'grabpay';
+          walletName = 'GrabPay';
+        } else if (intents.alipay.test(lower)) {
+          walletType = 'alipay';
+          walletName = 'Alipay';
+        }
+
+        // Try to extract amount from the command
+        let amt = null;
+        const amtNumMatch = text.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/);
+        if (amtNumMatch) amt = parseFloat(amtNumMatch[1]);
+        if (!amt) {
+          const byWords = wordsToNumber(text);
+          if (byWords) amt = byWords;
+        }
+
+        // Try to extract wallet ID/phone number (8-15 digits)
+        const walletIdMatch = text.match(/(\d{8,15})/);
+        const walletId = walletIdMatch ? walletIdMatch[1] : null;
+
+        // If we have both amount and wallet ID, process the transfer directly
+        if (amt && walletId) {
+          logBot(`Processing ${formatCurrency(amt)} transfer to ${walletName} wallet ${walletId}...`);
+          speak(`Processing ${amt} dollar transfer to ${walletName}.`);
+          
+          // Call the wallet transfer API
+          processWalletTransfer(walletType, walletId, amt);
+          return;
+        }
+
+        // If we have amount but no wallet ID, redirect to wallet transfer page with prefill
+        if (amt) {
+          logBot(`Opening ${walletName} wallet transfer for ${formatCurrency(amt)}. Please enter wallet ID.`);
+          speak(`Opening ${walletName} transfer for ${amt} dollars.`);
+          setTimeout(() => {
+            window.location.href = `/wallet-transfer?wallet=${walletType}&amount=${amt}`;
+          }, 700);
+          return;
+        }
+
+        // If only wallet type mentioned, redirect to wallet transfer page
+        logBot(`Opening ${walletName} wallet transfer. Please enter amount and wallet ID.`);
+        speak(`Opening ${walletName} wallet transfer.`);
+        setTimeout(() => {
+          window.location.href = `/wallet-transfer?wallet=${walletType}`;
+        }, 700);
         return;
       }
 
@@ -1343,6 +1525,17 @@
       const expected = depositInProgress ? depositInProgress.expected : 0;
       if(expected && expected > 0 && Math.abs(amount - expected) > 0.01){
         logBot(`Inserted amount ${formatCurrency(amount)} does not match expected ${formatCurrency(expected)}. Please cancel and try again.`);
+        if (!token) {
+          logBot('Session expired - please login again');
+          speak('Please login again');
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 2000);
+          resetCountingUI();
+          depositInProgress = null;
+          return;
+        }
+        
         speak('Inserted amount does not match expected. Please cancel and try again.');
         resetCountingUI();
         depositInProgress = null;
@@ -1365,17 +1558,38 @@
         if (response.ok) {
           const data = await response.json();
           balance = parseFloat(data.newBalance) || balance + amount;
+          // Save to localStorage
+          localStorage.setItem('balance', balance.toString());
           updateBalanceUI();
-          logBot(`Deposit accepted. ${formatCurrency(amount)} added to your account.`);
-          speak('Deposit accepted. Thank you.');
-          showSuccessBanner('Deposit successful — ' + formatCurrency(amount));
-          // cleanup UI
-          resetCountingUI();
-          depositInProgress = null;
-          // return to main after short delay
-          setTimeout(()=>{ showPage('main'); }, 1200);
+          
+          // Prepare receipt data
+          const receiptData = {
+            transactionType: 'deposit',
+            amount: formatCurrency(amount),
+            previousBalance: (balance - amount).toFixed(2),
+            currentBalance: balance.toFixed(2),
+            timestamp: new Date().toISOString(),
+            transactionId: 'TXN-' + Date.now()
+          };
+          
+          // Store in sessionStorage and redirect to receipt
+          sessionStorage.setItem('billPaymentData', JSON.stringify(receiptData));
+          window.location.href = 'receipt.html';
         } else {
           const error = await response.json();
+          
+          // Handle 401 Unauthorized
+          if (response.status === 401) {
+            logBot('Session expired - please login again');
+            speak('Session expired');
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 2000);
+            resetCountingUI();
+            depositInProgress = null;
+            return;
+          }
+          
           logBot(`Error: ${error.error || 'Deposit failed'}`);
           speak('Transaction failed. Please try again.');
           resetCountingUI();
@@ -1621,6 +1835,11 @@
           
           if (!token) {
             logBot('Session expired - please login again');
+            speak('Please login again');
+            // Redirect to login
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 2000);
             return;
           }
           
@@ -1644,26 +1863,39 @@
             const data = await response.json();
             console.log('Transfer successful:', data);
             balance = data.newBalance;
+            localStorage.setItem('balance', balance.toString());
             updateBalanceUI();
             
-            const dict = i18n[currentLang];
-            const successMsg = `Transfer successful! ${formatCurrency(amount)} sent to ${toAccountNumber}`;
-            logBot(successMsg);
-            speak(dict.transfer_done || 'Transfer completed');
-            showSuccessBanner(successMsg);
+            // Prepare receipt data
+            const receiptData = {
+              transactionType: 'transfer',
+              amount: formatCurrency(amount),
+              previousBalance: (balance + amount).toFixed(2),
+              currentBalance: balance.toFixed(2),
+              toAccount: toAccountNumber,
+              toBank: document.getElementById('transferBank')?.value || 'OCBC Bank',
+              payeeName: payee || 'Recipient',
+              timestamp: new Date().toISOString(),
+              transactionId: 'TXN-' + Date.now()
+            };
             
-            // Clear form
-            document.getElementById('transferAmount').value = '';
-            document.getElementById('transferToAccount').value = '';
-            document.getElementById('transferPayee').value = '';
-            if (document.getElementById('transferBank')) {
-              document.getElementById('transferBank').value = '';
-            }
-            
-            showPage("main");
+            // Store in sessionStorage and redirect to receipt
+            sessionStorage.setItem('billPaymentData', JSON.stringify(receiptData));
+            window.location.href = 'receipt.html';
           } else {
             const error = await response.json();
             console.error('Transfer failed:', error);
+            
+            // Handle 401 Unauthorized
+            if (response.status === 401) {
+              logBot('Session expired - please login again');
+              speak('Session expired');
+              setTimeout(() => {
+                window.location.href = 'login.html';
+              }, 2000);
+              return;
+            }
+            
             logBot(error.error || 'Transfer failed');
             speak(error.error || 'Transfer failed');
           }
@@ -1671,6 +1903,322 @@
           console.error('Transfer error:', error);
           logBot('Transfer failed - please try again');
           speak('Transfer failed');
+        }
+      });
+    }
+
+    // Process wallet transfer via API
+    async function processWalletTransfer(walletType, walletId, amount) {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          logBot('Session expired - please login again');
+          speak('Session expired');
+          return;
+        }
+
+        // Wallet names for display
+        const walletNames = {
+          alipay: 'Alipay',
+          wechat: 'Weixin Pay',
+          touchngo: 'Touch n Go',
+          grabpay: 'GrabPay',
+          paynow: 'PayNow'
+        };
+
+        const walletName = walletNames[walletType] || walletType;
+
+        const response = await fetch('/api/wallet/transfer', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            amount,
+            walletId,
+            walletType
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          balance = parseFloat(data.accountBalance) || balance - amount;
+          updateBalanceUI();
+          
+          const successMsg = `Successfully transferred ${formatCurrency(amount)} to ${walletName} wallet!`;
+          logBot(successMsg);
+          speak(`Transfer to ${walletName} successful.`);
+          showSuccessBanner(successMsg);
+          
+          // Broadcast update for mobile wallet
+          if (window.BroadcastChannel) {
+            const channel = new BroadcastChannel('wallet-updates');
+            channel.postMessage({
+              type: 'wallet-update',
+              walletId,
+              walletType,
+              amount,
+              newBalance: data.walletBalance || amount
+            });
+          }
+        } else {
+          const error = await response.json();
+          logBot(error.error || 'Transfer failed');
+          speak('Transfer failed');
+        }
+      } catch (error) {
+        console.error('Wallet transfer error:', error);
+        logBot('Network error - please try again');
+        speak('Network error');
+      }
+    }
+
+    // ========== FAVORITE MERCHANTS SYSTEM ==========
+    
+    /**
+     * Load and display favorite merchants
+     */
+    function loadFavoriteMerchants() {
+      const favorites = JSON.parse(localStorage.getItem('favoriteMerchants') || '[]');
+      const history = JSON.parse(localStorage.getItem('receiptHistory') || '[]');
+      const section = document.getElementById('favoriteBillsSection');
+      const list = document.getElementById('favoriteBillsList');
+      
+      // Hide section if no payment history at all
+      if (history.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+      
+      // Show section if there's payment history
+      section.classList.remove('hidden');
+      list.innerHTML = '';
+      
+      if (favorites.length === 0) {
+        // Show prompt to add favorites
+        list.innerHTML = `
+          <div class="col-span-full bg-gradient-to-r from-primary/5 to-primary/10 border-2 border-dashed border-primary/30 rounded-xl p-6 text-center">
+            <span class="material-symbols-outlined text-primary !text-5xl mb-3 block">add_circle</span>
+            <h3 class="font-bold text-lg text-[#1b0e0e] dark:text-zinc-100 mb-2">No Favorites Yet</h3>
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-4">Click "Manage" to select your frequently paid bills for quick access</p>
+            <button onclick="document.getElementById('manageFavoritesBtn').click()" class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors">
+              Add Favorites Now
+            </button>
+          </div>
+        `;
+        return;
+      }
+      
+      favorites.forEach(merchant => {
+        const card = createFavoriteMerchantCard(merchant);
+        list.appendChild(card);
+      });
+    }
+    
+    /**
+     * Create favorite merchant card
+     */
+    function createFavoriteMerchantCard(merchant) {
+      const card = document.createElement('button');
+      card.className = 'favorite-bill-card flex items-center gap-3 bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/30 p-4 rounded-xl hover:from-primary/10 hover:to-primary/20 hover:border-primary/50 hover:shadow-lg transition-all text-left group';
+      
+      // Get historical data
+      const history = getMerchantHistory(merchant.name);
+      const avgAmount = history.average;
+      const lastAmount = history.amounts[0] || '—';
+      
+      card.innerHTML = `
+        <div class="flex-shrink-0 bg-white dark:bg-zinc-800 p-2 rounded-lg group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined text-primary !text-2xl">${getProviderIcon(merchant.name)}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <p class="font-bold text-sm text-[#1b0e0e] dark:text-zinc-100 truncate">${merchant.name}</p>
+            <span class="material-symbols-outlined text-primary !text-base">arrow_forward</span>
+          </div>
+          <p class="text-xs text-zinc-600 dark:text-zinc-400">Last: ${lastAmount} • Avg: ${avgAmount}</p>
+          <p class="text-[10px] text-zinc-500 mt-0.5">${merchant.docType}</p>
+        </div>
+      `;
+      
+      card.addEventListener('click', () => {
+        openScannerWithFavorite(merchant);
+      });
+      
+      return card;
+    }
+    
+    /**
+     * Get historical payment data for a merchant
+     */
+    function getMerchantHistory(merchantName) {
+      const history = JSON.parse(localStorage.getItem('receiptHistory') || '[]');
+      const merchantPayments = history
+        .filter(r => r.provider && r.provider.toLowerCase() === merchantName.toLowerCase())
+        .slice(0, 3);
+      
+      if (merchantPayments.length === 0) {
+        return { amounts: [], average: 'N/A' };
+      }
+      
+      const amounts = merchantPayments.map(p => p.amount);
+      const numericAmounts = amounts.map(a => {
+        const str = typeof a === 'string' ? a : String(a);
+        return parseFloat(str.replace(/[S$,]/g, ''));
+      });
+      
+      const avg = numericAmounts.reduce((sum, val) => sum + val, 0) / numericAmounts.length;
+      
+      return {
+        amounts: amounts,
+        average: `S$${avg.toFixed(2)}`
+      };
+    }
+    
+    /**
+     * Get icon for provider
+     */
+    function getProviderIcon(providerName) {
+      const name = providerName.toLowerCase();
+      if (name.includes('sp services') || name.includes('power')) return 'bolt';
+      if (name.includes('pub') || name.includes('water')) return 'water_drop';
+      if (name.includes('starhub') || name.includes('singtel') || name.includes('m1')) return 'phone_iphone';
+      if (name.includes('ntuc') || name.includes('fairprice')) return 'shopping_cart';
+      if (name.includes('grab') || name.includes('gojek')) return 'local_taxi';
+      return 'receipt_long';
+    }
+    
+    /**
+     * Open bill scanner with favorite merchant context
+     */
+    function openScannerWithFavorite(merchant) {
+      // Store favorite context in sessionStorage
+      sessionStorage.setItem('favoriteMerchantContext', JSON.stringify({
+        merchantName: merchant.name,
+        docType: merchant.docType,
+        history: getMerchantHistory(merchant.name)
+      }));
+      
+      // Redirect to bill scanner
+      window.location.href = 'bill-scanner.html';
+    }
+    
+    /**
+     * Manage favorites modal functionality
+     */
+    const manageFavoritesBtn = document.getElementById('manageFavoritesBtn');
+    if (manageFavoritesBtn) {
+      manageFavoritesBtn.addEventListener('click', () => {
+        showManageFavoritesDialog();
+      });
+    }
+    
+    /**
+     * Show manage favorites dialog
+     */
+    function showManageFavoritesDialog() {
+      const favorites = JSON.parse(localStorage.getItem('favoriteMerchants') || '[]');
+      const history = JSON.parse(localStorage.getItem('receiptHistory') || '[]');
+      
+      // Get unique merchants from history
+      const merchantCounts = {};
+      history.forEach(receipt => {
+        if (receipt.provider) {
+          merchantCounts[receipt.provider] = (merchantCounts[receipt.provider] || 0) + 1;
+        }
+      });
+      
+      // Sort by frequency
+      const sortedMerchants = Object.entries(merchantCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([name, count]) => ({
+          name,
+          count,
+          isFavorite: favorites.some(f => f.name === name)
+        }));
+      
+      if (sortedMerchants.length === 0) {
+        alert('No payment history found. Pay some bills first to add favorites!');
+        return;
+      }
+      
+      // Create dialog
+      const dialog = document.createElement('div');
+      dialog.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+      dialog.innerHTML = `
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
+          <div class="p-6 border-b border-zinc-200 dark:border-zinc-800">
+            <h3 class="text-xl font-bold text-[#1b0e0e] dark:text-zinc-100">Manage Favorite Bills</h3>
+            <p class="text-sm text-zinc-500 mt-1">Select up to 6 frequently paid merchants</p>
+          </div>
+          <div class="flex-1 overflow-y-auto p-6">
+            <div class="space-y-2" id="merchantSelectionList">
+              ${sortedMerchants.map(merchant => `
+                <label class="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
+                  <input type="checkbox" value="${merchant.name}" ${merchant.isFavorite ? 'checked' : ''} 
+                    class="w-5 h-5 text-primary rounded focus:ring-primary">
+                  <div class="flex-1">
+                    <p class="font-semibold text-sm">${merchant.name}</p>
+                    <p class="text-xs text-zinc-500">Paid ${merchant.count} time${merchant.count > 1 ? 's' : ''}</p>
+                  </div>
+                  <span class="material-symbols-outlined text-primary !text-xl">${getProviderIcon(merchant.name)}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+          <div class="p-6 border-t border-zinc-200 dark:border-zinc-800 flex gap-3">
+            <button id="cancelFavoritesBtn" class="flex-1 px-4 py-3 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+              Cancel
+            </button>
+            <button id="saveFavoritesBtn" class="flex-1 px-4 py-3 rounded-lg bg-primary text-white font-semibold hover:bg-red-700 transition-colors">
+              Save Favorites
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(dialog);
+      
+      // Event listeners
+      dialog.querySelector('#cancelFavoritesBtn').addEventListener('click', () => {
+        dialog.remove();
+      });
+      
+      dialog.querySelector('#saveFavoritesBtn').addEventListener('click', () => {
+        const checkboxes = dialog.querySelectorAll('#merchantSelectionList input[type="checkbox"]');
+        const selected = Array.from(checkboxes)
+          .filter(cb => cb.checked)
+          .map(cb => cb.value);
+        
+        if (selected.length > 6) {
+          alert('Please select a maximum of 6 favorites');
+          return;
+        }
+        
+        // Get doc types from history
+        const newFavorites = selected.map(merchantName => {
+          const receipt = history.find(r => r.provider === merchantName);
+          return {
+            name: merchantName,
+            docType: receipt?.docType || 'Bill',
+            addedAt: new Date().toISOString()
+          };
+        });
+        
+        localStorage.setItem('favoriteMerchants', JSON.stringify(newFavorites));
+        loadFavoriteMerchants();
+        dialog.remove();
+        
+        logBot(`Updated favorite bills: ${selected.length} merchant${selected.length !== 1 ? 's' : ''} saved`);
+      });
+      
+      // Close on backdrop click
+      dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) {
+          dialog.remove();
         }
       });
     }
@@ -1685,6 +2233,7 @@
   // Load user name and balance from API on page load
   loadUserName();
   loadBalance();
+  loadFavoriteMerchants(); // Load favorite merchants
 
     logBot(
       'ATM ready.'
@@ -1693,11 +2242,26 @@
     try{ flashAllOptions(); }catch(e){}
     // show numbered options for the main menu immediately
     try{ displayMenuOptions('main'); }catch(e){}
+    
+    // Check for hash or query parameter to load non-cash services
+    const initialView = new URLSearchParams(window.location.search).get("view");
+    const hashView = window.location.hash.replace('#', '');
+    if (initialView === "noncash" || hashView === "noncash") {
+      navHistory = ["main"];
+      showPage("noncash");
+    }
   });
 
 const btnTransactions = document.getElementById("btnTransactions");
 if (btnTransactions) {
   btnTransactions.addEventListener("click", () => {
     window.location.href = "transactions.html";
+  });
+}
+
+const btnGuardianQR = document.getElementById("btnGuardianQR");
+if (btnGuardianQR) {
+  btnGuardianQR.addEventListener("click", () => {
+    window.location.href = "atm-qr-scanner.html";
   });
 }

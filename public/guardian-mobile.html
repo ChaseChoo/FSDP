@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guardian QR Code</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-section {
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      color: #555;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .qr-section {
+      display: none;
+      text-align: center;
+    }
+
+    .qr-container {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 15px;
+      margin: 20px 0;
+      display: inline-block;
+    }
+
+    #qrcode {
+      margin: 0 auto;
+    }
+
+    .qr-info {
+      color: #666;
+      font-size: 14px;
+      margin-top: 15px;
+      padding: 15px;
+      background: #e3f2fd;
+      border-radius: 10px;
+    }
+
+    .qr-info strong {
+      color: #1976d2;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .logout-btn {
+      background: #f44336;
+      margin-top: 20px;
+    }
+
+    .logout-btn:hover {
+      box-shadow: 0 10px 20px rgba(244, 67, 54, 0.3);
+    }
+
+    .error {
+      color: #f44336;
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+      padding: 10px;
+      background: #ffebee;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .success {
+      color: #4caf50;
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+      padding: 10px;
+      background: #e8f5e9;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .amount-input {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Guardian QR Code</h1>
+    <p class="subtitle">Create a QR code for ATM transactions</p>
+
+    <!-- Login Section -->
+    <div id="loginSection" class="login-section">
+      <div class="form-group">
+        <label for="guardianId">Guardian ID</label>
+        <input type="text" id="guardianId" placeholder="Enter your Guardian ID" value="user-1">
+      </div>
+      <button onclick="login()">Login as Guardian</button>
+      <button onclick="showMyQR()" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); margin-top: 10px;">Show My QR Code</button>
+      <div id="loginError" class="error"></div>
+    </div>
+
+    <!-- Show QR Section -->
+    <div id="showQRSection" class="qr-section">
+      <div class="qr-container">
+        <div id="storedQRCode"></div>
+      </div>
+      <div class="qr-info">
+        <strong>Your Saved QR Code</strong>
+        <div id="storedQRDetails"></div>
+      </div>
+      <button onclick="backToLogin()">Back to Login</button>
+    </div>
+
+    <!-- QR Creation Section -->
+    <div id="qrSection" class="qr-section">
+      <div class="form-group">
+        <label for="action">Select Action</label>
+        <select id="action" onchange="toggleAmountInput()">
+          <option value="">-- Choose Action --</option>
+          <option value="WITHDRAW">Withdraw Cash</option>
+          <option value="DEPOSIT">Deposit Cash</option>
+          <option value="CHECK_BALANCE">Check Balance</option>
+        </select>
+      </div>
+
+      <div id="amountGroup" class="form-group amount-input">
+        <label for="amount">Amount ($)</label>
+        <input type="number" id="amount" placeholder="Enter amount" min="1" step="1">
+      </div>
+
+      <div class="form-group">
+        <label for="maxUses">Maximum Uses</label>
+        <select id="maxUses">
+          <option value="1">1 time (single use)</option>
+          <option value="3">3 times</option>
+          <option value="5">5 times</option>
+          <option value="10">10 times</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="expiryDays">Expires In</label>
+        <select id="expiryDays">
+          <option value="1">1 day</option>
+          <option value="3">3 days</option>
+          <option value="7">7 days</option>
+          <option value="14">14 days</option>
+          <option value="30">30 days</option>
+        </select>
+      </div>
+
+      <button onclick="generateQR()">Generate QR Code</button>
+      <div id="qrError" class="error"></div>
+      <div id="qrSuccess" class="success"></div>
+
+      <!-- QR Code Display -->
+      <div id="qrDisplay" style="display: none;">
+        <div class="qr-container">
+          <div id="qrcode"></div>
+        </div>
+        <div class="qr-info">
+          <strong>Present this QR code to the ATM</strong>
+          <div id="qrDetails"></div>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    let guardianToken = null;
+    let currentQRCode = null;
+    let currentGuardianId = null;
+
+    function getBaseUrl() {
+      const { protocol, hostname, port } = window.location;
+      if (port && port !== '80' && port !== '443') {
+        return `${protocol}//${hostname}:${port}`;
+      }
+      return `${protocol}//${hostname}`;
+    }
+
+    // Fetch current logged-in user on page load
+    async function initializeUser() {
+      try {
+        const response = await fetch('/api/balance', {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Extract user ID from session or response
+          const userId = data.user?.userId || data.externalId || sessionStorage.getItem('userId');
+          if (userId) {
+            // Format user ID properly (add "user-" prefix if needed for dev mode)
+            let guardianId = userId;
+            if (String(userId).startsWith('user-')) {
+              guardianId = userId;
+            } else if (!isNaN(userId)) {
+              // If it's a number, keep it as is (card number)
+              guardianId = userId;
+            }
+            document.getElementById('guardianId').value = guardianId;
+            console.log('[Guardian Mobile] Pre-filled Guardian ID:', guardianId, 'from response:', data);
+          }
+        } else {
+          console.log('[Guardian Mobile] Not logged in or session expired');
+        }
+      } catch (error) {
+        console.log('[Guardian Mobile] Could not fetch user info:', error);
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initializeUser);
+
+    function login() {
+      const guardianId = document.getElementById('guardianId').value.trim();
+      const errorDiv = document.getElementById('loginError');
+
+      if (!guardianId) {
+        errorDiv.textContent = 'Please enter a Guardian ID';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      // Store guardian ID globally
+      currentGuardianId = guardianId;
+
+      // For demo purposes, create a simple token
+      // In production, this would authenticate with the backend
+      guardianToken = btoa(JSON.stringify({ guardianId, timestamp: Date.now() }));
+      
+      errorDiv.style.display = 'none';
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('qrSection').style.display = 'block';
+    }
+
+    function logout() {
+      guardianToken = null;
+      currentGuardianId = null;
+      document.getElementById('loginSection').style.display = 'block';
+      document.getElementById('qrSection').style.display = 'none';
+      document.getElementById('qrDisplay').style.display = 'none';
+      document.getElementById('action').value = '';
+      document.getElementById('amount').value = '';
+      if (currentQRCode) {
+        document.getElementById('qrcode').innerHTML = '';
+        currentQRCode = null;
+      }
+    }
+
+    function toggleAmountInput() {
+      const action = document.getElementById('action').value;
+      const amountGroup = document.getElementById('amountGroup');
+      
+      if (action === 'WITHDRAW' || action === 'DEPOSIT') {
+        amountGroup.style.display = 'block';
+      } else {
+        amountGroup.style.display = 'none';
+      }
+    }
+
+    async function generateQR() {
+      const action = document.getElementById('action').value;
+      const amount = parseFloat(document.getElementById('amount').value) || 0;
+      const maxUses = parseInt(document.getElementById('maxUses').value);
+      const expiryDays = parseInt(document.getElementById('expiryDays').value);
+
+      const errorDiv = document.getElementById('qrError');
+      const successDiv = document.getElementById('qrSuccess');
+
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      if (!action) {
+        errorDiv.textContent = 'Please select an action';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      if ((action === 'WITHDRAW' || action === 'DEPOSIT') && amount <= 0) {
+        errorDiv.textContent = 'Please enter a valid amount';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      try {
+        console.log('=== GENERATING QR CODE ===');
+        console.log('currentGuardianId:', currentGuardianId);
+        console.log('action:', action);
+        console.log('amount:', amount);
+        
+        const requestBody = {
+          guardianExternalId: currentGuardianId,
+          actionType: action,
+          amount: (action === 'WITHDRAW' || action === 'DEPOSIT') ? amount : undefined,
+          maxUses,
+          expiryDays
+        };
+        
+        console.log('Request body:', JSON.stringify(requestBody, null, 2));
+        
+        const response = await fetch('/api/guardian/create-action-qr', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to create QR code');
+        }
+
+        const data = await response.json();
+        
+        // Save the QR code to localStorage for this guardian
+        const qrUrl = `${getBaseUrl()}/assisted-qr-login.html?action=${data.actionId}`;
+
+        localStorage.setItem(`guardian_qr_${currentGuardianId}`, JSON.stringify({
+          actionId: data.actionId,
+          qrUrl,
+          action: action,
+          amount: amount,
+          maxUses: maxUses,
+          expiryDays: expiryDays,
+          createdAt: new Date().toISOString()
+        }));
+        
+        // Clear previous QR code
+        document.getElementById('qrcode').innerHTML = '';
+        
+        // Generate new QR code with the action ID
+        currentQRCode = new QRCode(document.getElementById('qrcode'), {
+          text: qrUrl,
+          width: 256,
+          height: 256,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Show QR code and details
+        document.getElementById('qrDisplay').style.display = 'block';
+        document.getElementById('qrDetails').innerHTML = `
+          Action: <strong>${action}</strong><br>
+          ${amount > 0 ? `Amount: <strong>$${amount.toFixed(2)}</strong><br>` : ''}
+          Max Uses: <strong>${maxUses}</strong><br>
+          Expires: <strong>${expiryDays} day(s)</strong><br>
+          Mobile URL: <strong>${qrUrl}</strong>
+        `;
+
+        successDiv.textContent = 'QR Code generated successfully!';
+        successDiv.style.display = 'block';
+
+        // Scroll to QR code
+        setTimeout(() => {
+          document.getElementById('qrDisplay').scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+
+      } catch (error) {
+        console.error('Error generating QR:', error);
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    function showMyQR() {
+      const guardianId = document.getElementById('guardianId').value.trim();
+      
+      if (!guardianId) {
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.textContent = 'Please enter your Guardian ID';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      // Get stored QR code from localStorage
+      const storedData = localStorage.getItem(`guardian_qr_${guardianId}`);
+      
+      if (!storedData) {
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.textContent = 'No saved QR code found for this Guardian ID';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      const qrData = JSON.parse(storedData);
+      const qrUrl = qrData.qrUrl || `${getBaseUrl()}/assisted-qr-login.html?action=${qrData.actionId}`;
+      
+      // Hide login section, show QR section
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('showQRSection').style.display = 'block';
+      
+      // Clear and generate QR code
+      document.getElementById('storedQRCode').innerHTML = '';
+      new QRCode(document.getElementById('storedQRCode'), {
+        text: qrUrl,
+        width: 256,
+        height: 256,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      
+      // Show details
+      document.getElementById('storedQRDetails').innerHTML = `
+        Guardian: <strong>${guardianId}</strong><br>
+        Action: <strong>${qrData.action}</strong><br>
+        ${qrData.amount > 0 ? `Amount: <strong>$${qrData.amount.toFixed(2)}</strong><br>` : ''}
+        Max Uses: <strong>${qrData.maxUses}</strong><br>
+        Created: <strong>${new Date(qrData.createdAt).toLocaleString()}</strong><br>
+        Mobile URL: <strong>${qrUrl}</strong>
+      `;
+    }
+
+    function backToLogin() {
+      document.getElementById('showQRSection').style.display = 'none';
+      document.getElementById('loginSection').style.display = 'block';
+      document.getElementById('storedQRCode').innerHTML = '';
+    }
+  </script>
+</body>
+</html>

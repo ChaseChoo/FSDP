@@ -1,5 +1,10 @@
 // models/preConfiguredActionModel.js
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+
+// File to persist pre-configured actions
+const ACTIONS_FILE = path.resolve('dev-guardian-actions.json');
 
 // In-memory store for pre-configured actions (in production, use database)
 // Structure: Map<actionId, { id, guardianExternalId, guardianCardNumber, action, createdAt, expiresAt, usedAt, maxUses, currentUses }>
@@ -7,6 +12,47 @@ const preConfiguredActions = new Map();
 
 // Action expires in 7 days by default
 const DEFAULT_EXPIRY = 7 * 24 * 60 * 60 * 1000;
+
+// Load actions from file on startup
+function loadActionsFromFile() {
+  try {
+    if (fs.existsSync(ACTIONS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(ACTIONS_FILE, 'utf-8'));
+      const now = Date.now();
+      let loadedCount = 0;
+      let expiredCount = 0;
+      
+      Object.entries(data).forEach(([id, action]) => {
+        // Only load non-expired actions
+        if (now <= action.expiresAt) {
+          preConfiguredActions.set(id, action);
+          loadedCount++;
+        } else {
+          expiredCount++;
+        }
+      });
+      
+      console.log(`[PreConfigured Action] Loaded ${loadedCount} active actions from file (${expiredCount} expired actions skipped)`);
+    }
+  } catch (error) {
+    console.error('[PreConfigured Action] Error loading actions from file:', error);
+  }
+}
+
+// Save actions to file
+function saveActionsToFile() {
+  try {
+    const data = Object.fromEntries(preConfiguredActions);
+    const json = JSON.stringify(data, null, 2);
+    fs.writeFileSync(ACTIONS_FILE, json);
+    console.log(`[PreConfigured Action] Saved ${preConfiguredActions.size} actions to file`);
+  } catch (error) {
+    console.error('[PreConfigured Action] ERROR saving actions to file:', error);
+  }
+}
+
+// Load actions on module initialization
+loadActionsFromFile();
 
 /**
  * Create a pre-configured action
@@ -48,6 +94,9 @@ export function createPreConfiguredAction(config) {
   
   preConfiguredActions.set(actionId, preConfiguredAction);
   
+  // Persist to file
+  saveActionsToFile();
+  
   console.log(`[PreConfigured Action] Created action ${actionId} for ${config.guardianName}:`, {
     type: preConfiguredAction.action.type,
     amount: preConfiguredAction.action.amount,
@@ -73,7 +122,12 @@ export function getPreConfiguredAction(actionId) {
  * @returns {Object} { valid: boolean, error?: string, action?: Object }
  */
 export function validatePreConfiguredAction(actionId) {
+  console.log('[PreConfigured Action] Validating actionId:', actionId);
+  console.log('[PreConfigured Action] Total actions in store:', preConfiguredActions.size);
+  
   const action = preConfiguredActions.get(actionId);
+  
+  console.log('[PreConfigured Action] Found action:', action ? 'YES' : 'NO');
   
   if (!action) {
     return { valid: false, error: 'Invalid or expired QR code' };
@@ -84,6 +138,7 @@ export function validatePreConfiguredAction(actionId) {
   // Check if expired
   if (now > action.expiresAt) {
     preConfiguredActions.delete(actionId);
+    saveActionsToFile(); // Persist deletion
     return { valid: false, error: 'QR code has expired' };
   }
   
@@ -119,6 +174,9 @@ export function markActionAsUsed(actionId) {
     console.log(`[PreConfigured Action] Action ${actionId} reached max uses (${action.maxUses})`);
   }
   
+  // Persist usage update
+  saveActionsToFile();
+  
   console.log(`[PreConfigured Action] Action ${actionId} used (${action.currentUses}/${action.maxUses})`);
   
   return true;
@@ -145,6 +203,9 @@ export function getActionsForGuardian(guardianExternalId) {
     }
   }
   
+  // Persist any deletions
+  saveActionsToFile();
+  
   return actions;
 }
 
@@ -154,7 +215,11 @@ export function getActionsForGuardian(guardianExternalId) {
  * @returns {boolean} Success status
  */
 export function deletePreConfiguredAction(actionId) {
-  return preConfiguredActions.delete(actionId);
+  const deleted = preConfiguredActions.delete(actionId);
+  if (deleted) {
+    saveActionsToFile();
+  }
+  return deleted;
 }
 
 // Cleanup expired actions periodically
@@ -171,5 +236,6 @@ setInterval(() => {
   
   if (cleaned > 0) {
     console.log(`[PreConfigured Action] Cleaned up ${cleaned} expired actions`);
+    saveActionsToFile(); // Persist cleanup
   }
 }, 60000); // Clean up every minute

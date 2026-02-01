@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OCBC ATM - Bill Scanner</title>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+<!-- Tesseract.js for OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#ea2a33",
+        "background-light": "#f8f6f6",
+        "background-dark": "#211111",
+      },
+      fontFamily: { display: ["Public Sans", "sans-serif"] },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+    }
+  }
+}
+</script>
+
+<style>
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 32px;
+}
+
+/* Elderly-Friendly UI Styles */
+.large-button {
+  font-size: 1.25rem;
+  padding: 1.5rem 2rem;
+  font-weight: 700;
+  min-height: 80px;
+}
+
+.extra-large-text {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.camera-view {
+  border: 4px solid #ea2a33;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.scan-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 60%;
+  border: 3px dashed #ea2a33;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.result-card {
+  background: white;
+  border: 3px solid #ea2a33;
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 1rem 0;
+}
+
+.result-label {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.result-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1b0e0e;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #ea2a33;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hidden {
+  display: none;
+}
+</style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
+</div>
+<div class="flex items-center gap-3">
+<button id="backBtn" class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined !text-lg">arrow_back</span> Back
+</button>
+</div>
+</div>
+</header>
+
+<main class="flex-1 flex flex-col max-w-[1400px] mx-auto w-full px-6 py-8">
+
+<!-- Favorite Merchant Context Banner -->
+<div id="favoriteMerchantBanner" class="hidden mb-6 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl p-5 shadow-lg">
+<div class="flex items-start gap-4">
+<div class="flex-shrink-0 bg-white dark:bg-zinc-800 p-3 rounded-lg">
+<span class="material-symbols-outlined text-primary !text-3xl" id="favoriteIcon">star</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-bold text-[#1b0e0e] dark:text-zinc-100 mb-1 flex items-center gap-2">
+Paying <span id="favoriteMerchantName" class="text-primary">—</span>
+</h3>
+<p class="text-sm text-zinc-600 dark:text-zinc-400 mb-3">Your typical payment history for this merchant:</p>
+<div id="merchantHistoryDisplay" class="grid grid-cols-3 gap-3 text-center">
+<!-- History will be inserted here -->
+</div>
+<p class="text-xs text-zinc-500 mt-3 italic">
+⚠️ If your scanned amount is very different from usual, we'll warn you!
+</p>
+</div>
+<button id="clearFavoriteContext" class="flex-shrink-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
+<span class="material-symbols-outlined !text-xl">close</span>
+</button>
+</div>
+</div>
+
+<!-- Initial Screen -->
+<div id="initialScreen" class="flex flex-col items-center justify-center space-y-6">
+<div class="text-center mb-6">
+<h2 class="text-3xl md:text-4xl font-extrabold mb-4 text-[#1b0e0e] dark:text-zinc-100">
+Scan Your Bill or Receipt
+</h2>
+<p class="text-xl text-zinc-600 dark:text-zinc-400 font-medium max-w-2xl mx-auto">
+Our smart scanner will extract payment details automatically. Point your camera at the bill and we'll do the rest!
+</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+<button id="startCameraBtn" class="large-button transaction-card group relative flex flex-col items-center justify-center bg-primary text-white rounded-xl shadow-lg hover:shadow-2xl hover:bg-red-700 transition-all">
+<span class="material-symbols-outlined mb-3" style="font-size: 48px;">photo_camera</span>
+<span>Start Camera</span>
+</button>
+
+<button id="uploadImageBtn" class="large-button transaction-card group relative flex flex-col items-center justify-center bg-white dark:bg-zinc-900 border-4 border-primary text-primary rounded-xl shadow-lg hover:shadow-2xl hover:bg-primary/5 transition-all">
+<span class="material-symbols-outlined mb-3" style="font-size: 48px;">upload_file</span>
+<span>Upload Image</span>
+</button>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" class="hidden">
+</div>
+
+<!-- Camera Screen -->
+<div id="cameraScreen" class="hidden space-y-6">
+<div class="text-center mb-4">
+<h2 class="text-2xl md:text-3xl font-extrabold mb-2 text-[#1b0e0e] dark:text-zinc-100">
+Position Your Bill in Frame
+</h2>
+<p class="text-lg text-zinc-600 dark:text-zinc-400 font-medium">
+Align the bill within the red box for best results
+</p>
+</div>
+
+<div class="relative max-w-3xl mx-auto">
+<video id="video" autoplay playsinline class="camera-view w-full"></video>
+<div class="scan-overlay"></div>
+<canvas id="canvas" class="hidden"></canvas>
+</div>
+
+<div class="flex justify-center gap-4">
+<button id="captureBtn" class="large-button bg-primary text-white rounded-xl shadow-lg hover:shadow-2xl hover:bg-red-700 transition-all flex items-center gap-3">
+<span class="material-symbols-outlined" style="font-size: 36px;">camera</span>
+<span>Capture Image</span>
+</button>
+
+<button id="cancelCameraBtn" class="large-button bg-zinc-200 dark:bg-zinc-700 text-[#1b0e0e] dark:text-white rounded-xl shadow-lg hover:shadow-2xl hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center gap-3">
+<span class="material-symbols-outlined" style="font-size: 36px;">close</span>
+<span>Cancel</span>
+</button>
+</div>
+</div>
+
+<!-- Processing Screen -->
+<div id="processingScreen" class="hidden flex flex-col items-center justify-center space-y-6">
+<div class="loading-spinner"></div>
+<h2 class="text-2xl md:text-3xl font-extrabold text-[#1b0e0e] dark:text-zinc-100">
+Processing Your Image...
+</h2>
+<p class="text-xl text-zinc-600 dark:text-zinc-400 font-medium">
+Our AI is extracting bill information
+</p>
+<div id="progressText" class="text-lg text-zinc-500 font-medium"></div>
+</div>
+
+<!-- Results Screen -->
+<div id="resultsScreen" class="hidden space-y-6">
+<div class="text-center mb-6">
+<h2 class="text-2xl md:text-3xl font-extrabold mb-2 text-[#1b0e0e] dark:text-zinc-100">
+Scan Complete!
+</h2>
+<p class="text-lg text-zinc-600 dark:text-zinc-400 font-medium">
+Review the extracted information below
+</p>
+</div>
+
+<!-- Captured Image Preview -->
+<div class="max-w-2xl mx-auto">
+<img id="capturedImage" src="" alt="Captured bill" class="w-full rounded-xl border-4 border-primary shadow-lg">
+</div>
+
+<!-- OCR Confidence Indicator -->
+<div class="max-w-4xl mx-auto mb-4">
+<div class="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+<div>
+<div class="font-bold text-blue-900 dark:text-blue-100">Scan Quality: <span id="confidenceLevel">Good</span></div>
+<div class="text-sm text-blue-700 dark:text-blue-300">You can edit any field below if needed</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Extracted Information Cards (Editable) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+<div class="result-card">
+<div class="result-label">Document Type</div>
+<input type="text" id="docType" value="-" class="w-full mt-2 px-4 py-3 text-lg font-bold border-2 border-zinc-300 dark:border-zinc-600 rounded-lg focus:border-primary focus:outline-none">
+</div>
+
+<div class="result-card">
+<div class="result-label">Amount</div>
+<input type="text" id="amount" value="-" class="w-full mt-2 px-4 py-3 text-lg font-bold text-primary border-2 border-zinc-300 dark:border-zinc-600 rounded-lg focus:border-primary focus:outline-none">
+</div>
+
+<div class="result-card md:col-span-2">
+<div class="result-label">Reference Number</div>
+<input type="text" id="refNumber" value="-" class="w-full mt-2 px-4 py-3 text-lg font-bold border-2 border-zinc-300 dark:border-zinc-600 rounded-lg focus:border-primary focus:outline-none">
+</div>
+</div>
+
+<!-- Duplicate Payment Warning (Hidden by default) -->
+<div id="duplicateWarning" class="hidden max-w-4xl mx-auto mt-4">
+<div class="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 rounded-xl p-5">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-amber-600 dark:text-amber-400" style="font-size: 32px;">warning</span>
+<div>
+<div class="font-bold text-lg text-amber-900 dark:text-amber-100 mb-2">Possible Duplicate Payment</div>
+<div class="text-amber-800 dark:text-amber-200" id="duplicateMessage">You paid a similar bill recently. Are you sure you want to pay again?</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Raw Text Section (Collapsible) -->
+<div class="max-w-4xl mx-auto">
+<button id="toggleRawText" class="w-full text-left px-6 py-4 bg-zinc-100 dark:bg-zinc-800 rounded-xl font-bold text-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors flex items-center justify-between">
+<span>View Full Extracted Text</span>
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+<div id="rawTextContent" class="hidden mt-2 p-6 bg-white dark:bg-zinc-900 border-2 border-zinc-300 dark:border-zinc-700 rounded-xl">
+<div class="result-label mb-2">Raw OCR Output</div>
+<pre id="rawText" class="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap font-mono overflow-x-auto"></pre>
+</div>
+</div>
+
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row justify-center gap-4">
+<button id="proceedPaymentBtn" class="large-button bg-primary text-white rounded-xl shadow-lg hover:shadow-2xl hover:bg-red-700 transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined" style="font-size: 36px;">payment</span>
+<span>Proceed to Payment</span>
+</button>
+
+<button id="scanAnotherBtn" class="large-button bg-white dark:bg-zinc-900 border-4 border-primary text-primary rounded-xl shadow-lg hover:shadow-2xl hover:bg-primary/5 transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined" style="font-size: 36px;">refresh</span>
+<span>Scan Another</span>
+</button>
+</div>
+</div>
+
+<!-- Error Screen -->
+<div id="errorScreen" class="hidden flex flex-col items-center justify-center space-y-6">
+<div class="text-center">
+<span class="material-symbols-outlined text-primary mb-4" style="font-size: 72px;">error</span>
+<h2 class="text-2xl md:text-3xl font-extrabold mb-4 text-[#1b0e0e] dark:text-zinc-100">
+Oops! Something Went Wrong
+</h2>
+<p id="errorMessage" class="text-xl text-zinc-600 dark:text-zinc-400 font-medium max-w-2xl mx-auto mb-8">
+We couldn't process your image. Please try again.
+</p>
+</div>
+
+<div class="flex flex-col sm:flex-row gap-4">
+<button id="retryBtn" class="large-button bg-primary text-white rounded-xl shadow-lg hover:shadow-2xl hover:bg-red-700 transition-all flex items-center gap-3">
+<span class="material-symbols-outlined" style="font-size: 36px;">refresh</span>
+<span>Try Again</span>
+</button>
+
+<button id="backToHomeBtn" class="large-button bg-zinc-200 dark:bg-zinc-700 text-[#1b0e0e] dark:text-white rounded-xl shadow-lg hover:shadow-2xl hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center gap-3">
+<span class="material-symbols-outlined" style="font-size: 36px;">home</span>
+<span>Back to Home</span>
+</button>
+</div>
+</div>
+
+</main>
+
+<script>
+/**
+ * Bill Scanner Module
+ * Handles camera access, image capture, OCR processing, and data extraction
+ */
+
+// Global variables
+let videoStream = null;
+let favoriteMerchantContext = null; // Store favorite merchant context
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Screen elements
+const screens = {
+  initial: document.getElementById('initialScreen'),
+  camera: document.getElementById('cameraScreen'),
+  processing: document.getElementById('processingScreen'),
+  results: document.getElementById('resultsScreen'),
+  error: document.getElementById('errorScreen')
+};
+
+// Button elements
+const buttons = {
+  startCamera: document.getElementById('startCameraBtn'),
+  uploadImage: document.getElementById('uploadImageBtn'),
+  capture: document.getElementById('captureBtn'),
+  cancelCamera: document.getElementById('cancelCameraBtn'),
+  scanAnother: document.getElementById('scanAnotherBtn'),
+  retry: document.getElementById('retryBtn'),
+  back: document.getElementById('backBtn'),
+  backToHome: document.getElementById('backToHomeBtn'),
+  proceedPayment: document.getElementById('proceedPaymentBtn'),
+  toggleRawText: document.getElementById('toggleRawText')
+};
+
+// File input
+const fileInput = document.getElementById('fileInput');
+
+/**
+ * Load favorite merchant context if present
+ */
+function loadFavoriteMerchantContext() {
+  const contextData = sessionStorage.getItem('favoriteMerchantContext');
+  if (contextData) {
+    favoriteMerchantContext = JSON.parse(contextData);
+    displayFavoriteContext(favoriteMerchantContext);
+  }
+}
+
+/**
+ * Display favorite merchant context banner
+ */
+function displayFavoriteContext(context) {
+  const banner = document.getElementById('favoriteMerchantBanner');
+  const merchantName = document.getElementById('favoriteMerchantName');
+  const historyDisplay = document.getElementById('merchantHistoryDisplay');
+  const favoriteIcon = document.getElementById('favoriteIcon');
+  
+  merchantName.textContent = context.merchantName;
+  
+  // Set appropriate icon
+  const name = context.merchantName.toLowerCase();
+  if (name.includes('sp services') || name.includes('power')) {
+    favoriteIcon.textContent = 'bolt';
+  } else if (name.includes('pub') || name.includes('water')) {
+    favoriteIcon.textContent = 'water_drop';
+  } else if (name.includes('starhub') || name.includes('singtel') || name.includes('m1')) {
+    favoriteIcon.textContent = 'phone_iphone';
+  } else if (name.includes('ntuc') || name.includes('fairprice')) {
+    favoriteIcon.textContent = 'shopping_cart';
+  } else if (name.includes('grab') || name.includes('gojek')) {
+    favoriteIcon.textContent = 'local_taxi';
+  } else {
+    favoriteIcon.textContent = 'star';
+  }
+  
+  // Display history
+  const history = context.history;
+  const amounts = history.amounts.slice(0, 3);
+  
+  if (amounts.length === 0) {
+    historyDisplay.innerHTML = '<p class="text-sm text-zinc-500 col-span-3">No payment history yet</p>';
+  } else {
+    historyDisplay.innerHTML = amounts.map((amount, index) => `
+      <div class="bg-white dark:bg-zinc-800 p-3 rounded-lg">
+        <p class="text-xs text-zinc-500 mb-1">${index === 0 ? 'Last' : index === 1 ? '2nd Last' : '3rd Last'}</p>
+        <p class="font-bold text-primary text-lg">${amount}</p>
+      </div>
+    `).join('');
+    
+    // Add average if available
+    if (history.average && history.average !== 'N/A') {
+      historyDisplay.innerHTML += `
+        <div class="bg-primary/10 border-2 border-primary/30 p-3 rounded-lg col-span-3 mt-2">
+          <p class="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Usual Amount</p>
+          <p class="font-extrabold text-primary text-xl">${history.average}</p>
+        </div>
+      `;
+    }
+  }
+  
+  banner.classList.remove('hidden');
+}
+
+/**
+ * Clear favorite merchant context
+ */
+document.getElementById('clearFavoriteContext')?.addEventListener('click', () => {
+  sessionStorage.removeItem('favoriteMerchantContext');
+  favoriteMerchantContext = null;
+  document.getElementById('favoriteMerchantBanner').classList.add('hidden');
+});
+
+/**
+ * Show a specific screen and hide others
+ * @param {string} screenName - Name of the screen to show
+ */
+function showScreen(screenName) {
+  Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+  if (screens[screenName]) {
+    screens[screenName].classList.remove('hidden');
+  }
+}
+
+/**
+ * Initialize and start camera
+ */
+async function startCamera() {
+  try {
+    // Request camera access with high resolution for better OCR
+    videoStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'environment', // Use back camera on mobile
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      }
+    });
+    
+    video.srcObject = videoStream;
+    showScreen('camera');
+  } catch (error) {
+    console.error('Camera access error:', error);
+    showError('Unable to access camera. Please check permissions and try again.');
+  }
+}
+
+/**
+ * Stop camera stream
+ */
+function stopCamera() {
+  if (videoStream) {
+    videoStream.getTracks().forEach(track => track.stop());
+    videoStream = null;
+  }
+}
+
+/**
+ * Capture image from video stream
+ */
+function captureImage() {
+  // Set canvas dimensions to match video
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  
+  // Draw current video frame to canvas
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  // Convert canvas to blob and process
+  canvas.toBlob(blob => {
+    processImage(blob);
+  }, 'image/jpeg', 0.95);
+  
+  stopCamera();
+}
+
+/**
+ * Handle file upload
+ */
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    processImage(file);
+  } else {
+    showError('Please select a valid image file.');
+  }
+  // Reset file input
+  event.target.value = '';
+}
+
+/**
+ * Process image with Tesseract OCR
+ * @param {Blob|File} imageBlob - Image to process
+ */
+async function processImage(imageBlob) {
+  showScreen('processing');
+  
+  try {
+    // Create object URL for image preview
+    const imageUrl = URL.createObjectURL(imageBlob);
+    document.getElementById('capturedImage').src = imageUrl;
+    
+    // Initialize Tesseract worker
+    const progressText = document.getElementById('progressText');
+    progressText.textContent = 'Initializing OCR engine...';
+    
+    const worker = await Tesseract.createWorker({
+      logger: m => {
+        // Update progress text
+        if (m.status === 'recognizing text') {
+          const progress = Math.round(m.progress * 100);
+          progressText.textContent = `Recognizing text: ${progress}%`;
+        }
+      }
+    });
+    
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    
+    // Perform OCR
+    progressText.textContent = 'Extracting text...';
+    const { data: { text } } = await worker.recognize(imageBlob);
+    
+    // Clean up worker
+    await worker.terminate();
+    
+    // Extract information from OCR text
+    extractInformation(text);
+    
+    showScreen('results');
+    
+  } catch (error) {
+    console.error('OCR processing error:', error);
+    showError('Failed to process image. Please ensure the image is clear and try again.');
+  }
+}
+
+/**
+ * Extract key information from OCR text using regex
+ * @param {string} text - Raw OCR text
+ */
+function extractInformation(text) {
+  // Display raw text
+  document.getElementById('rawText').textContent = text;
+  
+  // Process text to extract information
+  const amount = extractAmount(text);
+  const refNumber = extractReferenceNumber(text);
+  const docType = detectDocumentType(text);
+  const provider = detectProvider(text);
+  
+  // Update result fields (now editable inputs)
+  document.getElementById('docType').value = docType || 'Bill';
+  document.getElementById('amount').value = amount || 'Not detected';
+  document.getElementById('refNumber').value = refNumber || 'Not detected';
+  
+  // Set confidence level based on detection success
+  const detectedCount = [amount, refNumber, docType].filter(x => x && x !== 'Not detected').length;
+  const confidenceElem = document.getElementById('confidenceLevel');
+  if (detectedCount === 3) {
+    confidenceElem.textContent = 'Excellent';
+    confidenceElem.parentElement.className = 'font-bold text-green-600 dark:text-green-400';
+  } else if (detectedCount === 2) {
+    confidenceElem.textContent = 'Good';
+    confidenceElem.parentElement.className = 'font-bold text-blue-600 dark:text-blue-400';
+  } else {
+    confidenceElem.textContent = 'Fair - Please review';
+    confidenceElem.parentElement.className = 'font-bold text-amber-600 dark:text-amber-400';
+  }
+  
+  // Check for duplicate payments
+  checkDuplicatePayment(amount, refNumber, provider);
+  
+  // Check if scanned amount deviates from favorite merchant history
+  checkFavoriteMerchantDeviation(amount, provider);
+}
+
+/**
+ * Detect bill provider/company from text
+ * Identifies specific utility or service providers (Electricity, Water, etc.)
+ * Also detects retail, restaurants, and other transaction types
+ * @param {string} text - OCR text
+ * @returns {string} Provider name or appropriate category
+ */
+function detectProvider(text) {
+  const lowerText = text.toLowerCase();
+  
+  // Electricity/Power companies
+  if (lowerText.includes('electric') || lowerText.includes('power') || lowerText.includes('electricity') ||
+      (lowerText.includes('utility') && lowerText.includes('energy'))) {
+    return 'Electricity';
+  }
+  
+  // Water utilities
+  if (lowerText.includes('water') && !lowerText.includes('watermark')) {
+    return 'Water';
+  }
+  
+  // Telecommunications
+  if (lowerText.includes('phone') || lowerText.includes('telecom') || lowerText.includes('mobile') ||
+      lowerText.includes('internet') || lowerText.includes('broadband')) {
+    return 'Telecommunications';
+  }
+  
+  // Gas
+  if (lowerText.includes('gas') && !lowerText.includes('gasoline')) {
+    return 'Gas';
+  }
+  
+  // Credit Card or Loan
+  if (lowerText.includes('credit card') || lowerText.includes('loan') || lowerText.includes('mortgage')) {
+    return 'Credit Card Payment';
+  }
+  
+  // Insurance
+  if (lowerText.includes('insurance') || lowerText.includes('premium')) {
+    return 'Insurance';
+  }
+  
+  // Education/Tuition
+  if (lowerText.includes('school') || lowerText.includes('university') || lowerText.includes('tuition') ||
+      lowerText.includes('college') || lowerText.includes('course')) {
+    return 'Education';
+  }
+  
+  // Medical/Healthcare
+  if (lowerText.includes('hospital') || lowerText.includes('clinic') || lowerText.includes('medical') ||
+      lowerText.includes('pharmacy') || lowerText.includes('doctor')) {
+    return 'Medical';
+  }
+  
+  // Retail/Shopping (Supermarkets, stores, etc.)
+  if (lowerText.includes('ntuc') || lowerText.includes('supermarket') || lowerText.includes('shopping') ||
+      lowerText.includes('grocery') || lowerText.includes('mall') || lowerText.includes('store') ||
+      lowerText.includes('retail') || lowerText.includes('purchase') || lowerText.includes('product') ||
+      lowerText.includes('qty') || lowerText.includes('item') || lowerText.includes('cashier')) {
+    return 'Shopping Receipt';
+  }
+  
+  // Restaurant/Food
+  if (lowerText.includes('restaurant') || lowerText.includes('cafe') || lowerText.includes('food') ||
+      lowerText.includes('dining') || lowerText.includes('meal') || lowerText.includes('menu') ||
+      lowerText.includes('server') || lowerText.includes('table')) {
+    return 'Restaurant Receipt';
+  }
+  
+  // Transportation/Travel
+  if (lowerText.includes('airline') || lowerText.includes('hotel') || lowerText.includes('flight') ||
+      lowerText.includes('booking') || lowerText.includes('travel') || lowerText.includes('taxi') ||
+      lowerText.includes('bus') || lowerText.includes('train')) {
+    return 'Travel Receipt';
+  }
+  
+  // Parking/Toll
+  if (lowerText.includes('parking') || lowerText.includes('toll') || lowerText.includes('fare')) {
+    return 'Parking/Toll';
+  }
+  
+  // General payment or transaction
+  if (lowerText.includes('payment') || lowerText.includes('invoice') || lowerText.includes('receipt') ||
+      lowerText.includes('transaction')) {
+    return 'Payment Receipt';
+  }
+  
+  // Default fallback
+  return 'Bill Payment';
+}
+
+/**
+ * Detect document type from text
+ * @param {string} text - OCR text
+ * @returns {string} Document type
+ */
+function detectDocumentType(text) {
+  const lowerText = text.toLowerCase();
+  
+  if (lowerText.includes('invoice')) {
+    return 'Invoice';
+  } else if (lowerText.includes('receipt')) {
+    return 'Receipt';
+  } else if (lowerText.includes('bill')) {
+    return 'Bill';
+  } else if (lowerText.includes('statement')) {
+    return 'Statement';
+  } else {
+    return 'Document';
+  }
+}
+
+/**
+ * Extract amount from text using regex patterns
+ * @param {string} text - OCR text
+ * @returns {string|null} Extracted amount
+ */
+function extractAmount(text) {
+  // Patterns for different currency formats
+  const patterns = [
+    // SGD 123.45 or S$123.45
+    /(?:SGD|S\$|SGD\s*\$)\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/gi,
+    // $123.45
+    /\$\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/g,
+    // Total: 123.45 or Amount: 123.45
+    /(?:total|amount|pay|due)[\s:]*\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/gi,
+    // Plain number with 2 decimal places (likely an amount)
+    /\b(\d{1,3}(?:,\d{3})*\.\d{2})\b/g
+  ];
+  
+  for (const pattern of patterns) {
+    const matches = [...text.matchAll(pattern)];
+    if (matches.length > 0) {
+      // Return the largest amount found (likely the total)
+      const amounts = matches.map(m => {
+        const numStr = m[1].replace(/,/g, '');
+        return {
+          value: parseFloat(numStr),
+          original: m[0]
+        };
+      });
+      
+      amounts.sort((a, b) => b.value - a.value);
+      return `S$${amounts[0].value.toFixed(2)}`;
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Extract reference number from text
+ * @param {string} text - OCR text
+ * @returns {string|null} Extracted reference number
+ */
+function extractReferenceNumber(text) {
+  // Patterns for reference numbers - ordered by priority
+  const patterns = [
+    // "Payment Reference: 987654321" or "Ref #: ABC123"
+    /Payment\s+Reference[\s#:]*([A-Z0-9-]{6,})/gi,
+    // "Reference Number: ABC123" or "Ref Number: XYZ789"
+    /(?:Ref(?:erence)?\s+)?Number[\s#:]*([A-Z0-9-]{5,})/gi,
+    // "Invoice #12345" or "Bill #ABC123"
+    /(?:Invoice|Bill|Receipt|Transaction)[\s#:]*([A-Z0-9-]{5,})/gi,
+    // Standalone number patterns like "987654321" (9+ digits) or "ABC123456" (letters + numbers)
+    /\b(\d{9,})\b/g,
+    // Alphanumeric codes (letters followed by numbers or vice versa)
+    /\b([A-Z]{2,}\d{5,}|\d{5,}[A-Z]{2,})\b/g
+  ];
+  
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match && match.length > 0) {
+      // Get the captured group (or first match if no group)
+      let refNum = match[1] || match[0];
+      refNum = refNum.replace(/^(ref|reference|payment|invoice|bill|receipt|transaction|number)[\s#:]*([A-Z0-9-]+)$/gi, '$2');
+      refNum = refNum.replace(/^#/, '');
+      
+      // Validate it's not just a single word (like "ACCOUNT", "SERVICE", etc.)
+      if (refNum.length >= 5 && !/^[A-Z\s]+$/.test(refNum)) {
+        return refNum.trim().toUpperCase();
+      }
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Show error screen with message
+ * @param {string} message - Error message to display
+ */
+function showError(message) {
+  document.getElementById('errorMessage').textContent = message;
+  showScreen('error');
+  stopCamera();
+}
+
+/**
+ * Reset to initial screen
+ */
+function resetToInitial() {
+  stopCamera();
+  showScreen('initial');
+}
+
+// Event Listeners
+
+// Load favorite merchant context on page load
+loadFavoriteMerchantContext();
+
+// Start camera button
+buttons.startCamera.addEventListener('click', startCamera);
+
+// Upload image button
+buttons.uploadImage.addEventListener('click', () => {
+  fileInput.click();
+});
+
+// File input change
+fileInput.addEventListener('change', handleFileUpload);
+
+// Capture button
+buttons.capture.addEventListener('click', captureImage);
+
+// Cancel camera button
+buttons.cancelCamera.addEventListener('click', resetToInitial);
+
+// Scan another button
+buttons.scanAnother.addEventListener('click', resetToInitial);
+
+// Retry button
+buttons.retry.addEventListener('click', resetToInitial);
+
+// Back buttons
+buttons.back.addEventListener('click', () => {
+  window.location.href = 'home.html#noncash';
+});
+
+buttons.backToHome.addEventListener('click', () => {
+  window.location.href = 'home.html#noncash';
+});
+
+// Proceed to payment button
+buttons.proceedPayment.addEventListener('click', () => {
+  // Get values from editable inputs
+  const amount = document.getElementById('amount').value;
+  const refNumber = document.getElementById('refNumber').value;
+  const docType = document.getElementById('docType').value;
+  const rawText = document.getElementById('rawText').textContent;
+  const provider = detectProvider(rawText);
+  
+  // Validate fields
+  if (!amount || amount === 'Not detected' || amount === '-') {
+    alert('Please enter a valid amount before proceeding.');
+    document.getElementById('amount').focus();
+    return;
+  }
+  
+  // === NEW: Advanced Duplicate Scan Detection ===
+  const currentScan = {
+    docType: docType,
+    merchantOrBiller: provider,
+    amount: amount,
+    referenceNumber: refNumber === 'Not detected' ? '' : refNumber,
+    scannedAt: new Date().toISOString()
+  };
+  
+  const duplicateResult = checkForDuplicateScan(currentScan);
+  
+  if (duplicateResult.isDuplicate) {
+    // Store comparison data and redirect to comparison page
+    sessionStorage.setItem('scanComparisonData', JSON.stringify({
+      current: currentScan,
+      previous: duplicateResult.match,
+      similarity: duplicateResult.score
+    }));
+    
+    // Also store bill data for later use
+    sessionStorage.setItem('billAmount', amount);
+    sessionStorage.setItem('billReference', refNumber);
+    sessionStorage.setItem('billDocType', docType);
+    sessionStorage.setItem('billProvider', provider);
+    
+    window.location.href = 'scan-compare.html';
+    return;
+  }
+  
+  // === Store current scan in history ===
+  storeScanInHistory(currentScan);
+  
+  // Store data in sessionStorage for use in payment page
+  sessionStorage.setItem('billAmount', amount);
+  sessionStorage.setItem('billReference', refNumber);
+  sessionStorage.setItem('billDocType', docType);
+  sessionStorage.setItem('billProvider', provider);
+  
+  // Redirect to bills payment page
+  window.location.href = 'bills.html';
+});
+
+/**
+ * Check for duplicate payments in history (LEGACY - simple warning)
+ * @param {string} amount - Payment amount
+ * @param {string} refNumber - Reference number
+ * @param {string} provider - Provider name
+ */
+function checkDuplicatePayment(amount, refNumber, provider) {
+  try {
+    const history = JSON.parse(localStorage.getItem('receiptHistory') || '[]');
+    
+    // Check last 10 receipts for similar payments
+    const recentHistory = history.slice(0, 10);
+    const duplicate = recentHistory.find(receipt => {
+      const amountMatch = receipt.amount === amount;
+      const refMatch = receipt.refNumber === refNumber && refNumber !== 'Not detected';
+      const providerMatch = receipt.provider === provider;
+      
+      // Consider duplicate if amount + (ref or provider) match
+      return amountMatch && (refMatch || providerMatch);
+    });
+    
+    if (duplicate) {
+      const daysSince = Math.floor((Date.now() - new Date(duplicate.savedAt)) / (1000 * 60 * 60 * 24));
+      const warningElem = document.getElementById('duplicateWarning');
+      const messageElem = document.getElementById('duplicateMessage');
+      
+      let message = `You paid a similar ${provider || 'bill'} `;
+      if (daysSince === 0) {
+        message += 'today';
+      } else if (daysSince === 1) {
+        message += 'yesterday';
+      } else {
+        message += `${daysSince} days ago`;
+      }
+      message += ' for the same amount. Are you sure you want to pay again?';
+      
+      messageElem.textContent = message;
+      warningElem.classList.remove('hidden');
+    }
+  } catch (e) {
+    console.error('Error checking duplicates:', e);
+  }
+}
+
+/**
+ * === ADVANCED DUPLICATE SCAN DETECTION ===
+ * Compute similarity score between current and past scan
+ * @param {Object} current - Current scan data
+ * @param {Object} past - Past scan data
+ * @returns {number} - Similarity score (0-100)
+ */
+function computeSimilarity(current, past) {
+  // Perfect match on non-empty reference number = 100% duplicate
+  if (current.referenceNumber && past.referenceNumber && 
+      current.referenceNumber !== 'Not detected' &&
+      current.referenceNumber === past.referenceNumber) {
+    return 100;
+  }
+  
+  let score = 0;
+  
+  // === 1. Merchant/Biller Similarity (40 points max) ===
+  const currentMerchant = (current.merchantOrBiller || '').toLowerCase();
+  const pastMerchant = (past.merchantOrBiller || '').toLowerCase();
+  
+  if (currentMerchant === pastMerchant) {
+    score += 40;
+  } else if (currentMerchant && pastMerchant) {
+    // Check if one contains the other
+    if (currentMerchant.includes(pastMerchant) || pastMerchant.includes(currentMerchant)) {
+      score += 30;
+    }
+    // Check for common words (at least 2)
+    const currentWords = currentMerchant.split(/\s+/);
+    const pastWords = pastMerchant.split(/\s+/);
+    const commonWords = currentWords.filter(w => w.length > 2 && pastWords.includes(w));
+    if (commonWords.length >= 2) {
+      score += 20;
+    } else if (commonWords.length === 1) {
+      score += 10;
+    }
+  }
+  
+  // === 2. Amount Similarity (40 points max) ===
+  const currentAmount = parseFloat((current.amount || '0').replace(/[^0-9.]/g, ''));
+  const pastAmount = parseFloat((past.amount || '0').replace(/[^0-9.]/g, ''));
+  
+  if (currentAmount === pastAmount) {
+    score += 40;
+  } else {
+    const difference = Math.abs(currentAmount - pastAmount);
+    if (difference <= 1.00) {
+      score += 35; // Very close amounts
+    } else if (difference <= 5.00) {
+      score += 25; // Close amounts
+    } else if (difference <= 10.00) {
+      score += 15; // Somewhat close
+    } else if (difference <= 20.00) {
+      score += 5; // Different but notable
+    }
+  }
+  
+  // === 3. Recency Score (20 points max) ===
+  const currentTime = new Date(current.scannedAt).getTime();
+  const pastTime = new Date(past.scannedAt).getTime();
+  const daysDiff = (currentTime - pastTime) / (1000 * 60 * 60 * 24);
+  
+  // Determine recency window based on doc type
+  const isBill = (current.docType || '').toLowerCase().includes('bill');
+  const recencyWindow = isBill ? 30 : 7; // Bills: 30 days, Receipts: 7 days
+  
+  if (daysDiff <= 1) {
+    score += 20; // Same day or next day - very suspicious
+  } else if (daysDiff <= 3) {
+    score += 15; // Within 3 days
+  } else if (daysDiff <= 7) {
+    score += 10; // Within a week
+  } else if (daysDiff <= recencyWindow) {
+    score += 5; // Within window
+  }
+  // Outside window: 0 points
+  
+  return Math.min(Math.round(score), 100);
+}
+
+/**
+ * Check for duplicate scans in scan history
+ * @param {Object} currentScan - Current scan data
+ * @returns {Object} - {isDuplicate: boolean, score: number, match: Object|null}
+ */
+function checkForDuplicateScan(currentScan) {
+  try {
+    // Seed demo data if history is empty
+    seedDemoScanHistory();
+    
+    const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+    
+    let bestMatch = null;
+    let bestScore = 0;
+    
+    // Check against all scans in history
+    for (const pastScan of scanHistory) {
+      const score = computeSimilarity(currentScan, pastScan);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = pastScan;
+      }
+    }
+    
+    // Threshold: 75% or higher = duplicate
+    if (bestScore >= 75 && bestMatch) {
+      return {
+        isDuplicate: true,
+        score: bestScore,
+        match: bestMatch
+      };
+    }
+    
+    return {
+      isDuplicate: false,
+      score: bestScore,
+      match: null
+    };
+  } catch (e) {
+    console.error('Error checking duplicate scan:', e);
+    return { isDuplicate: false, score: 0, match: null };
+  }
+}
+
+/**
+ * Store current scan in history (max 50 scans)
+ * @param {Object} scanData - Scan data to store
+ */
+function storeScanInHistory(scanData) {
+  try {
+    const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+    
+    // Add current scan to beginning
+    scanHistory.unshift(scanData);
+    
+    // Keep only last 50 scans
+    if (scanHistory.length > 50) {
+      scanHistory.splice(50);
+    }
+    
+    localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
+  } catch (e) {
+    console.error('Error storing scan in history:', e);
+  }
+}
+
+/**
+ * Check if scanned amount deviates significantly from favorite merchant history
+ * @param {string} amount - Scanned amount
+ * @param {string} provider - Detected provider
+ */
+function checkFavoriteMerchantDeviation(amount, provider) {
+  // Only check if we have favorite context
+  if (!favoriteMerchantContext) return;
+  
+  // Check if provider matches favorite merchant
+  const merchantMatch = provider && favoriteMerchantContext.merchantName &&
+    provider.toLowerCase().includes(favoriteMerchantContext.merchantName.toLowerCase());
+  
+  if (!merchantMatch) return;
+  
+  // Get average from history
+  const history = favoriteMerchantContext.history;
+  if (!history || !history.average || history.average === 'N/A') return;
+  
+  // Parse amounts
+  const scannedAmount = parseFloat((amount || '0').replace(/[^0-9.]/g, ''));
+  const avgAmount = parseFloat(history.average.replace(/[^0-9.]/g, ''));
+  
+  if (scannedAmount === 0 || avgAmount === 0) return;
+  
+  // Calculate deviation percentage
+  const difference = Math.abs(scannedAmount - avgAmount);
+  const deviationPercent = (difference / avgAmount) * 100;
+  
+  // Show warning if deviation is > 50%
+  if (deviationPercent > 50) {
+    const warningElem = document.getElementById('duplicateWarning');
+    const messageElem = document.getElementById('duplicateMessage');
+    
+    let message = `⚠️ UNUSUAL AMOUNT DETECTED!\n\n`;
+    message += `This ${favoriteMerchantContext.merchantName} bill is ${scannedAmount > avgAmount ? 'HIGHER' : 'LOWER'} than usual.\n\n`;
+    message += `Scanned: S$${scannedAmount.toFixed(2)} | `;
+    message += `Your Average: ${history.average}\n\n`;
+    message += `Please verify this is correct before proceeding.`;
+    
+    messageElem.textContent = message;
+    messageElem.style.whiteSpace = 'pre-line';
+    warningElem.classList.remove('hidden');
+    
+    // Make warning more prominent
+    warningElem.style.borderColor = '#f59e0b';
+    warningElem.style.backgroundColor = '#fef3c7';
+  }
+}
+
+
+/**
+ * Seed demo scan history for demonstration
+ * Only runs if scanHistory is empty
+ */
+function seedDemoScanHistory() {
+  try {
+    const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+    
+    if (scanHistory.length === 0) {
+      // Seed with sample scans for demo
+      const demoScans = [
+        {
+          docType: 'Bill',
+          merchantOrBiller: 'SP Services',
+          amount: 'S$66.20',
+          referenceNumber: '987654321',
+          scannedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days ago
+        },
+        {
+          docType: 'Shopping Receipt',
+          merchantOrBiller: 'NTUC FairPrice',
+          amount: 'S$42.50',
+          referenceNumber: '',
+          scannedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days ago
+        },
+        {
+          docType: 'Bill',
+          merchantOrBiller: 'StarHub',
+          amount: 'S$89.90',
+          referenceNumber: '123456789',
+          scannedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() // 15 days ago
+        }
+      ];
+      
+      localStorage.setItem('scanHistory', JSON.stringify(demoScans));
+      console.log('✅ Demo scan history seeded with 3 sample scans');
+    }
+  } catch (e) {
+    console.error('Error seeding demo scan history:', e);
+  }
+}
+
+// Toggle raw text visibility
+buttons.toggleRawText.addEventListener('click', () => {
+  const content = document.getElementById('rawTextContent');
+  const icon = buttons.toggleRawText.querySelector('.material-symbols-outlined');
+  
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+    icon.textContent = 'expand_less';
+  } else {
+    content.classList.add('hidden');
+    icon.textContent = 'expand_more';
+  }
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', () => {
+  stopCamera();
+});
+
+// Initialize on page load
+console.log('Bill Scanner initialized');
+</script>
+
+</body>
+</html>

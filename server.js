@@ -13,15 +13,22 @@ import supportRoutes from "./routes/supportRoutes.js";
 import approvedRecipientRoutes from "./routes/approvedRecipientRoutes.js";
 import guardianQRRoutes from "./routes/guardianQRRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
+import appointmentRoutes from "./routes/appointmentRoutes.js";
 import { sessionCount } from "./services/sessionStore.js";
 import fakeLogin from "./middleware/fakeLogin.js";
 import requireSession from "./middleware/requireSession.js";
 import { getTransactionHistory } from "./controllers/transactionController.js";
+import { createAppointmentTable } from "./models/appointmentModel.js";
 
 dotenv.config();
 
 // Debug: confirm .env value
 console.log("ENV DEV_ALLOW_ALL =", process.env.DEV_ALLOW_ALL);
+
+// Initialize database tables (non-blocking - runs in background)
+createAppointmentTable().catch(err => {
+  console.error('Failed to initialize appointment table:', err);
+});
 
 const app = express();
 
@@ -31,15 +38,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Request logger (add immediately after body-parser)
 app.use((req, res, next) => {
-  console.log("REQ", req.method, req.path, "headers:", {
-    authorization: !!req.headers.authorization,
-    cookie: !!req.headers.cookie
-  });
+  console.log("========================================");
+  console.log("REQ", req.method, req.path, req.url);
+  console.log("Headers:", req.headers);
+  console.log("========================================");
   next();
 });
 
 // Serve static files from 'public' folder
-app.use(express.static("public"));
+app.use(express.static("public", {
+  setHeaders: (res, path) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
 
 // Serve atm videos folder at /atm-videos (so files in `atm videos/` are web-accessible)
 app.use('/atm-videos', express.static(path.resolve('atm videos')));
@@ -64,12 +77,16 @@ app.use("/account", fakeLogin, accountRoutes);
 app.use("/auth", authRoutes);
 app.use("/api", qrAuthRoutes); // QR authentication and login/signup
 app.use("/api", loginRoutes); // Login and signup functionality
+console.log('Mounting card routes at /api/card...');
 app.use("/api/card", cardRoutes); // Card-based authentication
+console.log('Card routes mounted successfully');
 app.use("/support", supportRoutes); // Support live agent demo
 // Approved recipients API (list/create/update/delete)
 app.use("/api", approvedRecipientRoutes);
 // Guardian QR code API (assisted transactions)
 app.use("/api/guardian", fakeLogin, guardianQRRoutes);
+// Bank appointment booking API (mount before walletRoutes to avoid middleware conflicts)
+app.use("/api", appointmentRoutes);
 // Digital wallet transfer API
 app.use("/api", fakeLogin, requireSession, walletRoutes);
 
@@ -121,6 +138,18 @@ app.get("/wallet-showcase", (req, res) => {
   res.sendFile(path.resolve("public/wallet-showcase.html"));
 });
 
+app.get("/bank-appointment", (req, res) => {
+  res.sendFile(path.resolve("public/bank-appointment.html"));
+});
+
+app.get("/appointment-confirmation", (req, res) => {
+  res.sendFile(path.resolve("public/appointment-confirmation.html"));
+});
+
+app.get("/my-bookings-mobile", (req, res) => {
+  res.sendFile(path.resolve("public/my-bookings-mobile.html"));
+});
+
 // Health check
 app.get("/health", (req, res) => {
   res.json({ ok: true, sessions: sessionCount() });
@@ -132,5 +161,5 @@ const HOST = '0.0.0.0'; // Listen on all network interfaces
 app.listen(PORT, HOST, () => {
   console.log(`Server listening on port ${PORT}`);
   console.log(`Local: http://localhost:${PORT}`);
-  console.log(`Network: http://172.20.10.7:${PORT}`);
+  console.log(`Network: http://192.168.18.83:${PORT}`);
 });

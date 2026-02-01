@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My OCBC Appointments</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .btn-new {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: transform 0.3s;
+        }
+
+        .btn-new:hover {
+            transform: translateY(-2px);
+        }
+
+        .appointments-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .appointment-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .appointment-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .appointment-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .appointment-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .status-badge.confirmed {
+            background: rgba(76, 175, 80, 0.3);
+            color: #fff;
+        }
+
+        .status-badge.cancelled {
+            background: rgba(244, 67, 54, 0.3);
+            color: #fff;
+        }
+
+        .appointment-content {
+            padding: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+            flex: 0 0 120px;
+        }
+
+        .detail-value {
+            color: #666;
+            text-align: right;
+        }
+
+        .appointment-actions {
+            padding: 16px 20px;
+            background: #f9f9f9;
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-view {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #5568d3;
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-cancel:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-title {
+            color: #333;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-button {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .back-button:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 600px) {
+            .appointment-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .detail-row {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .detail-label {
+                flex: 1;
+            }
+
+            .detail-value {
+                text-align: left;
+            }
+
+            .appointment-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/home.html" class="back-button">← Back to Home</a>
+
+        <div class="header">
+            <h1>📅 My Appointments</h1>
+            <p>View and manage your OCBC bank appointments</p>
+            <button class="btn-new" onclick="newAppointment()">+ Book New Appointment</button>
+        </div>
+
+        <div id="loadingState" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading your appointments...</p>
+        </div>
+
+        <div id="appointmentsList" class="appointments-list" style="display: none;"></div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📋</div>
+            <h2 class="empty-state-title">No Appointments</h2>
+            <p class="empty-state-text">You don't have any scheduled appointments yet.</p>
+            <button class="btn-new" onclick="newAppointment()">Book Your First Appointment</button>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+
+        async function loadAppointments() {
+            const loadingEl = document.getElementById('loadingState');
+            const listEl = document.getElementById('appointmentsList');
+            const emptyEl = document.getElementById('emptyState');
+
+            loadingEl.style.display = 'block';
+            listEl.style.display = 'none';
+            emptyEl.style.display = 'none';
+
+            try {
+                const response = await fetch('/account/appointments', {
+                    headers: {
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load appointments');
+                }
+
+                const data = await response.json();
+                const appointments = data.appointments || [];
+
+                loadingEl.style.display = 'none';
+
+                if (appointments.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    listEl.style.display = 'block';
+                    renderAppointments(appointments);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                loadingEl.style.display = 'none';
+                emptyEl.innerHTML = `
+                    <div class="empty-state-icon">❌</div>
+                    <h2 class="empty-state-title">Error Loading Appointments</h2>
+                    <p class="empty-state-text">${error.message}</p>
+                    <button class="btn-new" onclick="location.reload()">Try Again</button>
+                `;
+                emptyEl.style.display = 'block';
+            }
+        }
+
+        function renderAppointments(appointments) {
+            const listEl = document.getElementById('appointmentsList');
+            
+            listEl.innerHTML = appointments.map(apt => {
+                const dateObj = new Date(apt.appointmentDate);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                const statusLabel = apt.status || 'confirmed';
+                const statusClass = statusLabel.toLowerCase();
+                const timeSlot = apt.timeSlot || apt.appointmentTime || '-';
+                const serviceType = apt.serviceType || apt.notes || 'General Inquiry';
+
+                const isUpcoming = new Date(apt.appointmentDate) >= new Date();
+                const canCancel = statusLabel.toLowerCase() === 'confirmed' && isUpcoming;
+
+                return `
+                    <div class="appointment-card">
+                        <div class="appointment-header">
+                            <div class="appointment-title">${apt.bankName}</div>
+                            <div class="status-badge ${statusClass}">${statusLabel}</div>
+                        </div>
+                        <div class="appointment-content">
+                            <div class="detail-row">
+                                <div class="detail-label">📍 Location</div>
+                                <div class="detail-value">${apt.bankAddress}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">📅 Date</div>
+                                <div class="detail-value">${formattedDate}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">⏰ Time</div>
+                                <div class="detail-value">${timeSlot}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">🎯 Service</div>
+                                <div class="detail-value">${serviceType}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">🔢 Confirmation</div>
+                                <div class="detail-value" style="font-family: monospace; font-weight: 600;">${apt.id}</div>
+                            </div>
+                        </div>
+                        <div class="appointment-actions">
+                            <button class="btn-small btn-view" onclick="viewDetails('${apt.id}')">View Details</button>
+                            <button class="btn-small btn-cancel" ${!canCancel ? 'disabled' : ''} onclick="cancelAppointment('${apt.id}')">
+                                ${statusLabel.toLowerCase() === 'cancelled' ? 'Cancelled' : 'Cancel'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function viewDetails(appointmentId) {
+            // Could open a modal or navigate to details page
+            alert('Appointment ID: ' + appointmentId);
+        }
+
+        async function cancelAppointment(appointmentId) {
+            if (!confirm('Are you sure you want to cancel this appointment?')) return;
+
+            try {
+                const response = await fetch(`/api/appointments/${appointmentId}/cancel`, {
+                    method: 'PUT',
+                    headers: {
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Appointment cancelled successfully');
+                    loadAppointments();
+                } else {
+                    alert('Failed to cancel appointment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error cancelling appointment');
+            }
+        }
+
+        function newAppointment() {
+            window.location.href = '/bank-appointment.html';
+        }
+
+        // Load appointments on page load
+        document.addEventListener('DOMContentLoaded', loadAppointments);
+
+        // Sync appointments when page becomes visible (useful for mobile)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                loadAppointments();
+            }
+        });
+    </script>
+</body>
+</html>

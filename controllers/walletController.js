@@ -5,28 +5,60 @@ import { getDevBalance, setDevBalance, addDevTransaction } from "./accountContro
 import { findUserByExternalId } from "../models/userModel.js";
 import { poolPromise, mssql } from "../models/db.js";
 import { insertTransaction } from "../models/transactionModel.js";
+import { 
+  getOrCreateWallet, 
+  getWalletBalance as getWalletBalanceDB, 
+  updateWalletBalance as updateWalletBalanceDB,
+  getWalletTransactions,
+  getWalletSummary
+} from "../models/walletModel.js";
 
-// In-memory wallet storage for demo purposes
+// In-memory wallet storage for demo purposes (fallback only)
 const walletBalances = new Map();
 
 /**
  * Get wallet balance for a wallet ID
+ * Now uses database for persistent storage
  */
-export function getWalletBalance(walletId) {
-  if (!walletBalances.has(walletId)) {
-    walletBalances.set(walletId, 0.00);
+export async function getWalletBalance(walletId) {
+  try {
+    // Try to get from database first
+    const balance = await getWalletBalanceDB(walletId);
+    return balance;
+  } catch (error) {
+    console.error("Error fetching wallet balance from DB:", error);
+    // Fallback to in-memory storage
+    if (!walletBalances.has(walletId)) {
+      walletBalances.set(walletId, 0.00);
+    }
+    return walletBalances.get(walletId);
   }
-  return walletBalances.get(walletId);
 }
 
 /**
  * Update wallet balance
+ * Now uses database for persistent storage
  */
-export function updateWalletBalance(walletId, amount) {
-  const currentBalance = getWalletBalance(walletId);
-  const newBalance = currentBalance + amount;
-  walletBalances.set(walletId, newBalance);
-  return newBalance;
+export async function updateWalletBalance(walletId, amount, walletType, description) {
+  try {
+    // Update in database
+    const transaction = await updateWalletBalanceDB(
+      walletId,
+      amount,
+      amount > 0 ? 'received' : 'sent',
+      description,
+      'ATM',
+      null
+    );
+    return parseFloat(transaction.BalanceAfter);
+  } catch (error) {
+    console.error("Error updating wallet balance in DB:", error);
+    // Fallback to in-memory storage
+    const currentBalance = walletBalances.get(walletId) || 0.00;
+    const newBalance = currentBalance + amount;
+    walletBalances.set(walletId, newBalance);
+    return newBalance;
+  }
 }
 
 /**
@@ -49,6 +81,9 @@ export async function transferToWallet(req, res) {
   const userId = req.user.userId;
 
   try {
+    // Ensure wallet exists in database
+    await getOrCreateWallet(walletId, walletType, userId);
+
     // DEV shortcut
     if (process.env.DEV_ALLOW_ALL === "true") {
       const key = userId ? `user-${userId}` : externalId;
@@ -63,8 +98,13 @@ export async function transferToWallet(req, res) {
       setDevBalance(key, newAccountBalance);
       addDevTransaction(key, "WALLET_TRANSFER", -transferAmount, newAccountBalance, `Transfer to ${walletType} wallet ${walletId}`);
 
-      // Add to wallet
-      const newWalletBalance = updateWalletBalance(walletId, transferAmount);
+      // Add to wallet (now persisted to database)
+      const newWalletBalance = await updateWalletBalance(
+        walletId, 
+        transferAmount, 
+        walletType,
+        `Transfer from ATM account ${externalId}`
+      );
 
       return res.json({
         message: "Transfer successful",
@@ -125,16 +165,31 @@ export async function transferToWallet(req, res) {
         description: `Transfer to ${walletType} wallet ${walletId}`
       }, trx);
 
-      await trx.commit();
+      // Add to wallet using the same transaction (now persisted to database)
+      const walletTransaction = await updateWalletBalanceDB(
+        walletId,
+        transferAmount,
+        'received',
+        `Transfer from ATM account (User ID: ${user.Id})`,
+        'ATM',
+        inserted.Id ? inserted.Id.toString() : null,
+        trx // Pass the transaction for atomic operation
+      );
 
-      // Add to wallet
-      const newWalletBalance = updateWalletBalance(walletId, transferAmount);
+      await trx.commit();
 
       return res.json({
         message: "Transfer successful",
         accountBalance: newAccountBalance,
-        walletBalance: newWalletBalance,
-        transaction: inserted
+        walletBalance: parseFloat(walletTransaction.BalanceAfter),
+        transaction: inserted,
+        walletTransaction: {
+          id: walletTransaction.Id,
+          walletId: walletTransaction.WalletId,
+          amount: parseFloat(walletTransaction.Amount),
+          balanceAfter: parseFloat(walletTransaction.BalanceAfter),
+          createdAt: walletTransaction.CreatedAt
+        }
       });
     } catch (err) {
       await trx.rollback();
@@ -157,11 +212,74 @@ export async function getWalletBalanceAPI(req, res) {
     return res.status(400).json({ error: "walletId is required" });
   }
 
-  const balance = getWalletBalance(walletId);
+  try {
+    const balance = await getWalletBalance(walletId);
+    
+    return res.json({
+      walletId,
+      balance,
+      lastUpdated: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Error fetching wallet balance:", error);
+    return res.status(500).json({ error: "Server error fetching wallet balance" });
+  }
+}
+
+/**
+ * GET /api/wallet/transactions/:walletId
+ * Get transaction history for a digital wallet
+ */
+export async function getWalletTransactionsAPI(req, res) {
+  const { walletId } = req.params;
+  const limit = parseInt(req.query.limit) || 50;
+  const offset = parseInt(req.query.offset) || 0;
   
-  return res.json({
-    walletId,
-    balance,
-    lastUpdated: new Date().toISOString()
-  });
+  if (!walletId) {
+    return res.status(400).json({ error: "walletId is required" });
+  }
+
+  try {
+    const transactions = await getWalletTransactions(walletId, limit, offset);
+    
+    return res.json({
+      walletId,
+      transactions,
+      count: transactions.length,
+      limit,
+      offset
+    });
+  } catch (error) {
+    console.error("Error fetching wallet transactions:", error);
+    return res.status(500).json({ error: "Server error fetching transactions" });
+  }
+}
+
+/**
+ * GET /api/wallet/summary/:walletId
+ * Get wallet summary with balance and recent transactions
+ */
+export async function getWalletSummaryAPI(req, res) {
+  const { walletId } = req.params;
+  
+  if (!walletId) {
+    return res.status(400).json({ error: "walletId is required" });
+  }
+
+  try {
+    // Ensure wallet exists
+    const walletType = req.query.type || 'alipay';
+    await getOrCreateWallet(walletId, walletType);
+    
+    const summary = await getWalletSummary(walletId);
+    
+    if (!summary) {
+      return res.status(404).json({ error: "Wallet not found" });
+    }
+    
+    return res.json(summary);
+  } catch (error) {
+    console.error("Error fetching wallet summary:", error);
+    return res.status(500).json({ error: "Server error fetching wallet summary" });
+  }
 }

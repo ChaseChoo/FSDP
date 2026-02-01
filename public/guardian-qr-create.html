@@ -495,8 +495,16 @@
             clearAlert();
             
             try {
-                // Get auth token from localStorage (same as other pages)
-                const token = localStorage.getItem('token');
+                // Get auth token from localStorage (use authToken, not token)
+                const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+                
+                console.log('Creating QR code with token:', token ? 'Present' : 'Missing');
+                
+                // Get guardianExternalId from form if present, otherwise use user-1
+                const guardianIdInput = document.getElementById('guardian-id');
+                const guardianExternalId = guardianIdInput ? guardianIdInput.value : 'user-1';
+                
+                console.log('Guardian External ID:', guardianExternalId);
                 
                 // Create the QR code
                 const response = await fetch('/api/guardian/create-action-qr', {
@@ -512,7 +520,8 @@
                         recipientAccountNumber: recipient,
                         description,
                         maxUses,
-                        expiryDays
+                        expiryDays,
+                        guardianExternalId
                     })
                 });
                 
@@ -564,9 +573,30 @@
             const qrCodeDiv = document.getElementById('qr-code');
             qrCodeDiv.innerHTML = ''; // Clear previous QR code
             
-            // Create URL that can be scanned by phone and redirects to confirmation page
-            const currentDomain = window.location.origin; // e.g., http://localhost:3000
-            const qrUrl = `${currentDomain}/qr-confirm.html?id=${data.actionId}`;
+            // Get the actual URL being used (works with ngrok and localhost)
+            const hostname = window.location.hostname;
+            const port = window.location.port;
+            const protocol = window.location.protocol; // http: or https:
+            
+            // Build the base URL - if there's a port and it's not standard (80/443), include it
+            let baseUrl;
+            if (port && port !== '80' && port !== '443') {
+                baseUrl = `${protocol}//${hostname}:${port}`;
+            } else {
+                // For ngrok or standard ports, don't include port
+                baseUrl = `${protocol}//${hostname}`;
+            }
+            
+            const qrUrl = `${baseUrl}/assisted-qr-login.html?action=${data.actionId}`;
+            
+            // Display the URL for manual entry or copying
+            const urlDisplay = document.createElement('div');
+            urlDisplay.style.cssText = 'margin-top: 16px; padding: 12px; background: #1e293b; border-radius: 8px;';
+            urlDisplay.innerHTML = `
+                <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 8px 0;"><strong>Mobile URL:</strong></p>
+                <p style="color: #3b82f6; font-size: 0.9rem; margin: 0; word-break: break-all; font-family: monospace;">${qrUrl}</p>
+            `;
+            qrCodeDiv.parentElement.insertBefore(urlDisplay, qrCodeDiv.nextSibling);
             
             new QRCode(qrCodeDiv, {
                 text: qrUrl,

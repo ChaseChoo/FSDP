@@ -21,27 +21,46 @@ import {
  * Requires authentication
  */
 export async function createActionQR(req, res) {
+  console.log('[Guardian QR] ========== CREATE ACTION QR REQUEST ==========');
+  console.log('[Guardian QR] Request body:', req.body);
+  console.log('[Guardian QR] Request user:', req.user);
+  
   try {
-    const { actionType, amount, recipientAccountNumber, description, maxUses, expiryDays } = req.body;
+    const { actionType, amount, recipientAccountNumber, description, maxUses, expiryDays, guardianExternalId } = req.body;
     
-    // Get authenticated user info - use fallback for demo mode
-    let externalId = req.user?.externalId;
+    // PRIORITY: Use guardianExternalId from request body if provided (for guardian mobile app)
+    // Otherwise fall back to authenticated user from req.user
     let guardianInfo;
     
-    if (!externalId) {
-      // Fallback for demo mode - use the same ID as fakeLogin middleware
-      console.log('[Guardian QR] No authenticated user, using demo mode');
-      externalId = 'FAKE_USER'; // Same as fakeLogin middleware
+    if (guardianExternalId) {
+      // Guardian mobile app explicitly provides the guardian ID
+      console.log('[Guardian QR] Using guardianExternalId from request:', guardianExternalId);
       guardianInfo = {
-        externalId: externalId,
-        cardNumber: '5555 **** **** 2222',
-        name: 'Demo User'
+        externalId: guardianExternalId,
+        userId: null,
+        cardNumber: 'N/A',
+        name: guardianExternalId
       };
-    } else {
+    } else if (req.user?.externalId) {
+      // Authenticated session - use user from session
+      const userId = req.user.userId;
+      const balanceKey = userId ? `user-${userId}` : req.user.externalId;
+      console.log('[Guardian QR] Using authenticated user:', balanceKey);
+      
       guardianInfo = {
-        externalId: externalId,
+        externalId: balanceKey,
+        userId: userId,
         cardNumber: req.user.cardNumber || 'N/A',
         name: req.user.name || req.user.fullName || 'Guardian User'
+      };
+    } else {
+      // No guardian ID and no authenticated user - use default
+      console.log('[Guardian QR] No guardian ID or auth, using FAKE_USER');
+      guardianInfo = {
+        externalId: 'FAKE_USER',
+        userId: null,
+        cardNumber: '5555 **** **** 2222',
+        name: 'FAKE_USER'
       };
     }
     
@@ -123,6 +142,8 @@ export async function createActionQR(req, res) {
 export async function validateActionQR(req, res) {
   try {
     const { actionId } = req.params;
+    
+    console.log('[Guardian QR] Validating actionId:', actionId);
     
     const validation = validatePreConfiguredAction(actionId);
     
@@ -421,13 +442,18 @@ async function executeWithdraw(externalId, userId, amount, description) {
     const key = externalId;
     const currentBalance = getDevBalance(key);
     
+    console.log(`[Guardian Withdraw] Key: ${key}, Balance: ${currentBalance}, Amount: ${amount}`);
+    
     if (currentBalance < amount) {
+      console.log(`[Guardian Withdraw] Insufficient funds: ${currentBalance} < ${amount}`);
       return { success: false, error: 'Insufficient funds' };
     }
     
     const newBalance = currentBalance - amount;
     setDevBalance(key, newBalance);
     addDevTransaction(key, 'WITHDRAWAL', amount, newBalance, description);
+    
+    console.log(`[Guardian Withdraw] Success! New balance: ${newBalance}`);
     
     return {
       success: true,

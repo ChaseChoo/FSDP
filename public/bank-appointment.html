@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCBC Bank Appointments</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#ea2a33",
+            "background-light": "#f8f6f6",
+            "background-dark": "#211111",
+          },
+          fontFamily: { display: ["Public Sans", "sans-serif"] },
+          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+        }
+      }
+    }
+    </script>
+    
+    <style type="text/tailwindcss">
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+          font-size: 24px;
+        }
+        .page {
+          display: none;
+        }
+        .page.active {
+          display: block;
+        }
+        body {
+          background-image: linear-gradient(rgba(248, 246, 246, 0.98), rgba(248, 246, 246, 0.7)), url('sources/pexels-realcereal-15480508.jpg');
+          background-attachment: fixed;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+        .confirmation-email {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 16px;
+            max-width: 600px;
+            margin: 20px auto;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .email-header {
+            background: #ea2a33;
+            padding: 24px;
+            text-align: center;
+            color: white;
+        }
+        .email-header h2 {
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+        .email-content {
+            padding: 32px 24px;
+        }
+        .confirmation-section {
+            margin-bottom: 24px;
+        }
+        .confirmation-section h3 {
+            color: #1b0e0e;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ea2a33;
+            font-weight: 700;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        .detail-row strong {
+            color: #333;
+        }
+        .detail-row span {
+            color: #666;
+        }
+        .confirmation-number {
+            background: #fef2f2;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 24px 0;
+            border-left: 4px solid #ea2a33;
+        }
+        .confirmation-number .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .confirmation-number .number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ea2a33;
+            font-family: 'Courier New', monospace;
+        }
+        .email-footer {
+            background: #f8f6f6;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #e5e5e5;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            position: relative;
+        }
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e5e5e5;
+            z-index: 0;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #e5e5e5;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #999;
+        }
+        .step.active .step-number {
+            background: #ea2a33;
+            color: white;
+        }
+        .step.completed .step-number {
+            background: #4CAF50;
+            color: white;
+        }
+        .step-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+        .bank-card {
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .nearest-badge {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: linear-gradient(135deg, #ea2a33 0%, #c71d24 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(234, 42, 51, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .second-nearest-badge {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .bank-card:hover {
+            border-color: #ea2a33;
+            box-shadow: 0 4px 12px rgba(234, 42, 51, 0.15);
+            transform: translateY(-2px);
+        }
+        .bank-card.selected {
+            border-color: #ea2a33;
+            background: #fef2f2;
+        }
+        .bank-card .hidden-check {
+            display: none;
+        }
+        .bank-card.selected .hidden-check {
+            display: block;
+            color: #ea2a33;
+        }
+        .bank-card h3 {
+            color: #ea2a33;
+            margin-bottom: 8px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .bank-card p {
+            color: #666;
+            font-size: 14px;
+            margin: 6px 0;
+        }
+        .distance {
+            color: #999;
+            font-size: 13px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .bank-page-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .bank-page-header {
+            flex-shrink: 0;
+        }
+        .bank-page-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            padding: 32px 40px;
+        }
+        .bank-list-frame {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 12px 8px 0 0;
+            margin: 0 -8px 20px 0;
+            min-height: 0;
+        }
+        .bank-list-frame::-webkit-scrollbar {
+            width: 8px;
+        }
+        .bank-list-frame::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .bank-list-frame::-webkit-scrollbar-thumb {
+            background: #d4d4d8;
+            border-radius: 4px;
+        }
+        .bank-list-frame::-webkit-scrollbar-thumb:hover {
+            background: #a1a1aa;
+        }
+        .dark .bank-list-frame::-webkit-scrollbar-thumb {
+            background: #52525b;
+        }
+        .dark .bank-list-frame::-webkit-scrollbar-thumb:hover {
+            background: #71717a;
+        }
+        .bank-page-footer {
+            flex-shrink: 0;
+            background: white;
+            padding: 24px 40px 28px;
+            border-top: 1px solid #e5e5e5;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .dark .bank-page-footer {
+            background: #18181b;
+            border-top-color: #27272a;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        .slot-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .time-slot {
+            padding: 14px;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+            background: white;
+        }
+        .time-slot:hover:not(.disabled) {
+            border-color: #ea2a33;
+            background: #fef2f2;
+            transform: translateY(-2px);
+        }
+        .time-slot.selected {
+            background: #ea2a33;
+            color: white;
+            border-color: #ea2a33;
+        }
+        .time-slot.disabled {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        @media (max-width: 768px) {
+            .slot-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white min-h-screen">
+
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <a href="home.html" class="cursor-pointer">
+                <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8 hover:opacity-80 transition-opacity">
+            </a>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors" onclick="window.location.href='home.html#noncash'">
+                <span class="material-symbols-outlined !text-lg">support_agent</span> Virtual Teller
+            </button>
+            <button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors" onclick="window.location.href='home.html'">
+                <span class="material-symbols-outlined !text-lg">logout</span> Exit
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-[1000px] mx-auto px-6 py-8 h-[calc(100vh-96px)] overflow-hidden">
+    
+    <!-- Step 1: Location Search -->
+    <div id="locationPage" class="page active">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div class="bg-primary text-white px-8 py-6">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined !text-3xl">location_on</span>
+                        <h1 class="text-3xl font-extrabold">Find a Bank</h1>
+                    </div>
+                    <button onclick="window.location.href='home.html#noncash'" class="text-white hover:text-white/80 flex items-center gap-2 font-medium transition-colors">
+                        <span class="material-symbols-outlined !text-lg">arrow_back</span>
+                        Back
+                    </button>
+                </div>
+                <p class="text-white/90">Search for OCBC branches near you</p>
+            </div>
+            
+            <div class="p-8">
+                <div class="step-indicator">
+                    <div class="step active">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Location</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Select Bank</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Choose Time</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-label">Confirm</div>
+                    </div>
+                </div>
+
+                <div id="error" class="hidden bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
+                    <span class="material-symbols-outlined">error</span>
+                    <span id="errorText"></span>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block font-bold mb-2 text-[#1b0e0e] dark:text-zinc-100">Search Location</label>
+                    <div class="flex gap-3">
+                        <div class="relative flex-1">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">location_on</span>
+                            <input type="text" id="locationInput" placeholder='e.g., "Orchard", "Tampines"' class="w-full pl-12 pr-4 py-3 border-2 border-zinc-300 dark:border-zinc-600 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-zinc-800 dark:text-white transition-all">
+                        </div>
+                        <button onclick="useMyLocation()" class="bg-primary/10 text-primary px-4 py-3 rounded-xl font-bold hover:bg-primary/20 transition-all flex items-center gap-2 whitespace-nowrap" title="Use my current location">
+                            <span class="material-symbols-outlined">my_location</span>
+                            <span class="hidden sm:inline">Use My Location</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block font-bold mb-2 text-[#1b0e0e] dark:text-zinc-100">Search Radius</label>
+                    <select id="radiusSelect" class="w-full px-4 py-3 border-2 border-zinc-300 dark:border-zinc-600 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-zinc-800 dark:text-white transition-all">
+                        <option value="3">3 km</option>
+                        <option value="5" selected>5 km</option>
+                        <option value="10">10 km</option>
+                        <option value="20">20 km</option>
+                    </select>
+                </div>
+
+                <button class="w-full bg-primary text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2" onclick="searchBanks()">
+                    <span class="material-symbols-outlined">search</span>
+                    Search Banks
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Select Bank -->
+    <div id="bankPage" class="page h-full">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bank-page-card">
+            <div class="bg-primary text-white px-8 py-5 bank-page-header">
+                <div class="flex items-center gap-3 mb-1">
+                    <span class="material-symbols-outlined !text-3xl">account_balance</span>
+                    <h1 class="text-2xl font-extrabold">Select a Bank</h1>
+                </div>
+                <p class="text-white/90 text-sm">Choose your preferred OCBC branch</p>
+            </div>
+            
+            <div class="bank-page-content">
+                <div class="step-indicator">
+                    <div class="step completed">
+                        <div class="step-number">✓</div>
+                        <div class="step-label">Location</div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Select Bank</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Choose Time</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-label">Confirm</div>
+                    </div>
+                </div>
+
+                <div id="bankList" class="bank-list-frame"></div>
+            </div>
+
+            <div class="bank-page-footer">
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white px-6 py-3 rounded-xl font-bold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center justify-center gap-2" onclick="goToPage('locationPage')">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                        Back
+                    </button>
+                    <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" onclick="goToPage('dateTimePage')" id="selectBankBtn" disabled>
+                        Next
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Select Date & Time -->
+    <div id="dateTimePage" class="page">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div class="bg-primary text-white px-8 py-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="material-symbols-outlined !text-3xl">calendar_month</span>
+                    <h1 class="text-3xl font-extrabold">Choose Date & Time</h1>
+                </div>
+                <p class="text-white/90">Select your preferred appointment slot</p>
+            </div>
+            
+            <div class="p-8">
+                <div class="step-indicator">
+                    <div class="step completed">
+                        <div class="step-number">✓</div>
+                        <div class="step-label">Location</div>
+                    </div>
+                    <div class="step completed">
+                        <div class="step-number">✓</div>
+                        <div class="step-label">Select Bank</div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Choose Time</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-label">Confirm</div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block font-bold mb-2 text-[#1b0e0e] dark:text-zinc-100">Appointment Date</label>
+                    <input type="date" id="appointmentDate" min="" required class="w-full px-4 py-3 border-2 border-zinc-300 dark:border-zinc-600 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-zinc-800 dark:text-white transition-all">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block font-bold mb-3 text-[#1b0e0e] dark:text-zinc-100">Available Time Slots</label>
+                    <div class="slot-grid" id="slotsGrid"></div>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block font-bold mb-2 text-[#1b0e0e] dark:text-zinc-100">Service Type (Optional)</label>
+                    <select id="serviceType" class="w-full px-4 py-3 border-2 border-zinc-300 dark:border-zinc-600 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-zinc-800 dark:text-white transition-all">
+                        <option value="General Inquiry">General Inquiry</option>
+                        <option value="Account Opening">Account Opening</option>
+                        <option value="Loan Application">Loan Application</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="Investment Services">Investment Services</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white px-6 py-3 rounded-xl font-bold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center justify-center gap-2" onclick="goToPage('bankPage')">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                        Back
+                    </button>
+                    <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" onclick="goToConfirmPage()" id="confirmDateBtn" disabled>
+                        Next
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Confirmation -->
+    <div id="confirmPage" class="page">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div class="bg-primary text-white px-8 py-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="material-symbols-outlined !text-3xl">check_circle</span>
+                    <h1 class="text-3xl font-extrabold">Confirmation</h1>
+                </div>
+                <p class="text-white/90">Review your appointment details</p>
+            </div>
+            
+            <div class="p-8">
+                <div class="confirmation-email">
+                    <div class="email-header">
+                        <h2>Appointment Confirmation</h2>
+                        <p class="text-white/90">Your OCBC Bank Appointment</p>
+                    </div>
+
+                    <div class="email-content">
+                        <p style="margin-bottom: 20px; color: #666;">Dear Customer,</p>
+                        <p style="margin-bottom: 24px; color: #666;">Please review your appointment details before confirming:</p>
+
+                        <div class="confirmation-section">
+                            <h3>📍 Location</h3>
+                            <div class="detail-row">
+                                <strong>Bank Name:</strong>
+                                <span id="confirmBankName">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Address:</strong>
+                                <span id="confirmBankAddress">-</span>
+                            </div>
+                        </div>
+
+                        <div class="confirmation-section">
+                            <h3>📅 Date & Time</h3>
+                            <div class="detail-row">
+                                <strong>Date:</strong>
+                                <span id="confirmDate">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Time:</strong>
+                                <span id="confirmTime">-</span>
+                            </div>
+                        </div>
+
+                        <div class="confirmation-section">
+                            <h3>🎯 Service</h3>
+                            <div class="detail-row">
+                                <strong>Service Type:</strong>
+                                <span id="confirmService">-</span>
+                            </div>
+                        </div>
+
+                        <p style="color: #666; font-size: 13px; margin: 20px 0;">Please arrive 5-10 minutes before your scheduled time. If you need to cancel or reschedule, please contact us at least 24 hours in advance.</p>
+                    </div>
+
+                    <div class="email-footer">
+                        <p>© 2026 OCBC Bank. All rights reserved.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                    <button class="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white px-6 py-3 rounded-xl font-bold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center justify-center gap-2" onclick="goToPage('dateTimePage')">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                        Back
+                    </button>
+                    <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2" onclick="bookAppointment(event)">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Confirm Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="successPage" class="page">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div class="bg-green-500 text-white px-8 py-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="material-symbols-outlined !text-4xl">check_circle</span>
+                    <h1 class="text-3xl font-extrabold">Booking Confirmed!</h1>
+                </div>
+                <p class="text-white/90">Your appointment has been successfully booked</p>
+            </div>
+            
+            <div class="p-8 text-center">
+                <div class="mb-8">
+                    <div class="text-6xl mb-4">✅</div>
+                    <h2 class="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Appointment Booked</h2>
+                    <p class="text-zinc-600 dark:text-zinc-300 mb-6">Confirmation details have been saved and sent to your email</p>
+                </div>
+
+                <div class="bg-green-50 dark:bg-zinc-800 border-l-4 border-green-500 p-6 text-left mb-8 rounded-lg">
+                    <h3 class="font-bold text-lg text-zinc-900 dark:text-white mb-4">📋 Booking Details</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-zinc-600 dark:text-zinc-400">Bank:</span>
+                            <span class="font-semibold text-zinc-900 dark:text-white" id="successBankName">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-zinc-600 dark:text-zinc-400">Address:</span>
+                            <span class="font-semibold text-zinc-900 dark:text-white text-right" id="successBankAddress">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-zinc-600 dark:text-zinc-400">Date:</span>
+                            <span class="font-semibold text-zinc-900 dark:text-white" id="successDate">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-zinc-600 dark:text-zinc-400">Time:</span>
+                            <span class="font-semibold text-zinc-900 dark:text-white" id="successTime">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-zinc-600 dark:text-zinc-400">Service:</span>
+                            <span class="font-semibold text-zinc-900 dark:text-white" id="successService">-</span>
+                        </div>
+                        <div class="border-t border-zinc-200 dark:border-zinc-700 pt-3 flex justify-between">
+                            <span class="text-zinc-600 dark:text-zinc-400">Confirmation #:</span>
+                            <span class="font-mono font-bold text-green-600 text-lg" id="successConfirmNumber">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white px-6 py-3 rounded-xl font-bold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center justify-center gap-2" onclick="newAppointment()">
+                        <span class="material-symbols-outlined">add</span>
+                        Book Another
+                    </button>
+                    <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2" onclick="viewBookingsOnPhone()">
+                        <span class="material-symbols-outlined">phone_iphone</span>
+                        View on Phone
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 5: Success -->
+    <div id="successPage" class="page">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div class="bg-green-600 text-white px-8 py-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="material-symbols-outlined !text-3xl">celebration</span>
+                    <h1 class="text-3xl font-extrabold">Success!</h1>
+                </div>
+                <p class="text-white/90">Your appointment is confirmed</p>
+            </div>
+            
+            <div class="p-8 text-center">
+                <div class="text-6xl mb-4">✅</div>
+                <h2 class="text-2xl font-bold text-primary mb-2">Appointment Booked</h2>
+                <p class="text-zinc-600 dark:text-zinc-400 mb-8">A confirmation email has been sent to your registered email address.</p>
+
+                <div class="confirmation-email">
+                    <div class="email-header">
+                        <h2>Appointment Confirmed</h2>
+                    </div>
+                    <div class="email-content">
+                        <div class="confirmation-section">
+                            <h3>📍 Location</h3>
+                            <div class="detail-row">
+                                <strong>Bank:</strong>
+                                <span id="successBankName">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Address:</strong>
+                                <span id="successBankAddress">-</span>
+                            </div>
+                        </div>
+                        <div class="confirmation-section">
+                            <h3>📅 Date & Time</h3>
+                            <div class="detail-row">
+                                <strong>Date:</strong>
+                                <span id="successDate">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Time:</strong>
+                                <span id="successTime">-</span>
+                            </div>
+                        </div>
+                        <div class="confirmation-number">
+                            <div class="label">Confirmation Number</div>
+                            <div class="number" id="successNumber">APT-XXXX-XXXX</div>
+                        </div>
+                    </div>
+                    <div class="email-footer">
+                        <p>Check your email for the full confirmation details</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                    <button class="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white px-6 py-3 rounded-xl font-bold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center justify-center gap-2" onclick="viewMyAppointments()">
+                        <span class="material-symbols-outlined">event_note</span>
+                        View My Appointments
+                    </button>
+                    <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2" onclick="newAppointment()">
+                        Book Another
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</main>
+
+    <script>
+        // State
+        const state = {
+            selectedBank: null,
+            selectedDate: null,
+            selectedTime: null,
+            serviceType: 'General Inquiry',
+            banks: [],
+            token: localStorage.getItem('token'),
+            userCoords: null
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            document.getElementById('appointmentDate').min = tomorrowStr;
+            document.getElementById('appointmentDate').value = tomorrowStr;
+            // Initialize state with the default date
+            state.selectedDate = tomorrowStr;
+        });
+
+        function goToPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        async function useMyLocation() {
+            if (!navigator.geolocation) {
+                showError('Geolocation is not supported by your browser');
+                return;
+            }
+
+            const locationBtn = event.currentTarget;
+            locationBtn.disabled = true;
+            locationBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span><span class="hidden sm:inline">Getting location...</span>';
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    document.getElementById('locationInput').value = `My Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+                    state.userCoords = { lat: latitude, lng: longitude };
+                    locationBtn.disabled = false;
+                    locationBtn.innerHTML = '<span class="material-symbols-outlined">my_location</span><span class="hidden sm:inline">Use My Location</span>';
+                    await searchBanksWithCoords(latitude, longitude);
+                },
+                (error) => {
+                    locationBtn.disabled = false;
+                    locationBtn.innerHTML = '<span class="material-symbols-outlined">my_location</span><span class="hidden sm:inline">Use My Location</span>';
+                    showError('Unable to get your location. Please enter manually.');
+                    console.error('Geolocation error:', error);
+                }
+            );
+        }
+
+        async function searchBanksWithCoords(lat, lng) {
+            try {
+                // Use large radius to get all branches
+                const response = await fetch(`/api/nearby?latitude=${lat}&longitude=${lng}&radius=100`, {
+                    headers: {
+                        ...(state.token ? { 'Authorization': `Bearer ${state.token}` } : {}),
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.banks && data.banks.length > 0) {
+                    state.banks = data.banks;
+                    renderBanks(data.banks);
+                    goToPage('bankPage');
+                } else {
+                    showError('No banks found. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error searching for banks: ${error.message}`);
+            }
+        }
+
+        async function searchBanks() {
+            const location = document.getElementById('locationInput').value.trim();
+            const radius = document.getElementById('radiusSelect').value;
+
+            // If user has used their location already, use those coords
+            if (state.userCoords) {
+                return searchBanksWithCoords(state.userCoords.lat, state.userCoords.lng);
+            }
+
+            if (!location) {
+                showError('Please enter a location or use "Use My Location" button');
+                return;
+            }
+
+            // Common Singapore locations
+            const coordinates = {
+                'orchard': { lat: 1.3047, lng: 103.8350 },
+                'tampines': { lat: 1.3521, lng: 103.9450 },
+                'jurong': { lat: 1.3345, lng: 103.7880 },
+                'bukit timah': { lat: 1.3523, lng: 103.7744 },
+                'marina bay': { lat: 1.2757, lng: 103.8502 },
+                'woodlands': { lat: 1.4370, lng: 103.7860 },
+                'bedok': { lat: 1.3236, lng: 103.9273 },
+                'ang mo kio': { lat: 1.3691, lng: 103.8454 },
+                'serangoon': { lat: 1.3502, lng: 103.8682 },
+                'choa chu kang': { lat: 1.3840, lng: 103.7470 }
+            };
+
+            const coords = coordinates[location.toLowerCase()] || { lat: 1.3521, lng: 103.8198 };
+            await searchBanksWithCoords(coords.lat, coords.lng);
+        }
+
+        function renderBanks(banks) {
+            const list = document.getElementById('bankList');
+            list.innerHTML = banks.map((bank, index) => {
+                let badge = '';
+                if (index === 0 && bank.distance !== undefined) {
+                    badge = '<div class="nearest-badge"><span class="material-symbols-outlined" style="font-size: 14px;">star</span>Nearest Branch</div>';
+                } else if (index === 1 && bank.distance !== undefined) {
+                    badge = '<div class="second-nearest-badge"><span class="material-symbols-outlined" style="font-size: 14px;">distance</span>2nd Nearest</div>';
+                }
+                
+                return `
+                    <div class="bank-card" data-id="${bank.id}" onclick="selectBank(${bank.id}, this)">
+                        ${badge}
+                        <div class="flex items-start gap-4">
+                            <div class="bg-primary/10 p-3 rounded-xl">
+                                <span class="material-symbols-outlined text-primary !text-2xl">account_balance</span>
+                            </div>
+                            <div class="flex-1">
+                                <h3>${bank.name}</h3>
+                                <p class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined !text-base text-zinc-400">location_on</span>
+                                    ${bank.address}
+                                </p>
+                                <p class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined !text-base text-zinc-400">schedule</span>
+                                    ${bank.openHours}
+                                </p>
+                                ${bank.distance !== undefined ? `<div class="distance">
+                                    <span class="material-symbols-outlined !text-sm">directions</span>
+                                    ${bank.distance.toFixed(1)} km away
+                                </div>` : ''}
+                            </div>
+                            <span class="material-symbols-outlined text-zinc-400 hidden-check">check_circle</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectBank(bankId, element) {
+            document.querySelectorAll('.bank-card').forEach(e => e.classList.remove('selected'));
+            element.classList.add('selected');
+            // Convert bankId to number for comparison
+            const id = parseInt(bankId);
+            state.selectedBank = state.banks.find(b => parseInt(b.id) === id);
+            console.log('Selected bank:', state.selectedBank);
+            document.getElementById('selectBankBtn').disabled = false;
+        }
+
+        function loadTimeSlots() {
+            const date = document.getElementById('appointmentDate').value;
+            const slotsGrid = document.getElementById('slotsGrid');
+
+            // Hardcoded time slots
+            const slots = ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
+
+            slotsGrid.innerHTML = slots.map(slot => `
+                <div class="time-slot" onclick="selectTime('${slot}', this)">${slot}</div>
+            `).join('');
+        }
+
+        function selectTime(time, element) {
+            document.querySelectorAll('.time-slot').forEach(e => e.classList.remove('selected'));
+            element.classList.add('selected');
+            state.selectedTime = time;
+            document.getElementById('confirmDateBtn').disabled = false;
+        }
+
+        document.getElementById('appointmentDate').addEventListener('change', () => {
+            state.selectedDate = document.getElementById('appointmentDate').value;
+            loadTimeSlots();
+        });
+
+        document.getElementById('serviceType').addEventListener('change', (e) => {
+            state.serviceType = e.target.value;
+        });
+
+        // Update confirmation page before showing
+        function updateConfirmationPage() {
+            console.log('updateConfirmationPage: Checking state:', {
+                bank: state.selectedBank?.name,
+                date: state.selectedDate,
+                time: state.selectedTime
+            });
+            
+            if (!state.selectedBank) {
+                console.error('No bank selected');
+                showError('Please select a bank');
+                return false;
+            }
+            if (!state.selectedDate) {
+                console.error('No date selected');
+                showError('Please select a date');
+                return false;
+            }
+            if (!state.selectedTime) {
+                console.error('No time selected');
+                showError('Please select a time');
+                return false;
+            }
+            
+            try {
+                const dateObj = new Date(state.selectedDate);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+                
+                console.log('Setting confirmation values:', {
+                    bank: state.selectedBank.name,
+                    address: state.selectedBank.address,
+                    date: formattedDate,
+                    time: state.selectedTime,
+                    service: state.serviceType
+                });
+                
+                document.getElementById('confirmBankName').textContent = state.selectedBank.name;
+                document.getElementById('confirmBankAddress').textContent = state.selectedBank.address;
+                document.getElementById('confirmDate').textContent = formattedDate;
+                document.getElementById('confirmTime').textContent = state.selectedTime;
+                document.getElementById('confirmService').textContent = state.serviceType || 'General Inquiry';
+                
+                return true;
+            } catch (error) {
+                console.error('Error updating confirmation page:', error);
+                showError('Error loading confirmation details');
+                return false;
+            }
+        }
+
+        // Function to handle confirm page navigation
+        function goToConfirmPage() {
+            console.log('goToConfirmPage called');
+            const success = updateConfirmationPage();
+            console.log('updateConfirmationPage returned:', success);
+            if (success) {
+                console.log('Navigating to confirmPage');
+                goToPage('confirmPage');
+            }
+        }
+
+        async function bookAppointment(event) {
+            if (!state.selectedBank || !state.selectedDate || !state.selectedTime) {
+                showError('Please complete all selections');
+                return;
+            }
+
+            // Show loading state on button
+            const confirmBtn = event ? event.target : document.querySelector('.bg-primary');
+            const originalHTML = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<span class="spinner" style="border: 3px solid #fff; border-top: 3px solid transparent; width: 20px; height: 20px; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite; margin-right: 10px;"></span>Booking...';
+            confirmBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/appointments/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        bankId: state.selectedBank.id.toString(),
+                        bankName: state.selectedBank.name,
+                        bankAddress: state.selectedBank.address,
+                        appointmentDate: state.selectedDate,
+                        appointmentTime: state.selectedTime,
+                        serviceType: state.serviceType || 'General Banking'
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Booking response:', data);
+
+                if (response.ok) {
+                    // Display success page with details
+                    const dateObj = new Date(state.selectedDate);
+                    const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                    const confirmNumber = data.appointmentId || data.appointment?.id || 'APT-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                    
+                    document.getElementById('successBankName').textContent = state.selectedBank.name;
+                    document.getElementById('successBankAddress').textContent = state.selectedBank.address;
+                    document.getElementById('successDate').textContent = formattedDate;
+                    document.getElementById('successTime').textContent = state.selectedTime;
+                    document.getElementById('successService').textContent = state.serviceType || 'General Banking';
+                    document.getElementById('successConfirmNumber').textContent = confirmNumber;
+                    
+                    // Store booking ID for phone view
+                    window.lastBookingId = confirmNumber;
+                    
+                    goToPage('successPage');
+                } else {
+                    confirmBtn.innerHTML = originalHTML;
+                    confirmBtn.disabled = false;
+                    showError(data.message || data.error || 'Booking failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Booking error:', error);
+                confirmBtn.innerHTML = originalHTML;
+                confirmBtn.disabled = false;
+                showError('Error booking appointment. Please check your connection and try again.');
+            }
+        }
+
+        function viewBookingsOnPhone() {
+            window.open('/my-bookings-mobile.html', '_blank');
+        }
+
+        function viewMyAppointments() {
+            window.location.href = '/my-appointments.html';
+        }
+
+        function newAppointment() {
+            state.selectedBank = null;
+            state.selectedDate = null;
+            state.selectedTime = null;
+            goToPage('locationPage');
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorEl.classList.remove('hidden');
+            setTimeout(() => errorEl.classList.add('hidden'), 5000);
+        }
+
+        // Load initial time slots
+        loadTimeSlots();
+    </script>
+</body>
+</html>

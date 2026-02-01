@@ -1,0 +1,308 @@
+{
+  "28b0446d907c95944a2a6e42c84152cbfb4ea6ef5d9532ad9c623b4464db99d9": {
+    "id": "28b0446d907c95944a2a6e42c84152cbfb4ea6ef5d9532ad9c623b4464db99d9",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769927306420,
+    "expiresAt": 1770013706420,
+    "usedAt": 1769927325060,
+    "lastUsedAt": 1769927325060
+  },
+  "3685fac2dd7e9f896af12da7cf74562114837560785a6a063174f865d9a679f4": {
+    "id": "3685fac2dd7e9f896af12da7cf74562114837560785a6a063174f865d9a679f4",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769927362514,
+    "expiresAt": 1770013762514,
+    "usedAt": 1769927377327,
+    "lastUsedAt": 1769927377327
+  },
+  "b3d3b7ac520874be0d9c188dde9b6f62945bd4f23388022124a97919b5e83e77": {
+    "id": "b3d3b7ac520874be0d9c188dde9b6f62945bd4f23388022124a97919b5e83e77",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769927469034,
+    "expiresAt": 1770013869034,
+    "usedAt": 1769927474638,
+    "lastUsedAt": 1769927474638
+  },
+  "0d27c7ac468dd14a110bde874fd097bd42981be9877dc533815128874218be0a": {
+    "id": "0d27c7ac468dd14a110bde874fd097bd42981be9877dc533815128874218be0a",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769927647490,
+    "expiresAt": 1770014047490,
+    "usedAt": 1769927668323,
+    "lastUsedAt": 1769927668323
+  },
+  "58f02f10d304898a3e5f831a574fcb78cdf0aecd36d60d07ecf44892727c2792": {
+    "id": "58f02f10d304898a3e5f831a574fcb78cdf0aecd36d60d07ecf44892727c2792",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769927736782,
+    "expiresAt": 1770014136782,
+    "usedAt": 1769927753317,
+    "lastUsedAt": 1769927753317
+  },
+  "feb22256d6aedea170e592152ee3218132555e0e2c32fe3fe18b92cc0e109972": {
+    "id": "feb22256d6aedea170e592152ee3218132555e0e2c32fe3fe18b92cc0e109972",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 0,
+    "createdAt": 1769927835307,
+    "expiresAt": 1770014235307,
+    "usedAt": null,
+    "lastUsedAt": null
+  },
+  "705bfc220122a1790514071fd65a032c76141fc19ef35b0b1206cc9712b28c30": {
+    "id": "705bfc220122a1790514071fd65a032c76141fc19ef35b0b1206cc9712b28c30",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 0,
+    "createdAt": 1769927902032,
+    "expiresAt": 1770014302032,
+    "usedAt": null,
+    "lastUsedAt": null
+  },
+  "117eee1a7d37d71f4dc113f2cc131f1558e53f01a7dde7464997c5b2f0284d37": {
+    "id": "117eee1a7d37d71f4dc113f2cc131f1558e53f01a7dde7464997c5b2f0284d37",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 0,
+    "createdAt": 1769928193559,
+    "expiresAt": 1770014593559,
+    "usedAt": null,
+    "lastUsedAt": null
+  },
+  "f3901c7cf5dbe1cf4826a233df46854193b16327fd81a7b7de0eaa3c464357a2": {
+    "id": "f3901c7cf5dbe1cf4826a233df46854193b16327fd81a7b7de0eaa3c464357a2",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 0,
+    "createdAt": 1769928299768,
+    "expiresAt": 1770014699768,
+    "usedAt": null,
+    "lastUsedAt": null
+  },
+  "a9da65e35da59c1b5d1c8d86453039eb9796273f8475e3ada2cafa7275c55d86": {
+    "id": "a9da65e35da59c1b5d1c8d86453039eb9796273f8475e3ada2cafa7275c55d86",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 0,
+    "createdAt": 1769928405745,
+    "expiresAt": 1770014805745,
+    "usedAt": null,
+    "lastUsedAt": null
+  },
+  "d395f86b3152ce9e03dca5a6fde09727f23fddedde24f13e016c5b686b3ca5b5": {
+    "id": "d395f86b3152ce9e03dca5a6fde09727f23fddedde24f13e016c5b686b3ca5b5",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 0,
+    "createdAt": 1769928506072,
+    "expiresAt": 1770014906072,
+    "usedAt": null,
+    "lastUsedAt": null
+  },
+  "b29070267b8506af9b9faac3eb9181ac2d1083d7797f2cd74a4e781cdba31714": {
+    "id": "b29070267b8506af9b9faac3eb9181ac2d1083d7797f2cd74a4e781cdba31714",
+    "guardianExternalId": "FAKE_USER",
+    "guardianCardNumber": "N/A",
+    "guardianName": "Guardian User",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 0,
+    "createdAt": 1769928572510,
+    "expiresAt": 1770014972510,
+    "usedAt": null,
+    "lastUsedAt": null
+  },
+  "9a97538eaf7f6e0ad4fbe50584da3849f6d946e5fd4f89263b1e26e3a181e76e": {
+    "id": "9a97538eaf7f6e0ad4fbe50584da3849f6d946e5fd4f89263b1e26e3a181e76e",
+    "guardianExternalId": "user-1",
+    "guardianCardNumber": "N/A",
+    "guardianName": "user-1",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769928640844,
+    "expiresAt": 1770015040844,
+    "usedAt": 1769928651885,
+    "lastUsedAt": 1769928651885
+  },
+  "c546e4fc312aedbfca3642cc3c7ae1390b0a4255838eaf83864baa49f4c003b5": {
+    "id": "c546e4fc312aedbfca3642cc3c7ae1390b0a4255838eaf83864baa49f4c003b5",
+    "guardianExternalId": "guardian-user",
+    "guardianCardNumber": "N/A",
+    "guardianName": "guardian-user",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 10,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 0,
+    "createdAt": 1769930131634,
+    "expiresAt": 1770016531634,
+    "usedAt": null,
+    "lastUsedAt": null
+  },
+  "cb6989df31d19c363c1cb88512f4e329b19625e59168df33b44f002b2db0dfc9": {
+    "id": "cb6989df31d19c363c1cb88512f4e329b19625e59168df33b44f002b2db0dfc9",
+    "guardianExternalId": "guardian-user",
+    "guardianCardNumber": "N/A",
+    "guardianName": "guardian-user",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 10,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 0,
+    "createdAt": 1769930503336,
+    "expiresAt": 1770016903336,
+    "usedAt": null,
+    "lastUsedAt": null
+  },
+  "511b3b4ae7e5ce4f137f779d03bcce72237ec12b00a6be98b8df84fc6591d68c": {
+    "id": "511b3b4ae7e5ce4f137f779d03bcce72237ec12b00a6be98b8df84fc6591d68c",
+    "guardianExternalId": "user-1",
+    "guardianCardNumber": "N/A",
+    "guardianName": "user-1",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 10,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769931090282,
+    "expiresAt": 1770017490282,
+    "usedAt": 1769931112517,
+    "lastUsedAt": 1769931112517
+  },
+  "8975ad42bda09a939a1131f4311d7c8de6f00f16a53f348c1ca4fd62eb7d8f05": {
+    "id": "8975ad42bda09a939a1131f4311d7c8de6f00f16a53f348c1ca4fd62eb7d8f05",
+    "guardianExternalId": "user-1",
+    "guardianCardNumber": "N/A",
+    "guardianName": "user-1",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 10,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769932149118,
+    "expiresAt": 1770018549118,
+    "usedAt": 1769932164759,
+    "lastUsedAt": 1769932164759
+  }
+}

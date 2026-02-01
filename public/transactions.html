@@ -1,119 +1,280 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ATM | Transaction History</title>
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
-  <!-- Main ATM Styles -->
-  <link rel="stylesheet" href="styles/home.css">
-  <link rel="stylesheet" href="styles/transactions.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OCBC ATM - Transaction History</title>
+  
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#ea2a33",
+            "background-light": "#f8f6f6",
+            "background-dark": "#211111",
+          },
+          fontFamily: { display: ["Public Sans", "sans-serif"] },
+          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+        },
+      },
+    };
+  </script>
+  
+  <style type="text/tailwindcss">
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 28px;
+    }
+    body {
+      background-image: linear-gradient(rgba(248, 246, 246, 0.98), rgba(248, 246, 246, 0.7)), url('sources/pexels-realcereal-15480508.jpg');
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .transaction-row:hover {
+      background: #f9fafb;
+      transform: translateX(4px);
+      transition: all 0.2s ease;
+    }
+  </style>
 </head>
 
-<body class="atm-body">
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white h-screen flex flex-col overflow-hidden">
+  
+  <!-- Header -->
+  <header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="home.html" class="cursor-pointer">
+          <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8 hover:opacity-80 transition-opacity" />
+        </a>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors" onclick="window.location.href='home.html#noncash'">
+          <span class="material-symbols-outlined !text-lg">support_agent</span> Virtual Teller
+        </button>
+        <button id="exitBtn" class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
+          <span class="material-symbols-outlined !text-lg">logout</span> Exit
+        </button>
+      </div>
+    </div>
+  </header>
 
-  <main class="atm-shell">
-    <section class="atm-card">
-      <div class="atm-layout">
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto px-6 lg:px-12 py-8">
+    <div class="max-w-[900px] mx-auto">
+      
+      <!-- Page Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-[#1b0e0e] dark:text-white">Transaction History</h1>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">View your recent account activity</p>
+        </div>
+        <button onclick="window.location.href='home.html#noncash'" class="text-primary hover:text-red-700 flex items-center gap-2 font-medium transition-colors">
+          <span class="material-symbols-outlined !text-lg">arrow_back</span>
+          Back
+        </button>
+      </div>
 
-        <!-- LEFT SIDE CONTENT -->
-        <div class="atm-left">
-
-          <!-- Page Header -->
-          <div class="page-header">
-            <h2 class="page-title">Transaction History</h2>
-            <button class="ghost-btn backBtn hover-tts" type="button"
-                    onclick="window.location.href='home.html'">
-              <i data-lucide="arrow-left" class="icon-xs"></i>
-              <span>Back</span>
-            </button>
+      <!-- Transaction Table Card -->
+      <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg overflow-hidden">
+        
+        <!-- Table Header -->
+        <div class="bg-gradient-to-r from-primary/5 to-primary/10 px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">receipt_long</span>
+            <h2 class="font-bold text-lg">Recent Transactions</h2>
           </div>
-
-          <!-- History Table Panel -->
-          <div class="history-panel">
-            <table id="transactionTable" class="history-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
         </div>
 
-        <!-- RIGHT SIDE (Chatbot + Controls) -->
-        <aside class="atm-right">
-
-          <!-- Top Controls -->
-          <div class="topbar">
-            <div class="mic-wrap">
-              <div id="micToggleLabel" class="mic-toggle hover-tts">
-                <div class="mic-track"><div class="mic-knob"></div></div>
-                <div class="mic-labels">
-                  <span class="mic-on">Listening</span>
-                  <span class="mic-off">Mic Off</span>
-                </div>
-              </div>
-              <input id="micToggle" type="checkbox" class="mic-hidden" />
-            </div>
-
-            <div class="top-right-controls">
-              <select id="langSelectTop" class="lang-select">
-                <option value="en">English</option>
-                <option value="zh">中文</option>
-                <option value="ms">Bahasa Melayu</option>
-                <option value="ta">தமிழ்</option>
-              </select>
-
-              <div class="divider"></div>
-
-              <button id="exitBtn" class="exit-btn hover-tts">
-                <i data-lucide="log-out" class="icon"></i>
-                <span class="exit-label">Exit</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Chatbot Area -->
-          <div class="chat-shell">
-            <div id="chatlog" class="chat-log"></div>
-
-            <div class="chat-input-row">
-              <input id="userInput" type="text" class="chat-input"
-                     placeholder="Ask me anything…" />
-              <button id="sendBtn" class="chat-send hover-tts">
-                <i data-lucide="send" class="icon-xs"></i>
-              </button>
-            </div>
-
-            <div class="chat-footer">
-              <div class="chat-tip">Tip: "Show my last 5 transactions"</div>
-            </div>
-          </div>
-
-        </aside>
+        <!-- Table Content -->
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+                <th class="px-6 py-4 text-left text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">schedule</span>
+                    Date & Time
+                  </div>
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">category</span>
+                    Type
+                  </div>
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">description</span>
+                    Description
+                  </div>
+                </th>
+                <th class="px-6 py-4 text-right text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                  <div class="flex items-center justify-end gap-2">
+                    <span class="material-symbols-outlined text-lg">payments</span>
+                    Amount
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="transactionTable" class="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <!-- Transactions will be inserted here -->
+            </tbody>
+          </table>
+        </div>
 
       </div>
-    </section>
+
+    </div>
   </main>
 
-  <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Footer -->
+  <footer class="w-full bg-white dark:bg-zinc-900 border-t border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-3">
+    <div class="max-w-[1400px] mx-auto text-center text-xs text-zinc-500 dark:text-zinc-400">
+      © 2026 OCBC Bank. All rights reserved.
+    </div>
+  </footer>
 
-  <!-- Load main ATM logic -->
-  <script src="scripts/home.js"></script>
   <script>
-    // Ensure icons render on this page
-    document.addEventListener("DOMContentLoaded", () => {
-      lucide.createIcons();
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadTransactionHistory();
     });
+
+    async function loadTransactionHistory() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.warn('No token found');
+          displayNoTransactions();
+          return;
+        }
+
+        const response = await fetch('/api/transactions?limit=50', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          console.error('Failed to fetch transactions:', response.status);
+          displayNoTransactions();
+          return;
+        }
+
+        const data = await response.json();
+        const transactions = data.transactions || [];
+        
+        displayTransactions(transactions);
+      } catch (error) {
+        console.error('Error loading transactions:', error);
+        displayNoTransactions();
+      }
+    }
+
+    function displayTransactions(transactions) {
+      const tbody = document.getElementById('transactionTable');
+      if (!tbody) return;
+
+      if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-6 py-16 text-center">
+              <div class="flex flex-col items-center gap-3">
+                <span class="material-symbols-outlined text-6xl text-zinc-300">receipt_long</span>
+                <p class="text-zinc-500 dark:text-zinc-400">No transactions found</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = transactions.map(tx => {
+        const date = new Date(tx.CreatedAt);
+        const dateStr = date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        const type = tx.Type || tx.TransactionType || 'UNKNOWN';
+        const description = tx.Description || tx.Recipient || '-';
+        const amount = parseFloat(tx.Amount || 0);
+        const amountStr = amount >= 0 
+          ? `+S$${amount.toFixed(2)}` 
+          : `-S$${Math.abs(amount).toFixed(2)}`;
+        
+        const amountColor = amount >= 0 
+          ? 'text-green-600 dark:text-green-400' 
+          : 'text-red-600 dark:text-red-400';
+        
+        const typeIcon = getTypeIcon(type);
+
+        return `
+          <tr class="transaction-row hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-zinc-400 text-lg">event</span>
+                <span class="text-sm font-medium">${dateStr}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-2">
+                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                  <span class="material-symbols-outlined text-primary text-lg">${typeIcon}</span>
+                </div>
+                <span class="text-sm font-semibold">${type}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <span class="text-sm text-zinc-600 dark:text-zinc-400">${description}</span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <span class="text-base font-bold ${amountColor}">${amountStr}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function getTypeIcon(type) {
+      const typeUpper = type.toUpperCase();
+      if (typeUpper.includes('WITHDRAW')) return 'payments';
+      if (typeUpper.includes('DEPOSIT')) return 'account_balance_wallet';
+      if (typeUpper.includes('TRANSFER')) return 'swap_horiz';
+      if (typeUpper.includes('PAYNOW')) return 'qr_code_scanner';
+      if (typeUpper.includes('BILL')) return 'receipt';
+      return 'monetization_on';
+    }
+
+    function displayNoTransactions() {
+      const tbody = document.getElementById('transactionTable');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-6 py-16 text-center">
+              <div class="flex flex-col items-center gap-3">
+                <span class="material-symbols-outlined text-6xl text-zinc-300">receipt_long</span>
+                <p class="text-zinc-500 dark:text-zinc-400">No transactions found</p>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+    }
   </script>
 
 </body>

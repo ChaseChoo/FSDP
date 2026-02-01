@@ -114,6 +114,68 @@
       color: #999;
     }
 
+    .exchange-rate-card {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f0f7ff;
+      border-radius: 12px;
+      border: 1px solid #d4e7ff;
+    }
+
+    .exchange-rate-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .exchange-rate-title {
+      font-size: 13px;
+      color: #666;
+      font-weight: 600;
+    }
+
+    .exchange-rate-status {
+      font-size: 11px;
+      color: #999;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .exchange-rate-pulse {
+      width: 6px;
+      height: 6px;
+      background: #4CAF50;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .converted-amount {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1678ff;
+      margin-bottom: 8px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .exchange-rate-info {
+      font-size: 12px;
+      color: #666;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .rate-text {
+      color: #999;
+    }
+
     .wallet-actions {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -370,6 +432,24 @@
             <span class="currency">S$</span><span id="walletBalance">0.00</span>
           </div>
           <div class="balance-update" id="lastUpdate">Last updated: Now</div>
+
+          <!-- Exchange Rate Calculator -->
+          <div class="exchange-rate-card" id="exchangeRateCard" style="display: none;">
+            <div class="exchange-rate-header">
+              <div class="exchange-rate-title" id="exchangeRateTitle">Converted Amount</div>
+              <div class="exchange-rate-status">
+                <div class="exchange-rate-pulse"></div>
+                <span>Live</span>
+              </div>
+            </div>
+            <div class="converted-amount">
+              <span id="convertedCurrency"></span><span id="convertedBalance">0.00</span>
+            </div>
+            <div class="exchange-rate-info">
+              <span class="rate-text">Exchange Rate: <strong id="currentRate">0.0000</strong></span>
+              <span class="rate-text" id="rateUpdate">Updated now</span>
+            </div>
+          </div>
         </div>
 
         <div class="wallet-id-display">
@@ -449,7 +529,11 @@
         color: '#1678ff',
         colorDark: '#0d5ecc',
         displayName: '支付宝',
-        currency: 'S$'
+        currency: 'S$',
+        targetCurrency: 'CNY',
+        targetCurrencySymbol: '¥',
+        targetCurrencyName: 'Chinese Yuan',
+        exchangeRateApi: 'SGD_CNY'
       },
       wechat: {
         name: 'Weixin Pay',
@@ -457,7 +541,11 @@
         color: '#09bb07',
         colorDark: '#078707',
         displayName: '微信支付 WeChat Pay',
-        currency: 'S$'
+        currency: 'S$',
+        targetCurrency: 'CNY',
+        targetCurrencySymbol: '¥',
+        targetCurrencyName: 'Chinese Yuan',
+        exchangeRateApi: 'SGD_CNY'
       },
       touchngo: {
         name: 'Touch n Go',
@@ -465,7 +553,11 @@
         color: '#0066cc',
         colorDark: '#004499',
         displayName: 'Touch n Go eWallet',
-        currency: 'RM'
+        currency: 'RM',
+        targetCurrency: 'MYR',
+        targetCurrencySymbol: 'RM',
+        targetCurrencyName: 'Malaysian Ringgit',
+        exchangeRateApi: 'SGD_MYR'
       },
       grabpay: {
         name: 'GrabPay',
@@ -518,6 +610,65 @@
 
     let currentBalance = 0;
     let transactions = [];
+    let currentExchangeRate = 1.0;
+    let exchangeRateInterval = null;
+
+    // Exchange rate configuration
+    const exchangeRates = {
+      SGD_CNY: 5.35,  // SGD to Chinese Yuan (approximate)
+      SGD_MYR: 3.45   // SGD to Malaysian Ringgit (approximate)
+    };
+
+    // Fetch live exchange rates from API
+    async function fetchExchangeRate() {
+      // Show exchange rate card only for supported wallets
+      if (config.targetCurrency) {
+        document.getElementById('exchangeRateCard').style.display = 'block';
+        document.getElementById('exchangeRateTitle').textContent = `Amount in ${config.targetCurrencyName}`;
+        document.getElementById('convertedCurrency').textContent = config.targetCurrencySymbol;
+      }
+
+      if (!config.exchangeRateApi) return;
+
+      try {
+        // Try to fetch from a free exchange rate API
+        // Using exchangerate-api.com (free tier: 1500 requests/month)
+        const response = await fetch(`https://open.er-api.com/v6/latest/SGD`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.rates && data.rates[config.targetCurrency]) {
+            currentExchangeRate = data.rates[config.targetCurrency];
+            console.log(`Live exchange rate fetched: 1 SGD = ${currentExchangeRate} ${config.targetCurrency}`);
+          } else {
+            // Fallback to hardcoded rates
+            currentExchangeRate = exchangeRates[config.exchangeRateApi] || 1.0;
+            console.log('Using fallback exchange rate');
+          }
+        } else {
+          // Use fallback rates
+          currentExchangeRate = exchangeRates[config.exchangeRateApi] || 1.0;
+        }
+      } catch (error) {
+        console.error('Error fetching exchange rate:', error);
+        // Use fallback rates
+        currentExchangeRate = exchangeRates[config.exchangeRateApi] || 1.0;
+      }
+
+      // Update the UI
+      updateExchangeRateDisplay();
+      document.getElementById('rateUpdate').textContent = `Updated ${new Date().toLocaleTimeString()}`;
+    }
+
+    // Update the converted balance display
+    function updateExchangeRateDisplay() {
+      if (!config.targetCurrency) return;
+
+      const convertedAmount = currentBalance * currentExchangeRate;
+      document.getElementById('convertedBalance').textContent = convertedAmount.toFixed(2);
+      document.getElementById('currentRate').textContent = currentExchangeRate.toFixed(4);
+    }
 
     // Update time
     function updateTime() {
@@ -570,6 +721,9 @@
       }, duration / steps);
 
       document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+      
+      // Update converted balance
+      updateExchangeRateDisplay();
     }
 
     // Add transaction to list
@@ -604,20 +758,32 @@
         return;
       }
 
-      listElement.innerHTML = transactions.map(tx => `
-        <div class="transaction-item">
-          <div class="transaction-icon">
-            ${tx.type === 'received' ? '📥' : '📤'}
+      listElement.innerHTML = transactions.map(tx => {
+        // Handle both old format and new database format
+        const txType = tx.TransactionType || tx.type;
+        const txAmount = parseFloat(tx.Amount || tx.amount);
+        const txDescription = tx.Description || tx.description;
+        const txTime = tx.CreatedAt 
+          ? new Date(tx.CreatedAt).toLocaleTimeString() 
+          : (tx.time || new Date().toLocaleTimeString());
+        
+        const isReceived = txType === 'received' || txAmount > 0;
+        
+        return `
+          <div class="transaction-item">
+            <div class="transaction-icon">
+              ${isReceived ? '📥' : '📤'}
+            </div>
+            <div class="transaction-info">
+              <div class="transaction-title">${txDescription}</div>
+              <div class="transaction-time">${txTime}</div>
+            </div>
+            <div class="transaction-amount ${!isReceived ? 'negative' : ''}">
+              ${isReceived ? '+' : '-'}${config.currency}${Math.abs(txAmount).toFixed(2)}
+            </div>
           </div>
-          <div class="transaction-info">
-            <div class="transaction-title">${tx.description}</div>
-            <div class="transaction-time">${tx.time}</div>
-          </div>
-          <div class="transaction-amount ${tx.type === 'sent' ? 'negative' : ''}">
-            ${tx.type === 'received' ? '+' : '-'}${config.currency}${Math.abs(tx.amount).toFixed(2)}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     // Fetch wallet balance from server
@@ -633,6 +799,49 @@
       }
     }
 
+    // Fetch wallet transactions from database
+    async function fetchWalletTransactions() {
+      try {
+        const response = await fetch(`/api/wallet/transactions/${walletId}?limit=20`);
+        if (response.ok) {
+          const data = await response.json();
+          transactions = data.transactions || [];
+          renderTransactions();
+        }
+      } catch (error) {
+        console.error('Error fetching wallet transactions:', error);
+      }
+    }
+
+    // Fetch wallet summary (balance + transactions + statistics)
+    async function fetchWalletSummary() {
+      try {
+        const response = await fetch(`/api/wallet/summary/${walletId}?type=${walletType}`);
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.wallet) {
+            updateBalance(parseFloat(data.wallet.Balance));
+          }
+          
+          if (data.transactions) {
+            transactions = data.transactions;
+            renderTransactions();
+          }
+          
+          // Log statistics for debugging
+          if (data.statistics) {
+            console.log('Wallet Statistics:', data.statistics);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching wallet summary:', error);
+        // Fallback to individual calls
+        await fetchWalletBalance();
+        await fetchWalletTransactions();
+      }
+    }
+
     // Listen for wallet updates using BroadcastChannel
     if (window.BroadcastChannel) {
       const channel = new BroadcastChannel('wallet-updates');
@@ -645,6 +854,9 @@
           addTransaction('received', amount, `ATM Transfer from ${event.data.walletType}`);
           showNotification(`✅ Received ${config.currency}${amount.toFixed(2)} from ATM!`);
           
+          // Refresh transaction list from database
+          fetchWalletTransactions();
+          
           // Play a success sound (if available)
           try {
             const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBi6B0fPTgjMGHm7A7+OZRQ0OUqnn77BfGAhBmtvyv3AoBjJ+zPPWgzcGHGu77OGVRw0PUqnn77BfGAhBmtvyv3AoBjJ+zPPWgzcGHGu77OGVRw0PUqnn77BfGAhBmtvyv3AoBjJ+zPPWgzcGHGu77OGVRw0PUqnn77BfGAhBmtvyv3AoBjJ+zPPWgzcGHGu77OGVRw0P');
@@ -654,21 +866,18 @@
       };
     }
 
-    // Poll for updates every 2 seconds (fallback for browsers without BroadcastChannel)
-    setInterval(fetchWalletBalance, 2000);
+    // Poll for updates every 5 seconds (increased from 2 seconds to reduce load)
+    setInterval(fetchWalletSummary, 5000);
 
-    // Initial load
-    fetchWalletBalance();
-    renderTransactions();
+    // Fetch exchange rates on load and update every 5 minutes
+    fetchExchangeRate();
+    setInterval(fetchExchangeRate, 300000); // 5 minutes
 
-    // Add some demo data for testing
-    setTimeout(() => {
-      if (transactions.length === 0) {
-        // Simulate some initial transactions
-        currentBalance = 100;
-        updateBalance(100);
-      }
-    }, 1000);
+    // Initial load - fetch complete wallet summary
+    fetchWalletSummary();
+
+    // Legacy: Add some demo data for testing (removed as we now load from database)
+    // The database will be the source of truth
   </script>
 </body>
 </html>

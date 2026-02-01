@@ -29,3 +29,14 @@
 .history-table tbody tr:hover {
   background: #fff4f4;
 }
+
+/* Amount styling */
+.amount-positive {
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.amount-negative {
+  color: #dc2626;
+  font-weight: 500;
+}

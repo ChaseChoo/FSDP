@@ -1,541 +1,367 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OCBC ATM - Face Enrollment</title>
-    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <link rel="stylesheet" href="styles/home.css">
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background-color: #f5f5f5;
-            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-        
-        .container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-        
-        .enrollment-card {
-            width: 100%;
-            max-width: 700px;
-            background: #ffffff;
-            border-radius: 24px;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
-            padding: 40px;
-        }
-        
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 32px;
-        }
-        
-        .logo-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            background: linear-gradient(to bottom, rgba(71, 85, 105, 0.75), #020817);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-        
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #111827;
-        }
-        
-        .title {
-            font-size: 1.9rem;
-            font-weight: 600;
-            margin: 0 0 8px;
-            text-align: center;
-        }
-        
-        .subtitle {
-            font-size: 1.05rem;
-            color: #6b7280;
-            margin: 0 0 32px;
-            text-align: center;
-        }
-        
-        .form-section {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 18px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #111827;
-        }
-        
-        .form-input, .form-select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-        
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        
-        .video-section {
-            background: #000000;
-            border-radius: 18px;
-            overflow: hidden;
-            position: relative;
-            margin-bottom: 20px;
-        }
-        
-        #video {
-            width: 100%;
-            height: auto;
-            display: block;
-            transform: scaleX(-1);
-        }
-        
-        #canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            transform: scaleX(-1);
-        }
-        
-        .capture-info {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 14px 24px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-        }
-        
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-        }
-        
-        .btn-secondary {
-            background: white;
-            border: 1px solid #e5e7eb;
-            color: #111827;
-        }
-        
-        .btn-secondary:hover {
-            background: #f9fafb;
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .status {
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-        
-        .status-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #93c5fd;
-        }
-        
-        .status-success {
-            background: #dcfce7;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
-        }
-        
-        .status-error {
-            background: #fee2e2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-        
-        .captures-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-top: 16px;
-        }
-        
-        .capture-preview {
-            aspect-ratio: 1;
-            border-radius: 12px;
-            border: 2px solid #e5e7eb;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .capture-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
-        
-        .capture-preview.captured {
-            border-color: #10b981;
-        }
-        
-        .capture-number {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OCBC ATM - Face Enrollment</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#ea2a33",
+            "background-light": "#f8f6f6",
+            "background-dark": "#211111",
+          },
+          fontFamily: { display: ["Public Sans", "sans-serif"] },
+          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+        },
+      },
+    };
+  </script>
+  <style type="text/tailwindcss">
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 28px;
+    }
+    body {
+      background-image: linear-gradient(rgba(248, 246, 246, 0.98), rgba(248, 246, 246, 0.7)), url('sources/pexels-realcereal-15480508.jpg');
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    #video,
+    #canvas {
+      transform: scaleX(-1);
+    }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <div class="enrollment-card">
-            <div class="header">
-                <div class="logo-icon">
-                    <i data-lucide="landmark"></i>
-                </div>
-                <span class="logo-text">OCBC</span>
-            </div>
-            
-            <h1 class="title">Face Enrollment</h1>
-            <p class="subtitle">Register your face for secure login</p>
-            
-            <div id="status" class="status status-info">
-                📸 We'll capture 3 photos of your face from different angles
-            </div>
-            
-            <div class="form-section">
-                <div class="form-group">
-                    <label class="form-label" for="userName">Your Name</label>
-                    <input type="text" id="userName" class="form-input" placeholder="Enter your full name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="userAccount">Select Your Account</label>
-                    <select id="userAccount" class="form-select" required>
-                        <option value="">-- Select Account --</option>
-                        <option value="5555444433332222">Lee Jia Jun - Card ending 2222</option>
-                        <option value="4444333322221111">Chase Choo - Card ending 1111</option>
-                        <option value="3333222211110000">Fang Yu Xuan - Card ending 0000</option>
-                        <option value="2222111100009999">David Chong - Card ending 9999</option>
-                        <option value="1111000099998888">Luo Tian Rui - Card ending 8888</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="video-section">
-                <video id="video" width="640" height="480" autoplay muted></video>
-                <canvas id="canvas"></canvas>
-                <div class="capture-info" id="captureInfo">Position your face in the frame</div>
-            </div>
-            
-            <div class="captures-grid">
-                <div class="capture-preview" id="preview1">
-                    <div class="capture-number">1</div>
-                </div>
-                <div class="capture-preview" id="preview2">
-                    <div class="capture-number">2</div>
-                </div>
-                <div class="capture-preview" id="preview3">
-                    <div class="capture-number">3</div>
-                </div>
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn btn-secondary" onclick="window.location.href='login.html'">
-                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
-                    Cancel
-                </button>
-                <button id="captureBtn" class="btn btn-primary" disabled>
-                    <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
-                    <span id="captureBtnText">Initializing...</span>
-                </button>
-                <button id="saveBtn" class="btn btn-primary" style="display: none;">
-                    <i data-lucide="save" style="width: 18px; height: 18px;"></i>
-                    Save & Enable Face Login
-                </button>
-            </div>
-        </div>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white h-screen flex flex-col overflow-hidden">
+  <header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="home.html" class="cursor-pointer">
+          <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8 hover:opacity-80 transition-opacity" />
+        </a>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="bg-primary text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-red-700 transition-colors" onclick="window.location.href='login.html'">
+          <span class="material-symbols-outlined !text-lg">close</span>
+          Cancel
+        </button>
+      </div>
     </div>
+  </header>
 
-    <script>
-        class FaceEnrollment {
-            constructor() {
-                this.video = document.getElementById('video');
-                this.canvas = document.getElementById('canvas');
-                this.captureBtn = document.getElementById('captureBtn');
-                this.captureBtnText = document.getElementById('captureBtnText');
-                this.saveBtn = document.getElementById('saveBtn');
-                this.statusDiv = document.getElementById('status');
-                this.captureInfo = document.getElementById('captureInfo');
-                this.userName = document.getElementById('userName');
-                this.userAccount = document.getElementById('userAccount');
-                
-                this.captures = [];
-                this.descriptors = [];
-                this.currentCapture = 0;
-                this.maxCaptures = 3;
-                
-                this.init();
-            }
-            
-            async init() {
-                try {
-                    await this.loadModels();
-                    await this.startVideo();
-                    await this.startDetection();
-                    
-                    this.captureBtn.disabled = false;
-                    this.captureBtnText.textContent = 'Capture Photo 1';
-                    
-                    this.captureBtn.addEventListener('click', () => this.capturePhoto());
-                    this.saveBtn.addEventListener('click', () => this.saveFaceData());
-                    
-                } catch (error) {
-                    console.error('Init error:', error);
-                    this.updateStatus('error', '❌ Error: ' + error.message);
-                }
-            }
-            
-            async loadModels() {
-                this.updateStatus('info', '⏳ Loading AI models...');
-                
-                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
-                
-                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-                
-                console.log('✅ Models loaded');
-            }
-            
-            async startVideo() {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: 640, height: 480 } 
-                });
-                this.video.srcObject = stream;
-                
-                return new Promise((resolve) => {
-                    this.video.onloadedmetadata = () => resolve();
-                });
-            }
-            
-            async startDetection() {
-                const canvas = faceapi.createCanvasFromMedia(this.video);
-                document.getElementById('canvas').replaceWith(canvas);
-                this.canvas = canvas;
-                
-                const displaySize = { width: this.video.width, height: this.video.height };
-                faceapi.matchDimensions(canvas, displaySize);
-                
-                setInterval(async () => {
-                    const detections = await faceapi
-                        .detectAllFaces(this.video, new faceapi.TinyFaceDetectorOptions())
-                        .withFaceLandmarks()
-                        .withFaceDescriptors();
-                    
-                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                    
-                    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    if (detections.length > 0) {
-                        faceapi.draw.drawDetections(canvas, resizedDetections);
-                        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-                        
-                        const confidence = detections[0].detection.score;
-                        this.captureInfo.textContent = `Face detected (${(confidence * 100).toFixed(1)}% confidence) - Ready to capture`;
-                        this.captureInfo.style.background = 'rgba(34, 197, 94, 0.9)';
-                        
-                        if (this.currentCapture < this.maxCaptures) {
-                            this.captureBtn.disabled = false;
-                        }
-                    } else {
-                        this.captureInfo.textContent = 'No face detected - please look at camera';
-                        this.captureInfo.style.background = 'rgba(239, 68, 68, 0.9)';
-                        this.captureBtn.disabled = true;
-                    }
-                }, 100);
-            }
-            
-            async capturePhoto() {
-                if (this.currentCapture >= this.maxCaptures) return;
-                
-                // Detect face and get descriptor
-                const detection = await faceapi
-                    .detectSingleFace(this.video, new faceapi.TinyFaceDetectorOptions())
-                    .withFaceLandmarks()
-                    .withFaceDescriptor();
-                
-                if (!detection) {
-                    this.updateStatus('error', '❌ No face detected. Please try again.');
-                    return;
-                }
-                
-                // Save descriptor
-                this.descriptors.push(Array.from(detection.descriptor));
-                
-                // Capture image
-                const captureCanvas = document.createElement('canvas');
-                captureCanvas.width = this.video.videoWidth;
-                captureCanvas.height = this.video.videoHeight;
-                const ctx = captureCanvas.getContext('2d');
-                ctx.drawImage(this.video, 0, 0);
-                
-                const imageData = captureCanvas.toDataURL('image/jpeg');
-                this.captures.push(imageData);
-                
-                // Update preview
-                this.currentCapture++;
-                const preview = document.getElementById(`preview${this.currentCapture}`);
-                preview.innerHTML = `
-                    <img src="${imageData}" alt="Capture ${this.currentCapture}">
-                    <div class="capture-number">✓</div>
-                `;
-                preview.classList.add('captured');
-                
-                // Update UI
-                if (this.currentCapture < this.maxCaptures) {
-                    this.captureBtnText.textContent = `Capture Photo ${this.currentCapture + 1}`;
-                    this.updateStatus('success', `✅ Photo ${this.currentCapture} captured! ${this.maxCaptures - this.currentCapture} more to go.`);
-                    this.speak(`Photo ${this.currentCapture} captured`);
-                } else {
-                    this.captureBtn.style.display = 'none';
-                    this.saveBtn.style.display = 'flex';
-                    this.updateStatus('success', '✅ All photos captured! Click "Save" to enable face login.');
-                    this.speak('All photos captured. You can now save your face data.');
-                }
-            }
-            
-            async saveFaceData() {
-                const name = this.userName.value.trim();
-                const cardNumber = this.userAccount.value;
-                
-                if (!name || !cardNumber) {
-                    this.updateStatus('error', '❌ Please enter your name and select an account.');
-                    return;
-                }
-                
-                // Save to localStorage (in production, send to backend)
-                const faceData = {
-                    name: name,
-                    cardNumber: cardNumber,
-                    descriptors: this.descriptors,
-                    captures: this.captures,
-                    enrolledAt: new Date().toISOString()
-                };
-                
-                // Get existing enrolled faces
-                let enrolledFaces = [];
-                try {
-                    const stored = localStorage.getItem('enrolledFaces');
-                    if (stored) {
-                        enrolledFaces = JSON.parse(stored);
-                    }
-                } catch (e) {}
-                
-                // Check if user already enrolled
-                const existingIndex = enrolledFaces.findIndex(f => f.cardNumber === cardNumber);
-                if (existingIndex >= 0) {
-                    enrolledFaces[existingIndex] = faceData; // Update
-                } else {
-                    enrolledFaces.push(faceData); // Add new
-                }
-                
-                localStorage.setItem('enrolledFaces', JSON.stringify(enrolledFaces));
-                
-                this.updateStatus('success', '✅ Face data saved successfully! Redirecting to login...');
-                this.speak('Face recognition enabled. You can now login with your face.');
-                
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2500);
-            }
-            
-            updateStatus(type, message) {
-                this.statusDiv.className = `status status-${type}`;
-                this.statusDiv.textContent = message;
-            }
-            
-            speak(text) {
-                if ('speechSynthesis' in window) {
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.rate = 0.9;
-                    window.speechSynthesis.speak(utterance);
-                }
-            }
+  <main class="flex-1 flex max-w-[1400px] mx-auto w-full px-6 py-4 overflow-y-auto">
+    <div class="w-full">
+      <!-- Title Section -->
+      <div class="mb-4">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="material-symbols-outlined text-primary !text-3xl">face</span>
+          <h1 class="text-2xl font-extrabold text-[#1b0e0e] dark:text-zinc-100">Face Enrollment</h1>
+        </div>
+        <p class="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Register your face for secure login</p>
+      </div>
+
+      <!-- Two Column Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Left Column: Video & Previews -->
+        <div class="space-y-4">
+          <div class="bg-black rounded-2xl overflow-hidden shadow-lg relative aspect-video">
+            <video id="video" width="640" height="480" autoplay muted class="w-full h-full object-cover"></video>
+            <canvas id="canvas"></canvas>
+            <div id="captureInfo" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1.5 rounded-lg text-xs font-medium">
+              Position your face in the frame
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3">
+            <div id="preview1" class="aspect-square bg-zinc-100 dark:bg-zinc-800 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex items-center justify-center">
+              <div class="text-3xl font-bold text-zinc-400">1</div>
+            </div>
+            <div id="preview2" class="aspect-square bg-zinc-100 dark:bg-zinc-800 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex items-center justify-center">
+              <div class="text-3xl font-bold text-zinc-400">2</div>
+            </div>
+            <div id="preview3" class="aspect-square bg-zinc-100 dark:bg-zinc-800 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex items-center justify-center">
+              <div class="text-3xl font-bold text-zinc-400">3</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Form & Controls -->
+        <div class="space-y-4">
+          <div id="status" class="bg-blue-50 border-2 border-blue-200 text-blue-700 px-4 py-3 rounded-2xl flex items-center gap-3">
+            <span class="material-symbols-outlined !text-xl">info</span>
+            <span class="text-sm">We'll capture 3 photos of your face from different angles</span>
+          </div>
+
+          <div class="bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-lg">
+            <h3 class="font-bold text-[#1b0e0e] dark:text-zinc-100 mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined !text-xl text-primary">person</span>
+              Account Information
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block font-semibold text-[#1b0e0e] dark:text-zinc-100 mb-2 text-sm">Your Name</label>
+                <input type="text" id="userName" placeholder="Enter your full name" class="w-full px-3 py-2.5 border-2 border-zinc-300 dark:border-zinc-700 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all dark:bg-zinc-800 text-sm" />
+              </div>
+              <div>
+                <label class="block font-semibold text-[#1b0e0e] dark:text-zinc-100 mb-2 text-sm">Select Your Account</label>
+                <select id="userAccount" class="w-full px-3 py-2.5 border-2 border-zinc-300 dark:border-zinc-700 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all dark:bg-zinc-800 text-sm">
+                  <option value="">-- Select Account --</option>
+                  <option value="5555444433332222">Lee Jia Jun - Card ending 2222</option>
+                  <option value="4444333322221111">Chase Choo - Card ending 1111</option>
+                  <option value="3333222211110000">Fang Yu Xuan - Card ending 0000</option>
+                  <option value="2222111100009999">David Chong - Card ending 9999</option>
+                  <option value="1111000099998888">Luo Tian Rui - Card ending 8888</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-lg">
+            <h3 class="font-bold text-[#1b0e0e] dark:text-zinc-100 mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined !text-xl text-primary">photo_camera</span>
+              Capture Controls
+            </h3>
+            <div class="space-y-3">
+              <button id="captureBtn" class="w-full bg-primary text-white px-5 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <span class="material-symbols-outlined">camera</span>
+                <span id="captureBtnText">Initializing...</span>
+              </button>
+              <button id="saveBtn" class="w-full bg-green-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg flex items-center justify-center gap-2" style="display: none;">
+                <span class="material-symbols-outlined">check_circle</span>
+                Save & Enable Face Login
+              </button>
+              <button class="w-full bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white px-5 py-3 rounded-xl font-bold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all flex items-center justify-center gap-2" onclick="window.location.href='login.html'">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Back to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="w-full py-3 px-6 flex-shrink-0 text-center text-xs text-zinc-500 border-t border-zinc-200 dark:border-zinc-800">
+    <span>© 2024 OCBC Bank. All rights reserved.</span>
+  </footer>
+
+  <script>
+    class FaceEnrollment {
+      constructor() {
+        this.video = document.getElementById('video');
+        this.canvas = document.getElementById('canvas');
+        this.captureBtn = document.getElementById('captureBtn');
+        this.captureBtnText = document.getElementById('captureBtnText');
+        this.saveBtn = document.getElementById('saveBtn');
+        this.statusDiv = document.getElementById('status');
+        this.captureInfo = document.getElementById('captureInfo');
+        this.userName = document.getElementById('userName');
+        this.userAccount = document.getElementById('userAccount');
+
+        this.captures = [];
+        this.descriptors = [];
+        this.currentCapture = 0;
+        this.maxCaptures = 3;
+
+        this.init();
+      }
+
+      async init() {
+        try {
+          await this.loadModels();
+          await this.startVideo();
+          await this.startDetection();
+
+          this.captureBtn.disabled = false;
+          this.captureBtnText.textContent = 'Capture Photo 1';
+
+          this.captureBtn.addEventListener('click', () => this.capturePhoto());
+          this.saveBtn.addEventListener('click', () => this.saveFaceData());
+        } catch (error) {
+          console.error('Init error:', error);
+          this.updateStatus('error', '❌ Error: ' + error.message);
         }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            new FaceEnrollment();
-            lucide.createIcons();
+      }
+
+      async loadModels() {
+        this.updateStatus('info', '⏳ Loading AI models...');
+
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+
+        console.log('✅ Models loaded');
+      }
+
+      async startVideo() {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480 },
         });
-    </script>
+        this.video.srcObject = stream;
+
+        return new Promise((resolve) => {
+          this.video.onloadedmetadata = () => resolve();
+        });
+      }
+
+      async startDetection() {
+        const canvas = faceapi.createCanvasFromMedia(this.video);
+        document.getElementById('canvas').replaceWith(canvas);
+        this.canvas = canvas;
+
+        const displaySize = { width: this.video.width, height: this.video.height };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        setInterval(async () => {
+          const detections = await faceapi
+            .detectAllFaces(this.video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+
+          const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+          canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+
+          if (detections.length > 0) {
+            faceapi.draw.drawDetections(canvas, resizedDetections);
+            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+
+            const confidence = detections[0].detection.score;
+            this.captureInfo.textContent = `Face detected (${(confidence * 100).toFixed(1)}% confidence) - Ready to capture`;
+            this.captureInfo.style.background = 'rgba(34, 197, 94, 0.85)';
+
+            if (this.currentCapture < this.maxCaptures) {
+              this.captureBtn.disabled = false;
+            }
+          } else {
+            this.captureInfo.textContent = 'No face detected - please look at camera';
+            this.captureInfo.style.background = 'rgba(239, 68, 68, 0.85)';
+            this.captureBtn.disabled = true;
+          }
+        }, 100);
+      }
+
+      async capturePhoto() {
+        if (this.currentCapture >= this.maxCaptures) return;
+
+        const detection = await faceapi
+          .detectSingleFace(this.video, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+
+        if (!detection) {
+          this.updateStatus('error', '❌ No face detected. Please try again.');
+          return;
+        }
+
+        this.descriptors.push(Array.from(detection.descriptor));
+
+        const captureCanvas = document.createElement('canvas');
+        captureCanvas.width = this.video.videoWidth;
+        captureCanvas.height = this.video.videoHeight;
+        const ctx = captureCanvas.getContext('2d');
+        ctx.drawImage(this.video, 0, 0);
+
+        const imageData = captureCanvas.toDataURL('image/jpeg');
+        this.captures.push(imageData);
+
+        this.currentCapture++;
+        const preview = document.getElementById(`preview${this.currentCapture}`);
+        preview.innerHTML = `
+          <img src="${imageData}" alt="Capture ${this.currentCapture}" class="w-full h-full object-cover" />
+        `;
+        preview.classList.add('border-green-400', 'border-4');
+        preview.classList.remove('border-zinc-300', 'border-2');
+
+        if (this.currentCapture < this.maxCaptures) {
+          this.captureBtnText.textContent = `Capture Photo ${this.currentCapture + 1}`;
+          this.updateStatus('success', `✅ Photo ${this.currentCapture} captured! ${this.maxCaptures - this.currentCapture} more to go.`);
+          this.speak(`Photo ${this.currentCapture} captured`);
+        } else {
+          this.captureBtn.style.display = 'none';
+          this.saveBtn.style.display = 'flex';
+          this.updateStatus('success', '✅ All photos captured! Click "Save" to enable face login.');
+          this.speak('All photos captured. You can now save your face data.');
+        }
+      }
+
+      async saveFaceData() {
+        const name = this.userName.value.trim();
+        const cardNumber = this.userAccount.value;
+
+        if (!name || !cardNumber) {
+          this.updateStatus('error', '❌ Please enter your name and select an account.');
+          return;
+        }
+
+        const faceData = {
+          name: name,
+          cardNumber: cardNumber,
+          descriptors: this.descriptors,
+          captures: this.captures,
+          enrolledAt: new Date().toISOString(),
+        };
+
+        let enrolledFaces = [];
+        try {
+          const stored = localStorage.getItem('enrolledFaces');
+          if (stored) {
+            enrolledFaces = JSON.parse(stored);
+          }
+        } catch (e) {}
+
+        const existingIndex = enrolledFaces.findIndex((f) => f.cardNumber === cardNumber);
+        if (existingIndex >= 0) {
+          enrolledFaces[existingIndex] = faceData;
+        } else {
+          enrolledFaces.push(faceData);
+        }
+
+        localStorage.setItem('enrolledFaces', JSON.stringify(enrolledFaces));
+
+        this.updateStatus('success', '✅ Face data saved successfully! Redirecting to login...');
+        this.speak('Face recognition enabled. You can now login with your face.');
+
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2500);
+      }
+
+      updateStatus(type, message) {
+        if (type === 'info') {
+          this.statusDiv.className = 'bg-blue-50 border-2 border-blue-200 text-blue-700 px-6 py-4 rounded-2xl flex items-center gap-3';
+        } else if (type === 'success') {
+          this.statusDiv.className = 'bg-green-50 border-2 border-green-200 text-green-700 px-6 py-4 rounded-2xl flex items-center gap-3';
+        } else {
+          this.statusDiv.className = 'bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-2xl flex items-center gap-3';
+        }
+        this.statusDiv.innerHTML = `<span class="material-symbols-outlined">info</span><span>${message}</span>`;
+      }
+
+      speak(text) {
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = 0.9;
+          window.speechSynthesis.speak(utterance);
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      new FaceEnrollment();
+    });
+  </script>
 </body>
 </html>
