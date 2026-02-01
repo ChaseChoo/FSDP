@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node controllers/server.js"
+    "start": "node controllers/server.js",
+    "dev": "node server.js",
+    "build": "npm install"
   },
   "repository": {
     "type": "git",

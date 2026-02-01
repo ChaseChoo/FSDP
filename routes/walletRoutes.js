@@ -9,15 +9,15 @@ import {
 const router = express.Router();
 
 // Transfer funds to digital wallet
-router.post("/wallet/transfer", transferToWallet);
+router.post("/transfer", transferToWallet);
 
 // Get wallet balance
-router.get("/wallet/balance/:walletId", getWalletBalanceAPI);
+router.get("/balance/:walletId", getWalletBalanceAPI);
 
 // Get wallet transaction history
-router.get("/wallet/transactions/:walletId", getWalletTransactionsAPI);
+router.get("/transactions/:walletId", getWalletTransactionsAPI);
 
 // Get wallet summary (balance + recent transactions + statistics)
-router.get("/wallet/summary/:walletId", getWalletSummaryAPI);
+router.get("/summary/:walletId", getWalletSummaryAPI);
 
 export default router;
