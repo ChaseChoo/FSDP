@@ -298,16 +298,18 @@
     async function stopScanning() {
       if (html5QrcodeScanner) {
         try {
-          // Check if scanner is actually running before stopping
-          const state = html5QrcodeScanner.getState();
-          if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
-            await html5QrcodeScanner.stop();
-          }
+          await html5QrcodeScanner.stop();
           html5QrcodeScanner.clear();
-          html5QrcodeScanner = null;
         } catch (error) {
           // Ignore errors when stopping (scanner might not be running)
-          console.log('Note: Scanner stop called when not running');
+          console.log('Scanner stop error (safe to ignore):', error);
+        }
+        html5QrcodeScanner = null;
+      }
+      document.getElementById('cameraContainer').style.display = 'none';
+      document.getElementById('startBtn').style.display = 'inline-block';
+      document.getElementById('stopBtn').style.display = 'none';
+    }
           html5QrcodeScanner = null;
         }
       }
