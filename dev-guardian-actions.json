@@ -502,5 +502,23 @@
     "expiresAt": 1770040107102,
     "usedAt": 1769953722863,
     "lastUsedAt": 1769953722863
+  },
+  "0120f79e84ecd4393400fb48e1ad53f316bd6c443c1ba626de708e879ccda194": {
+    "id": "0120f79e84ecd4393400fb48e1ad53f316bd6c443c1ba626de708e879ccda194",
+    "guardianExternalId": "user-1",
+    "guardianCardNumber": "N/A",
+    "guardianName": "user-1",
+    "action": {
+      "type": "WITHDRAW",
+      "amount": 100,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured withdraw"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1769954461896,
+    "expiresAt": 1770040861896,
+    "usedAt": 1769954478280,
+    "lastUsedAt": 1769954478280
   }
 }

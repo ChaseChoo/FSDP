@@ -1501,6 +1501,15 @@
   ],
   "user-1": [
     {
+      "Id": "dev-1769954478277-0.1930451804528297",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 100,
+      "BalanceAfter": 29321,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-01T14:01:18.277Z"
+    },
+    {
       "Id": "dev-1769953775082-0.0730850847871316",
       "AccountId": "dev-user-1",
       "Type": "WALLET_TRANSFER",
