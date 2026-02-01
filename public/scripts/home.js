@@ -44,6 +44,9 @@
     let listeningActive = false;
     let hoverReadCooldown = false;
     let cachedVoices = [];
+    let voiceMuted = false; // Mute voice reading
+    let assistantRespondingShown = false; // Track if we've shown the responding indicator
+    let lastMenuReadTime = 0; // Prevent duplicate menu reads
   let tempOtpToken = null;
   let lastOtpIdentifier = null;
     let pendingWithdrawal = null; // { amount: number }
@@ -404,6 +407,11 @@
 
     function logBot(text) {
       if (!chatlog) return;
+      // Show assistant status only once per user message
+      if (!assistantRespondingShown && assistantStatus) {
+        assistantStatus.style.display = 'block';
+        assistantRespondingShown = true;
+      }
       const div = document.createElement("div");
       div.textContent = "🤖 " + text;
       chatlog.appendChild(div);
@@ -446,8 +454,24 @@
           if(window.speechSynthesis && window.speechSynthesis.cancel) window.speechSynthesis.cancel();
         }catch(e){}
       }
-      // Announce numeric options for the page (ATM numeric-pad friendly)
-      displayMenuOptions(name);
+      
+      // Add hover-tts class to buttons on this page and re-register hover listeners
+      setTimeout(() => {
+        document.querySelectorAll('.transaction-card, .tile-card, [id^="btn"], .backBtn').forEach(el => {
+          if (!el.classList.contains('hover-tts')) {
+            el.classList.add('hover-tts');
+          }
+        });
+        registerHoverTTS();
+      }, 100);
+      
+      // Show menu options for non-initial page loads
+      if (!isInitialMainLoad) {
+        setTimeout(() => {
+          displayMenuOptions(name);
+        }, 150);
+      }
+      
       // notify other widgets/pages that page changed
       try{ document.dispatchEvent(new CustomEvent('atmPageChange',{detail:{page:name}})); }catch(e){}
     }
@@ -456,6 +480,10 @@
       if (navHistory.length > 1) navHistory.pop();
       const prev = navHistory.pop() || "main";
       showPage(prev);
+      // Display options after going back
+      setTimeout(() => {
+        displayMenuOptions(prev);
+      }, 200);
     }
 
     document
@@ -728,10 +756,19 @@
       // Log numbered options to the chat so user can press numbers on keypad
       logBot("Options:");
       const labels = opts.map((o) => `${o.key} — ${o.label}`);
-      labels.forEach((l) => logBot(l));
+      // Add remaining options without emoji
+      labels.forEach((l) => {
+        if (!chatlog) return;
+        const div = document.createElement("div");
+        div.textContent = l;
+        div.style.marginLeft = "20px";
+        chatlog.appendChild(div);
+      });
+      chatlog.scrollTop = chatlog.scrollHeight;
       try {
-        // Speak a short prompt (not every option to avoid long speech)
-        speak("Press a number to choose an option.");
+        // Speak the options
+        const optionsText = labels.join(", ");
+        speak(`Your options are: ${optionsText}. Press a number to choose an option.`);
       } catch {}
     }
 
@@ -760,6 +797,11 @@
       } catch (e) {
         console.error(e);
       }
+      // Display menu options after page change
+      setTimeout(() => {
+        const newPage = getCurrentActivePage();
+        displayMenuOptions(newPage);
+      }, 300);
       return true;
     }
 
@@ -1328,12 +1370,25 @@
     }
 
     if (sendBtn && userInput) {
-      sendBtn.addEventListener("click", () => {
+      const sendMessage = () => {
         const text = userInput.value.trim();
         if (!text) return;
+        // Hide assistant status when user sends a message and reset the flag
+        if (assistantStatus) assistantStatus.style.display = 'none';
+        assistantRespondingShown = false;
         logUser(text);
         handleCommand(text);
         userInput.value = "";
+      };
+      
+      sendBtn.addEventListener("click", sendMessage);
+      
+      // Send message when Enter is pressed
+      userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          sendMessage();
+        }
       });
     }
 
@@ -1371,7 +1426,7 @@
     }
 
     function speak(text) {
-      if (!text || !("speechSynthesis" in window)) return;
+      if (!text || !("speechSynthesis" in window) || voiceMuted) return;
       const u = new SpeechSynthesisUtterance(text);
       u.lang = speechLang(currentLang);
       const v = pickVoice(currentLang);
@@ -2229,6 +2284,26 @@
     if (langSelect) langSelect.value = currentLang;
     if (langSelectTop) langSelectTop.value = currentLang;
 
+    // Mute button functionality
+    const muteBtn = document.getElementById('muteBtn');
+    if (muteBtn) {
+      muteBtn.addEventListener('click', () => {
+        voiceMuted = !voiceMuted;
+        const icon = muteBtn.querySelector('.material-symbols-outlined');
+        if (voiceMuted) {
+          // Immediately stop any ongoing speech
+          if (window.speechSynthesis) window.speechSynthesis.cancel();
+          muteBtn.classList.add('!text-red-500', 'bg-red-50', 'dark:bg-red-950/30');
+          icon.textContent = 'volume_off';
+          muteBtn.title = 'Voice is muted';
+        } else {
+          muteBtn.classList.remove('!text-red-500', 'bg-red-50', 'dark:bg-red-950/30');
+          icon.textContent = 'volume_up';
+          muteBtn.title = 'Mute voice reading';
+        }
+      });
+    }
+
   // Load user name and balance from API on page load
   loadUserName();
   loadBalance();
@@ -2236,10 +2311,16 @@
 
     // Initial welcome message
     setTimeout(() => {
-      logBot('Welcome to OCBC ATM! I\'m your AI assistant.');
-      logBot('How can I help you today?');
       // show numbered options for the main menu immediately
       try{ displayMenuOptions('main'); }catch(e){}
+      
+      // Add hover-tts class to all transaction buttons so they can be read on hover
+      document.querySelectorAll('.transaction-card, .tile-card, [id^="btn"]').forEach(el => {
+        if (!el.classList.contains('hover-tts')) {
+          el.classList.add('hover-tts');
+        }
+      });
+      registerHoverTTS();
     }, 100);
     
     // visually flash main options so users notice available buttons after ready
