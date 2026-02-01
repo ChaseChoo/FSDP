@@ -115,10 +115,9 @@ tailwind.config = {
 <div class="max-w-[1400px] mx-auto flex items-center justify-between">
 <div class="flex items-center gap-3">
 <img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
-<h1 class="text-xl font-bold hidden sm:block">Bill / Receipt Scanner</h1>
 </div>
 <div class="flex items-center gap-3">
-<button id="backBtn" class="bg-zinc-200 dark:bg-zinc-700 text-[#1b0e0e] dark:text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors">
+<button id="backBtn" class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors">
 <span class="material-symbols-outlined !text-lg">arrow_back</span> Back
 </button>
 </div>
@@ -126,6 +125,30 @@ tailwind.config = {
 </header>
 
 <main class="flex-1 flex flex-col max-w-[1400px] mx-auto w-full px-6 py-8">
+
+<!-- Favorite Merchant Context Banner -->
+<div id="favoriteMerchantBanner" class="hidden mb-6 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl p-5 shadow-lg">
+<div class="flex items-start gap-4">
+<div class="flex-shrink-0 bg-white dark:bg-zinc-800 p-3 rounded-lg">
+<span class="material-symbols-outlined text-primary !text-3xl" id="favoriteIcon">star</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-bold text-[#1b0e0e] dark:text-zinc-100 mb-1 flex items-center gap-2">
+Paying <span id="favoriteMerchantName" class="text-primary">—</span>
+</h3>
+<p class="text-sm text-zinc-600 dark:text-zinc-400 mb-3">Your typical payment history for this merchant:</p>
+<div id="merchantHistoryDisplay" class="grid grid-cols-3 gap-3 text-center">
+<!-- History will be inserted here -->
+</div>
+<p class="text-xs text-zinc-500 mt-3 italic">
+⚠️ If your scanned amount is very different from usual, we'll warn you!
+</p>
+</div>
+<button id="clearFavoriteContext" class="flex-shrink-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
+<span class="material-symbols-outlined !text-xl">close</span>
+</button>
+</div>
+</div>
 
 <!-- Initial Screen -->
 <div id="initialScreen" class="flex flex-col items-center justify-center space-y-6">
@@ -211,21 +234,47 @@ Review the extracted information below
 <img id="capturedImage" src="" alt="Captured bill" class="w-full rounded-xl border-4 border-primary shadow-lg">
 </div>
 
-<!-- Extracted Information Cards -->
+<!-- OCR Confidence Indicator -->
+<div class="max-w-4xl mx-auto mb-4">
+<div class="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+<div>
+<div class="font-bold text-blue-900 dark:text-blue-100">Scan Quality: <span id="confidenceLevel">Good</span></div>
+<div class="text-sm text-blue-700 dark:text-blue-300">You can edit any field below if needed</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Extracted Information Cards (Editable) -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
 <div class="result-card">
 <div class="result-label">Document Type</div>
-<div class="result-value" id="docType">-</div>
+<input type="text" id="docType" value="-" class="w-full mt-2 px-4 py-3 text-lg font-bold border-2 border-zinc-300 dark:border-zinc-600 rounded-lg focus:border-primary focus:outline-none">
 </div>
 
 <div class="result-card">
 <div class="result-label">Amount</div>
-<div class="result-value text-primary" id="amount">-</div>
+<input type="text" id="amount" value="-" class="w-full mt-2 px-4 py-3 text-lg font-bold text-primary border-2 border-zinc-300 dark:border-zinc-600 rounded-lg focus:border-primary focus:outline-none">
 </div>
 
 <div class="result-card md:col-span-2">
 <div class="result-label">Reference Number</div>
-<div class="result-value" id="refNumber">-</div>
+<input type="text" id="refNumber" value="-" class="w-full mt-2 px-4 py-3 text-lg font-bold border-2 border-zinc-300 dark:border-zinc-600 rounded-lg focus:border-primary focus:outline-none">
+</div>
+</div>
+
+<!-- Duplicate Payment Warning (Hidden by default) -->
+<div id="duplicateWarning" class="hidden max-w-4xl mx-auto mt-4">
+<div class="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 rounded-xl p-5">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-amber-600 dark:text-amber-400" style="font-size: 32px;">warning</span>
+<div>
+<div class="font-bold text-lg text-amber-900 dark:text-amber-100 mb-2">Possible Duplicate Payment</div>
+<div class="text-amber-800 dark:text-amber-200" id="duplicateMessage">You paid a similar bill recently. Are you sure you want to pay again?</div>
+</div>
+</div>
 </div>
 </div>
 
@@ -290,6 +339,7 @@ We couldn't process your image. Please try again.
 
 // Global variables
 let videoStream = null;
+let favoriteMerchantContext = null; // Store favorite merchant context
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -319,6 +369,81 @@ const buttons = {
 
 // File input
 const fileInput = document.getElementById('fileInput');
+
+/**
+ * Load favorite merchant context if present
+ */
+function loadFavoriteMerchantContext() {
+  const contextData = sessionStorage.getItem('favoriteMerchantContext');
+  if (contextData) {
+    favoriteMerchantContext = JSON.parse(contextData);
+    displayFavoriteContext(favoriteMerchantContext);
+  }
+}
+
+/**
+ * Display favorite merchant context banner
+ */
+function displayFavoriteContext(context) {
+  const banner = document.getElementById('favoriteMerchantBanner');
+  const merchantName = document.getElementById('favoriteMerchantName');
+  const historyDisplay = document.getElementById('merchantHistoryDisplay');
+  const favoriteIcon = document.getElementById('favoriteIcon');
+  
+  merchantName.textContent = context.merchantName;
+  
+  // Set appropriate icon
+  const name = context.merchantName.toLowerCase();
+  if (name.includes('sp services') || name.includes('power')) {
+    favoriteIcon.textContent = 'bolt';
+  } else if (name.includes('pub') || name.includes('water')) {
+    favoriteIcon.textContent = 'water_drop';
+  } else if (name.includes('starhub') || name.includes('singtel') || name.includes('m1')) {
+    favoriteIcon.textContent = 'phone_iphone';
+  } else if (name.includes('ntuc') || name.includes('fairprice')) {
+    favoriteIcon.textContent = 'shopping_cart';
+  } else if (name.includes('grab') || name.includes('gojek')) {
+    favoriteIcon.textContent = 'local_taxi';
+  } else {
+    favoriteIcon.textContent = 'star';
+  }
+  
+  // Display history
+  const history = context.history;
+  const amounts = history.amounts.slice(0, 3);
+  
+  if (amounts.length === 0) {
+    historyDisplay.innerHTML = '<p class="text-sm text-zinc-500 col-span-3">No payment history yet</p>';
+  } else {
+    historyDisplay.innerHTML = amounts.map((amount, index) => `
+      <div class="bg-white dark:bg-zinc-800 p-3 rounded-lg">
+        <p class="text-xs text-zinc-500 mb-1">${index === 0 ? 'Last' : index === 1 ? '2nd Last' : '3rd Last'}</p>
+        <p class="font-bold text-primary text-lg">${amount}</p>
+      </div>
+    `).join('');
+    
+    // Add average if available
+    if (history.average && history.average !== 'N/A') {
+      historyDisplay.innerHTML += `
+        <div class="bg-primary/10 border-2 border-primary/30 p-3 rounded-lg col-span-3 mt-2">
+          <p class="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Usual Amount</p>
+          <p class="font-extrabold text-primary text-xl">${history.average}</p>
+        </div>
+      `;
+    }
+  }
+  
+  banner.classList.remove('hidden');
+}
+
+/**
+ * Clear favorite merchant context
+ */
+document.getElementById('clearFavoriteContext')?.addEventListener('click', () => {
+  sessionStorage.removeItem('favoriteMerchantContext');
+  favoriteMerchantContext = null;
+  document.getElementById('favoriteMerchantBanner').classList.add('hidden');
+});
 
 /**
  * Show a specific screen and hide others
@@ -451,17 +576,127 @@ function extractInformation(text) {
   // Display raw text
   document.getElementById('rawText').textContent = text;
   
-  // Extract document type
-  const docType = detectDocumentType(text);
-  document.getElementById('docType').textContent = docType;
-  
-  // Extract amount
+  // Process text to extract information
   const amount = extractAmount(text);
-  document.getElementById('amount').textContent = amount || 'Not found';
-  
-  // Extract reference number
   const refNumber = extractReferenceNumber(text);
-  document.getElementById('refNumber').textContent = refNumber || 'Not found';
+  const docType = detectDocumentType(text);
+  const provider = detectProvider(text);
+  
+  // Update result fields (now editable inputs)
+  document.getElementById('docType').value = docType || 'Bill';
+  document.getElementById('amount').value = amount || 'Not detected';
+  document.getElementById('refNumber').value = refNumber || 'Not detected';
+  
+  // Set confidence level based on detection success
+  const detectedCount = [amount, refNumber, docType].filter(x => x && x !== 'Not detected').length;
+  const confidenceElem = document.getElementById('confidenceLevel');
+  if (detectedCount === 3) {
+    confidenceElem.textContent = 'Excellent';
+    confidenceElem.parentElement.className = 'font-bold text-green-600 dark:text-green-400';
+  } else if (detectedCount === 2) {
+    confidenceElem.textContent = 'Good';
+    confidenceElem.parentElement.className = 'font-bold text-blue-600 dark:text-blue-400';
+  } else {
+    confidenceElem.textContent = 'Fair - Please review';
+    confidenceElem.parentElement.className = 'font-bold text-amber-600 dark:text-amber-400';
+  }
+  
+  // Check for duplicate payments
+  checkDuplicatePayment(amount, refNumber, provider);
+  
+  // Check if scanned amount deviates from favorite merchant history
+  checkFavoriteMerchantDeviation(amount, provider);
+}
+
+/**
+ * Detect bill provider/company from text
+ * Identifies specific utility or service providers (Electricity, Water, etc.)
+ * Also detects retail, restaurants, and other transaction types
+ * @param {string} text - OCR text
+ * @returns {string} Provider name or appropriate category
+ */
+function detectProvider(text) {
+  const lowerText = text.toLowerCase();
+  
+  // Electricity/Power companies
+  if (lowerText.includes('electric') || lowerText.includes('power') || lowerText.includes('electricity') ||
+      (lowerText.includes('utility') && lowerText.includes('energy'))) {
+    return 'Electricity';
+  }
+  
+  // Water utilities
+  if (lowerText.includes('water') && !lowerText.includes('watermark')) {
+    return 'Water';
+  }
+  
+  // Telecommunications
+  if (lowerText.includes('phone') || lowerText.includes('telecom') || lowerText.includes('mobile') ||
+      lowerText.includes('internet') || lowerText.includes('broadband')) {
+    return 'Telecommunications';
+  }
+  
+  // Gas
+  if (lowerText.includes('gas') && !lowerText.includes('gasoline')) {
+    return 'Gas';
+  }
+  
+  // Credit Card or Loan
+  if (lowerText.includes('credit card') || lowerText.includes('loan') || lowerText.includes('mortgage')) {
+    return 'Credit Card Payment';
+  }
+  
+  // Insurance
+  if (lowerText.includes('insurance') || lowerText.includes('premium')) {
+    return 'Insurance';
+  }
+  
+  // Education/Tuition
+  if (lowerText.includes('school') || lowerText.includes('university') || lowerText.includes('tuition') ||
+      lowerText.includes('college') || lowerText.includes('course')) {
+    return 'Education';
+  }
+  
+  // Medical/Healthcare
+  if (lowerText.includes('hospital') || lowerText.includes('clinic') || lowerText.includes('medical') ||
+      lowerText.includes('pharmacy') || lowerText.includes('doctor')) {
+    return 'Medical';
+  }
+  
+  // Retail/Shopping (Supermarkets, stores, etc.)
+  if (lowerText.includes('ntuc') || lowerText.includes('supermarket') || lowerText.includes('shopping') ||
+      lowerText.includes('grocery') || lowerText.includes('mall') || lowerText.includes('store') ||
+      lowerText.includes('retail') || lowerText.includes('purchase') || lowerText.includes('product') ||
+      lowerText.includes('qty') || lowerText.includes('item') || lowerText.includes('cashier')) {
+    return 'Shopping Receipt';
+  }
+  
+  // Restaurant/Food
+  if (lowerText.includes('restaurant') || lowerText.includes('cafe') || lowerText.includes('food') ||
+      lowerText.includes('dining') || lowerText.includes('meal') || lowerText.includes('menu') ||
+      lowerText.includes('server') || lowerText.includes('table')) {
+    return 'Restaurant Receipt';
+  }
+  
+  // Transportation/Travel
+  if (lowerText.includes('airline') || lowerText.includes('hotel') || lowerText.includes('flight') ||
+      lowerText.includes('booking') || lowerText.includes('travel') || lowerText.includes('taxi') ||
+      lowerText.includes('bus') || lowerText.includes('train')) {
+    return 'Travel Receipt';
+  }
+  
+  // Parking/Toll
+  if (lowerText.includes('parking') || lowerText.includes('toll') || lowerText.includes('fare')) {
+    return 'Parking/Toll';
+  }
+  
+  // General payment or transaction
+  if (lowerText.includes('payment') || lowerText.includes('invoice') || lowerText.includes('receipt') ||
+      lowerText.includes('transaction')) {
+    return 'Payment Receipt';
+  }
+  
+  // Default fallback
+  return 'Bill Payment';
 }
 
 /**
@@ -529,23 +764,32 @@ function extractAmount(text) {
  * @returns {string|null} Extracted reference number
  */
 function extractReferenceNumber(text) {
-  // Patterns for reference numbers
+  // Patterns for reference numbers - ordered by priority
   const patterns = [
-    // Ref: ABC123, Reference: ABC123
-    /(?:ref(?:erence)?|transaction|invoice|bill|receipt)[\s#:]*([A-Z0-9-]{5,})/gi,
-    // #ABC123
-    /#([A-Z0-9-]{5,})/g,
-    // Generic alphanumeric codes (at least 6 characters)
-    /\b([A-Z]{2,}\d{4,}|\d{4,}[A-Z]{2,})\b/g
+    // "Payment Reference: 987654321" or "Ref #: ABC123"
+    /Payment\s+Reference[\s#:]*([A-Z0-9-]{6,})/gi,
+    // "Reference Number: ABC123" or "Ref Number: XYZ789"
+    /(?:Ref(?:erence)?\s+)?Number[\s#:]*([A-Z0-9-]{5,})/gi,
+    // "Invoice #12345" or "Bill #ABC123"
+    /(?:Invoice|Bill|Receipt|Transaction)[\s#:]*([A-Z0-9-]{5,})/gi,
+    // Standalone number patterns like "987654321" (9+ digits) or "ABC123456" (letters + numbers)
+    /\b(\d{9,})\b/g,
+    // Alphanumeric codes (letters followed by numbers or vice versa)
+    /\b([A-Z]{2,}\d{5,}|\d{5,}[A-Z]{2,})\b/g
   ];
   
   for (const pattern of patterns) {
     const match = text.match(pattern);
-    if (match) {
-      // Clean up the match
-      let refNum = match[0].replace(/^(ref|reference|transaction|invoice|bill|receipt)[\s#:]*/gi, '');
+    if (match && match.length > 0) {
+      // Get the captured group (or first match if no group)
+      let refNum = match[1] || match[0];
+      refNum = refNum.replace(/^(ref|reference|payment|invoice|bill|receipt|transaction|number)[\s#:]*([A-Z0-9-]+)$/gi, '$2');
       refNum = refNum.replace(/^#/, '');
-      return refNum.trim().toUpperCase();
+      
+      // Validate it's not just a single word (like "ACCOUNT", "SERVICE", etc.)
+      if (refNum.length >= 5 && !/^[A-Z\s]+$/.test(refNum)) {
+        return refNum.trim().toUpperCase();
+      }
     }
   }
   
@@ -572,6 +816,9 @@ function resetToInitial() {
 
 // Event Listeners
 
+// Load favorite merchant context on page load
+loadFavoriteMerchantContext();
+
 // Start camera button
 buttons.startCamera.addEventListener('click', startCamera);
 
@@ -597,25 +844,354 @@ buttons.retry.addEventListener('click', resetToInitial);
 
 // Back buttons
 buttons.back.addEventListener('click', () => {
-  window.location.href = 'home.html';
+  window.location.href = 'home.html#noncash';
 });
 
 buttons.backToHome.addEventListener('click', () => {
-  window.location.href = 'home.html';
+  window.location.href = 'home.html#noncash';
 });
 
 // Proceed to payment button
 buttons.proceedPayment.addEventListener('click', () => {
-  const amount = document.getElementById('amount').textContent;
-  const refNumber = document.getElementById('refNumber').textContent;
+  // Get values from editable inputs
+  const amount = document.getElementById('amount').value;
+  const refNumber = document.getElementById('refNumber').value;
+  const docType = document.getElementById('docType').value;
+  const rawText = document.getElementById('rawText').textContent;
+  const provider = detectProvider(rawText);
+  
+  // Validate fields
+  if (!amount || amount === 'Not detected' || amount === '-') {
+    alert('Please enter a valid amount before proceeding.');
+    document.getElementById('amount').focus();
+    return;
+  }
+  
+  // === NEW: Advanced Duplicate Scan Detection ===
+  const currentScan = {
+    docType: docType,
+    merchantOrBiller: provider,
+    amount: amount,
+    referenceNumber: refNumber === 'Not detected' ? '' : refNumber,
+    scannedAt: new Date().toISOString()
+  };
+  
+  const duplicateResult = checkForDuplicateScan(currentScan);
+  
+  if (duplicateResult.isDuplicate) {
+    // Store comparison data and redirect to comparison page
+    sessionStorage.setItem('scanComparisonData', JSON.stringify({
+      current: currentScan,
+      previous: duplicateResult.match,
+      similarity: duplicateResult.score
+    }));
+    
+    // Also store bill data for later use
+    sessionStorage.setItem('billAmount', amount);
+    sessionStorage.setItem('billReference', refNumber);
+    sessionStorage.setItem('billDocType', docType);
+    sessionStorage.setItem('billProvider', provider);
+    
+    window.location.href = 'scan-compare.html';
+    return;
+  }
+  
+  // === Store current scan in history ===
+  storeScanInHistory(currentScan);
   
   // Store data in sessionStorage for use in payment page
   sessionStorage.setItem('billAmount', amount);
   sessionStorage.setItem('billReference', refNumber);
+  sessionStorage.setItem('billDocType', docType);
+  sessionStorage.setItem('billProvider', provider);
   
   // Redirect to bills payment page
   window.location.href = 'bills.html';
 });
+
+/**
+ * Check for duplicate payments in history (LEGACY - simple warning)
+ * @param {string} amount - Payment amount
+ * @param {string} refNumber - Reference number
+ * @param {string} provider - Provider name
+ */
+function checkDuplicatePayment(amount, refNumber, provider) {
+  try {
+    const history = JSON.parse(localStorage.getItem('receiptHistory') || '[]');
+    
+    // Check last 10 receipts for similar payments
+    const recentHistory = history.slice(0, 10);
+    const duplicate = recentHistory.find(receipt => {
+      const amountMatch = receipt.amount === amount;
+      const refMatch = receipt.refNumber === refNumber && refNumber !== 'Not detected';
+      const providerMatch = receipt.provider === provider;
+      
+      // Consider duplicate if amount + (ref or provider) match
+      return amountMatch && (refMatch || providerMatch);
+    });
+    
+    if (duplicate) {
+      const daysSince = Math.floor((Date.now() - new Date(duplicate.savedAt)) / (1000 * 60 * 60 * 24));
+      const warningElem = document.getElementById('duplicateWarning');
+      const messageElem = document.getElementById('duplicateMessage');
+      
+      let message = `You paid a similar ${provider || 'bill'} `;
+      if (daysSince === 0) {
+        message += 'today';
+      } else if (daysSince === 1) {
+        message += 'yesterday';
+      } else {
+        message += `${daysSince} days ago`;
+      }
+      message += ' for the same amount. Are you sure you want to pay again?';
+      
+      messageElem.textContent = message;
+      warningElem.classList.remove('hidden');
+    }
+  } catch (e) {
+    console.error('Error checking duplicates:', e);
+  }
+}
+
+/**
+ * === ADVANCED DUPLICATE SCAN DETECTION ===
+ * Compute similarity score between current and past scan
+ * @param {Object} current - Current scan data
+ * @param {Object} past - Past scan data
+ * @returns {number} - Similarity score (0-100)
+ */
+function computeSimilarity(current, past) {
+  // Perfect match on non-empty reference number = 100% duplicate
+  if (current.referenceNumber && past.referenceNumber && 
+      current.referenceNumber !== 'Not detected' &&
+      current.referenceNumber === past.referenceNumber) {
+    return 100;
+  }
+  
+  let score = 0;
+  
+  // === 1. Merchant/Biller Similarity (40 points max) ===
+  const currentMerchant = (current.merchantOrBiller || '').toLowerCase();
+  const pastMerchant = (past.merchantOrBiller || '').toLowerCase();
+  
+  if (currentMerchant === pastMerchant) {
+    score += 40;
+  } else if (currentMerchant && pastMerchant) {
+    // Check if one contains the other
+    if (currentMerchant.includes(pastMerchant) || pastMerchant.includes(currentMerchant)) {
+      score += 30;
+    }
+    // Check for common words (at least 2)
+    const currentWords = currentMerchant.split(/\s+/);
+    const pastWords = pastMerchant.split(/\s+/);
+    const commonWords = currentWords.filter(w => w.length > 2 && pastWords.includes(w));
+    if (commonWords.length >= 2) {
+      score += 20;
+    } else if (commonWords.length === 1) {
+      score += 10;
+    }
+  }
+  
+  // === 2. Amount Similarity (40 points max) ===
+  const currentAmount = parseFloat((current.amount || '0').replace(/[^0-9.]/g, ''));
+  const pastAmount = parseFloat((past.amount || '0').replace(/[^0-9.]/g, ''));
+  
+  if (currentAmount === pastAmount) {
+    score += 40;
+  } else {
+    const difference = Math.abs(currentAmount - pastAmount);
+    if (difference <= 1.00) {
+      score += 35; // Very close amounts
+    } else if (difference <= 5.00) {
+      score += 25; // Close amounts
+    } else if (difference <= 10.00) {
+      score += 15; // Somewhat close
+    } else if (difference <= 20.00) {
+      score += 5; // Different but notable
+    }
+  }
+  
+  // === 3. Recency Score (20 points max) ===
+  const currentTime = new Date(current.scannedAt).getTime();
+  const pastTime = new Date(past.scannedAt).getTime();
+  const daysDiff = (currentTime - pastTime) / (1000 * 60 * 60 * 24);
+  
+  // Determine recency window based on doc type
+  const isBill = (current.docType || '').toLowerCase().includes('bill');
+  const recencyWindow = isBill ? 30 : 7; // Bills: 30 days, Receipts: 7 days
+  
+  if (daysDiff <= 1) {
+    score += 20; // Same day or next day - very suspicious
+  } else if (daysDiff <= 3) {
+    score += 15; // Within 3 days
+  } else if (daysDiff <= 7) {
+    score += 10; // Within a week
+  } else if (daysDiff <= recencyWindow) {
+    score += 5; // Within window
+  }
+  // Outside window: 0 points
+  
+  return Math.min(Math.round(score), 100);
+}
+
+/**
+ * Check for duplicate scans in scan history
+ * @param {Object} currentScan - Current scan data
+ * @returns {Object} - {isDuplicate: boolean, score: number, match: Object|null}
+ */
+function checkForDuplicateScan(currentScan) {
+  try {
+    // Seed demo data if history is empty
+    seedDemoScanHistory();
+    
+    const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+    
+    let bestMatch = null;
+    let bestScore = 0;
+    
+    // Check against all scans in history
+    for (const pastScan of scanHistory) {
+      const score = computeSimilarity(currentScan, pastScan);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = pastScan;
+      }
+    }
+    
+    // Threshold: 75% or higher = duplicate
+    if (bestScore >= 75 && bestMatch) {
+      return {
+        isDuplicate: true,
+        score: bestScore,
+        match: bestMatch
+      };
+    }
+    
+    return {
+      isDuplicate: false,
+      score: bestScore,
+      match: null
+    };
+  } catch (e) {
+    console.error('Error checking duplicate scan:', e);
+    return { isDuplicate: false, score: 0, match: null };
+  }
+}
+
+/**
+ * Store current scan in history (max 50 scans)
+ * @param {Object} scanData - Scan data to store
+ */
+function storeScanInHistory(scanData) {
+  try {
+    const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+    
+    // Add current scan to beginning
+    scanHistory.unshift(scanData);
+    
+    // Keep only last 50 scans
+    if (scanHistory.length > 50) {
+      scanHistory.splice(50);
+    }
+    
+    localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
+  } catch (e) {
+    console.error('Error storing scan in history:', e);
+  }
+}
+
+/**
+ * Check if scanned amount deviates significantly from favorite merchant history
+ * @param {string} amount - Scanned amount
+ * @param {string} provider - Detected provider
+ */
+function checkFavoriteMerchantDeviation(amount, provider) {
+  // Only check if we have favorite context
+  if (!favoriteMerchantContext) return;
+  
+  // Check if provider matches favorite merchant
+  const merchantMatch = provider && favoriteMerchantContext.merchantName &&
+    provider.toLowerCase().includes(favoriteMerchantContext.merchantName.toLowerCase());
+  
+  if (!merchantMatch) return;
+  
+  // Get average from history
+  const history = favoriteMerchantContext.history;
+  if (!history || !history.average || history.average === 'N/A') return;
+  
+  // Parse amounts
+  const scannedAmount = parseFloat((amount || '0').replace(/[^0-9.]/g, ''));
+  const avgAmount = parseFloat(history.average.replace(/[^0-9.]/g, ''));
+  
+  if (scannedAmount === 0 || avgAmount === 0) return;
+  
+  // Calculate deviation percentage
+  const difference = Math.abs(scannedAmount - avgAmount);
+  const deviationPercent = (difference / avgAmount) * 100;
+  
+  // Show warning if deviation is > 50%
+  if (deviationPercent > 50) {
+    const warningElem = document.getElementById('duplicateWarning');
+    const messageElem = document.getElementById('duplicateMessage');
+    
+    let message = `⚠️ UNUSUAL AMOUNT DETECTED!\n\n`;
+    message += `This ${favoriteMerchantContext.merchantName} bill is ${scannedAmount > avgAmount ? 'HIGHER' : 'LOWER'} than usual.\n\n`;
+    message += `Scanned: S$${scannedAmount.toFixed(2)} | `;
+    message += `Your Average: ${history.average}\n\n`;
+    message += `Please verify this is correct before proceeding.`;
+    
+    messageElem.textContent = message;
+    messageElem.style.whiteSpace = 'pre-line';
+    warningElem.classList.remove('hidden');
+    
+    // Make warning more prominent
+    warningElem.style.borderColor = '#f59e0b';
+    warningElem.style.backgroundColor = '#fef3c7';
+  }
+}
+
+
+/**
+ * Seed demo scan history for demonstration
+ * Only runs if scanHistory is empty
+ */
+function seedDemoScanHistory() {
+  try {
+    const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+    
+    if (scanHistory.length === 0) {
+      // Seed with sample scans for demo
+      const demoScans = [
+        {
+          docType: 'Bill',
+          merchantOrBiller: 'SP Services',
+          amount: 'S$66.20',
+          referenceNumber: '987654321',
+          scannedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days ago
+        },
+        {
+          docType: 'Shopping Receipt',
+          merchantOrBiller: 'NTUC FairPrice',
+          amount: 'S$42.50',
+          referenceNumber: '',
+          scannedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days ago
+        },
+        {
+          docType: 'Bill',
+          merchantOrBiller: 'StarHub',
+          amount: 'S$89.90',
+          referenceNumber: '123456789',
+          scannedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() // 15 days ago
+        }
+      ];
+      
+      localStorage.setItem('scanHistory', JSON.stringify(demoScans));
+      console.log('✅ Demo scan history seeded with 3 sample scans');
+    }
+  } catch (e) {
+    console.error('Error seeding demo scan history:', e);
+  }
+}
 
 // Toggle raw text visibility
 buttons.toggleRawText.addEventListener('click', () => {

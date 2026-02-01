@@ -1,121 +1,179 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EasyATM — Successful</title>
+  <title>OCBC ATM - Transaction Successful</title>
 
-  <!-- ATM UI -->
-  <link rel="stylesheet" href="styles/home.css">
-  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#ea2a33",
+          "background-light": "#f8f6f6",
+          "background-dark": "#211111",
+        },
+        fontFamily: { display: ["Public Sans", "sans-serif"] },
+        borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      }
+    }
+  }
+  </script>
+
+  <style type="text/tailwindcss">
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-size: 32px;
+  }
+  </style>
 </head>
 
-<body class="atm-body">
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white min-h-screen flex flex-col">
 
-<main class="atm-shell">
-  <section class="atm-card">
-    <div class="atm-layout">
+<!-- Header -->
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
+<h1 class="text-xl font-bold hidden sm:block">Transaction Successful</h1>
+</div>
+<div class="flex items-center gap-3">
+<button onclick="window.location.href='home.html'" class="bg-zinc-200 dark:bg-zinc-700 text-[#1b0e0e] dark:text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors">
+<span class="material-symbols-outlined !text-lg">home</span> Home
+</button>
+</div>
+</div>
+</header>
 
-      <!-- ================================ -->
-      <!-- LEFT PANEL: SUCCESS MESSAGE      -->
-      <!-- ================================ -->
-      <div class="atm-left">
+<main class="flex-1 flex flex-col items-center justify-center px-6 py-12">
 
-        <!-- Header -->
-        <div class="atm-header">
-          <div class="header-content">
-            <h1 class="atm-title">Transaction Successful</h1>
+<div class="max-w-2xl w-full space-y-8">
 
-            <button onclick="location.href='index.html'" class="logout-btn">
-              <i data-lucide="arrow-left"></i> Back
-            </button>
-          </div>
-        </div>
+<!-- Success Icon & Title -->
+<div class="text-center space-y-4">
+<div class="flex justify-center">
+<div class="w-24 h-24 bg-green-100 dark:bg-green-950/30 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-green-600 dark:text-green-400" style="font-size: 56px;">check_circle</span>
+</div>
+</div>
 
-        <!-- Success Box -->
-        <div class="card" style="margin-top:20px;">
-          <div class="summary" style="text-align:center; font-size:1rem;">
-            <strong>✅ Success!</strong>  
-            <br>Your transaction has been sent.
-          </div>
+<h2 class="text-4xl md:text-5xl font-extrabold text-[#1b0e0e] dark:text-zinc-100">
+Success!
+</h2>
 
-          <hr class="divider">
+<p class="text-xl text-zinc-600 dark:text-zinc-400 font-medium">
+Your transaction has been completed successfully
+</p>
+</div>
 
-          <div class="actions" style="justify-content:center;">
-            <a class="btn btn-primary btn-lg" href="index.html">New Transaction</a>
-            <a class="btn btn-secondary btn-lg" href="help.html">Get Help</a>
-          </div>
+<!-- Transaction Details Card -->
+<div class="bg-white dark:bg-zinc-900 border-2 border-green-200 dark:border-green-900 rounded-xl shadow-lg p-8 space-y-6">
 
-          <p class="footnotes" style="margin-top:20px; text-align:center;">
-            A receipt can be printed or emailed (coming soon).
-          </p>
-        </div>
+<div class="text-center pb-6 border-b border-zinc-200 dark:border-zinc-700">
+<p class="text-sm text-zinc-600 dark:text-zinc-400 font-medium mb-2">Transaction ID</p>
+<p class="text-lg font-mono font-bold text-[#1b0e0e] dark:text-white" id="transactionId">BILL-0000000000</p>
+</div>
 
-      </div>
+<div class="grid grid-cols-2 gap-6">
+<div>
+<p class="text-sm text-zinc-600 dark:text-zinc-400 font-medium mb-2">Amount</p>
+<p class="text-2xl font-extrabold text-primary" id="transactionAmount">S$0.00</p>
+</div>
+<div>
+<p class="text-sm text-zinc-600 dark:text-zinc-400 font-medium mb-2">Date & Time</p>
+<p class="text-lg font-semibold text-[#1b0e0e] dark:text-white" id="transactionDate">Just now</p>
+</div>
+</div>
 
-      <!-- ================================ -->
-      <!-- RIGHT PANEL: CHATBOT            -->
-      <!-- ================================ -->
-      <aside class="atm-right">
+<div class="pb-6 border-b border-zinc-200 dark:border-zinc-700">
+<p class="text-sm text-zinc-600 dark:text-zinc-400 font-medium mb-2">Recipient / Biller</p>
+<p class="text-lg font-bold text-[#1b0e0e] dark:text-white" id="transactionRecipient">-</p>
+</div>
 
-        <div class="topbar">
+<div class="bg-blue-50 dark:bg-blue-950/20 border-l-4 border-blue-500 px-4 py-3 rounded">
+<p class="text-sm text-blue-700 dark:text-blue-300">
+<strong>Note:</strong> A receipt can be printed or emailed (coming soon).
+</p>
+</div>
 
-          <div class="top-right-controls">
+</div>
 
-            <select class="lang-select">
-              <option>English</option>
-            </select>
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button onclick="window.location.href='home.html'" class="px-8 py-4 bg-primary text-white font-bold rounded-lg hover:bg-red-700 transition-colors text-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">home</span>
+Back to Home
+</button>
 
-            <div class="divider"></div>
+<button onclick="window.location.href='bill-scanner.html'" class="px-8 py-4 bg-white dark:bg-zinc-900 border-2 border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors text-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+New Transaction
+</button>
+</div>
 
-            <!-- COMPACT SAFE MODE -->
-            <div class="safe safe-compact">
-              <input id="safemode" type="checkbox">
-              <label for="safemode">Safe Mode</label>
-            </div>
+</div>
 
-            <div class="divider"></div>
-
-            <button onclick="location.href='home.html'" class="exit-btn hover-tts">
-              <i data-lucide="log-out" class="icon"></i>
-              <span>Exit</span>
-            </button>
-          </div>
-
-        </div>
-
-        <!-- Chat Shell -->
-        <div class="chat-shell">
-          <div id="chatlog" class="chat-log"></div>
-
-          <div class="chat-input-row">
-            <input id="userInput" class="chat-input" placeholder="How can I assist?" />
-            <button id="sendBtn" class="chat-send">
-              <i data-lucide="send" class="icon-xs"></i>
-            </button>
-          </div>
-
-          <div class="chat-footer">
-            <div class="chat-tip">Tip: “How do I print my receipt?”</div>
-          </div>
-        </div>
-
-      </aside>
-    </div>
-  </section>
 </main>
 
-<script src="https://unpkg.com/lucide@latest"></script>
-<script>lucide.createIcons();</script>
+<!-- Footer -->
+<footer class="w-full py-6 mt-auto bg-zinc-100 dark:bg-zinc-950/50 px-6">
+<div class="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-zinc-500 dark:text-zinc-500 text-xs font-medium">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined !text-sm">security</span>
+<span>Your session is secure and encrypted. Please do not share your PIN.</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Use</a>
+<span>© 2024 OCBC Bank</span>
+</div>
+</div>
+</footer>
 
-<!-- Homepage systems -->
+<!-- Flag to prevent balance API calls -->
+<script>
+  window.skipBalanceAPI = true;
+</script>
+
 <script src="scripts/home.js"></script>
 
-<!-- Your original logic -->
-<script src="app.js"></script>
-<script src="fraud-detection-system.js"></script>
+<script>
+// Parse URL parameters and display transaction details
+document.addEventListener('DOMContentLoaded', function() {
+  const params = new URLSearchParams(window.location.search);
+  const type = params.get('type');
+  const provider = params.get('provider');
+  const amount = params.get('amount');
+
+  // Set amount
+  if (amount) {
+    const displayAmount = isNaN(amount) ? amount : `S$${parseFloat(amount).toFixed(2)}`;
+    document.getElementById('transactionAmount').textContent = displayAmount;
+  }
+
+  // Set recipient/provider
+  if (provider) {
+    document.getElementById('transactionRecipient').textContent = decodeURIComponent(provider);
+  }
+
+  // Set transaction ID
+  const now = new Date();
+  document.getElementById('transactionId').textContent = `BILL-${now.getTime()}`;
+  document.getElementById('transactionDate').textContent = now.toLocaleString();
+
+  // Disable back button for safety
+  history.pushState(null, null, location.href);
+  window.onpopstate = function() {
+    window.location.href = 'home.html';
+  };
+});
+</script>
 
 </body>
 </html>

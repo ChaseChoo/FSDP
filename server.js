@@ -25,8 +25,10 @@ dotenv.config();
 // Debug: confirm .env value
 console.log("ENV DEV_ALLOW_ALL =", process.env.DEV_ALLOW_ALL);
 
-// Initialize database tables
-await createAppointmentTable();
+// Initialize database tables (non-blocking - runs in background)
+createAppointmentTable().catch(err => {
+  console.error('Failed to initialize appointment table:', err);
+});
 
 const app = express();
 
@@ -83,10 +85,10 @@ app.use("/support", supportRoutes); // Support live agent demo
 app.use("/api", approvedRecipientRoutes);
 // Guardian QR code API (assisted transactions)
 app.use("/api/guardian", fakeLogin, guardianQRRoutes);
+// Bank appointment booking API (mount before walletRoutes to avoid middleware conflicts)
+app.use("/api", appointmentRoutes);
 // Digital wallet transfer API
 app.use("/api", fakeLogin, requireSession, walletRoutes);
-// Bank appointment booking API
-app.use("/api", appointmentRoutes);
 
 // Transaction history API endpoint (JSON)
 app.get("/api/transactions", fakeLogin, requireSession, getTransactionHistory);

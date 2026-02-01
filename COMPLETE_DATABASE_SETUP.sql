@@ -346,7 +346,72 @@ END
 GO
 
 -- ============================================================================
--- STEP 10: INSERT SAMPLE DATA FOR TESTING
+-- STEP 10: CREATE APPOINTMENTS TABLE
+-- ============================================================================
+IF OBJECT_ID(N'dbo.Appointments', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Appointments (
+        Id INT IDENTITY(1,1) PRIMARY KEY,
+        UserId INT NOT NULL,
+        BankId NVARCHAR(100) NOT NULL,
+        BankName NVARCHAR(255) NOT NULL,
+        BankAddress NVARCHAR(500) NOT NULL,
+        AppointmentDate DATE NOT NULL,
+        AppointmentTime NVARCHAR(10) NOT NULL,
+        Status NVARCHAR(50) NOT NULL DEFAULT 'confirmed',
+        Notes NVARCHAR(MAX) NULL,
+        CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+        UpdatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+        CONSTRAINT FK_Appointments_Users FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
+    );
+    PRINT 'Created table dbo.Appointments';
+END
+ELSE
+BEGIN
+    PRINT 'Table dbo.Appointments already exists';
+    
+    -- Add missing columns if they don't exist
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('Appointments') AND name = 'Notes')
+    BEGIN
+        ALTER TABLE Appointments ADD Notes NVARCHAR(MAX) NULL;
+        PRINT 'Added Notes column to Appointments table';
+    END
+    
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('Appointments') AND name = 'CreatedAt')
+    BEGIN
+        ALTER TABLE Appointments ADD CreatedAt DATETIME NOT NULL DEFAULT GETDATE();
+        PRINT 'Added CreatedAt column to Appointments table';
+    END
+    
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('Appointments') AND name = 'UpdatedAt')
+    BEGIN
+        ALTER TABLE Appointments ADD UpdatedAt DATETIME NOT NULL DEFAULT GETDATE();
+        PRINT 'Added UpdatedAt column to Appointments table';
+    END
+END
+GO
+
+-- Create indexes for Appointments
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes WHERE name = N'IX_Appointments_UserId' AND object_id = OBJECT_ID('Appointments')
+)
+BEGIN
+    CREATE INDEX IX_Appointments_UserId ON dbo.Appointments(UserId);
+    PRINT 'Created index IX_Appointments_UserId';
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes WHERE name = N'IX_Appointments_AppointmentDate' AND object_id = OBJECT_ID('Appointments')
+)
+BEGIN
+    CREATE INDEX IX_Appointments_AppointmentDate ON dbo.Appointments(AppointmentDate);
+    PRINT 'Created index IX_Appointments_AppointmentDate';
+END
+GO
+
+-- ============================================================================
+-- STEP 11: INSERT SAMPLE DATA FOR TESTING
 -- ============================================================================
 PRINT '';
 PRINT 'Inserting sample test data...';

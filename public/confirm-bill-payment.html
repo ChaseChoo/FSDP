@@ -1,341 +1,326 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EasyATM — Confirm Bill Payment</title>
+  <title>OCBC ATM - Confirm Bill Payment</title>
 
-  <!-- ATM homepage styling -->
-  <link rel="stylesheet" href="styles/home.css">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
-  <!-- App form style -->
-  <link rel="stylesheet" href="styles.css">
-
-  <!-- Impersonation Guard Styles -->
-  <link rel="stylesheet" href="impersonation-guard.css">
-
-  <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#ea2a33",
+          "background-light": "#f8f6f6",
+          "background-dark": "#211111",
+        },
+        fontFamily: { display: ["Public Sans", "sans-serif"] },
+        borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      }
+    }
+  }
+  </script>
 
   <style>
-    .bill-summary-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 24px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-    }
-
-    .bill-summary-item {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .bill-summary-item:last-child {
-      margin-bottom: 0;
-      border-bottom: none;
-    }
-
-    .bill-label {
-      opacity: 0.9;
-      font-size: 14px;
-    }
-
-    .bill-value {
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    .bill-total {
-      font-size: 24px;
-      font-weight: 600;
-      text-align: center;
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 2px solid rgba(255,255,255,0.3);
-    }
-
-    .warning-badge {
-      background: #fed7d7;
-      border-left: 4px solid #f56565;
-      color: #742a2a;
-      padding: 12px;
-      border-radius: 4px;
-      margin-bottom: 20px;
-      font-size: 14px;
-    }
-
-    .bill-receipt {
-      background: #f7fafc;
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-
-    .receipt-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      font-size: 13px;
-    }
-
-    .receipt-row strong {
-      color: #2d3748;
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 32px;
     }
   </style>
 </head>
 
-<body class="atm-body">
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white min-h-screen flex flex-col">
 
-<main class="atm-shell">
-  <section class="atm-card">
-    <div class="atm-layout">
+<!-- Header -->
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
+</div>
+<div class="flex items-center gap-3">
+<button onclick="window.location.href='home.html#noncash'" class="bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined !text-lg">arrow_back</span> Back
+</button>
+</div>
+</div>
+</header>
 
-      <!-- =============================== -->
-      <!-- LEFT SIDE: CONFIRM DETAILS      -->
-      <!-- =============================== -->
-      <div class="atm-left">
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-8">
 
-        <!-- Header -->
-        <div class="atm-header">
-          <div class="header-content">
-            <h1 class="atm-title">Confirm Bill Payment</h1>
+<div class="max-w-2xl w-full space-y-8">
 
-            <button onclick="location.href='bills.html'" class="logout-btn">
-              <i data-lucide="arrow-left"></i> Back
-            </button>
-          </div>
-        </div>
+<!-- Title -->
+<div class="text-center">
+<h2 class="text-4xl md:text-5xl font-extrabold text-[#1b0e0e] dark:text-white mb-2">Final Check</h2>
+<p class="text-lg text-zinc-600 dark:text-zinc-400">Review bill details before confirming payment</p>
+</div>
 
-        <!-- Review Details Box -->
-        <div class="card" style="margin-top:20px;">
-          <p class="summary">
-            <strong>Final check:</strong> Verify all bill details before confirming payment.
-          </p>
+<!-- Warning Box -->
+<div class="bg-amber-50 dark:bg-amber-950/20 border-l-4 border-amber-500 px-4 py-3 rounded">
+<p class="text-sm text-amber-700 dark:text-amber-300">
+<strong>Please verify all details are correct.</strong> You cannot undo this payment once confirmed.
+</p>
+</div>
 
-          <!-- Payment Summary -->
-          <div class="bill-summary-card">
-            <div class="bill-summary-item">
-              <span class="bill-label">Bill Type</span>
-              <span class="bill-value" id="confirm-billType">(loading)</span>
-            </div>
-            <div class="bill-summary-item">
-              <span class="bill-label">Provider</span>
-              <span class="bill-value" id="confirm-provider">(loading)</span>
-            </div>
-            <div class="bill-summary-item">
-              <span class="bill-label">Account Number</span>
-              <span class="bill-value" id="confirm-accountNumber">(loading)</span>
-            </div>
-            <div class="bill-summary-item">
-              <span class="bill-label">Due Date</span>
-              <span class="bill-value" id="confirm-dueDate">(loading)</span>
-            </div>
-            <div class="bill-total">
-              Amount: $<span id="confirm-amount">(loading)</span>
-            </div>
-          </div>
+<!-- Bill Details Card -->
+<div class="bg-white dark:bg-zinc-900 border-2 border-[#ea2a33] rounded-xl shadow-lg p-8 space-y-6">
 
-          <!-- Warning -->
-          <div class="warning-badge">
-            ⚠️ Once confirmed, this payment will be deducted from your account balance immediately.
-          </div>
+<!-- Bill Type -->
+<div class="pb-6 border-b border-zinc-200 dark:border-zinc-700">
+<p class="text-sm text-zinc-600 dark:text-zinc-400 font-medium mb-1">Document Type</p>
+<p class="text-2xl font-bold text-[#1b0e0e] dark:text-white" id="billDocType">Bill</p>
+</div>
 
-          <!-- Receipt Preview -->
-          <div class="bill-receipt">
-            <div class="receipt-row">
-              <strong>Transaction Type</strong>
-              <strong>Bill Payment</strong>
-            </div>
-            <div class="receipt-row">
-              <span>Processing Fee</span>
-              <span>$0.00</span>
-            </div>
-            <div class="receipt-row">
-              <span>Balance After</span>
-              <span id="balance-after">$0.00</span>
-            </div>
-          </div>
+<!-- Provider -->
+<div class="pb-6 border-b border-zinc-200 dark:border-zinc-700">
+<p class="text-sm text-zinc-600 dark:text-zinc-400 font-medium mb-1">Biller / Provider</p>
+<p class="text-xl font-bold text-[#1b0e0e] dark:text-white" id="billProvider">—</p>
+</div>
 
-          <!-- Actions -->
-          <div class="actions">
-            <a href="bills.html" class="btn btn-ghost">Back</a>
-            <button id="confirm-payment" class="btn btn-primary btn-lg">Confirm & Pay</button>
-          </div>
-        </div>
-      </div>
+<!-- Account Number -->
+<div class="pb-6 border-b border-zinc-200 dark:border-zinc-700">
+<p class="text-sm text-zinc-600 dark:text-zinc-400 font-medium mb-1">Account Number</p>
+<p class="text-lg font-mono font-bold text-[#1b0e0e] dark:text-white" id="billAccount">—</p>
+</div>
 
-      <!-- =============================== -->
-      <!-- RIGHT SIDE: CHATBOT             -->
-      <!-- =============================== -->
-      <aside class="atm-right">
+<!-- Reference Number -->
+<div class="pb-6 border-b border-zinc-200 dark:border-zinc-700">
+<p class="text-sm text-zinc-600 dark:text-zinc-400 font-medium mb-1">Reference Number</p>
+<p class="text-lg font-mono font-bold text-[#1b0e0e] dark:text-white" id="billRef">—</p>
+</div>
 
-        <div class="topbar">
+<!-- Amount - Large & Bold -->
+<div class="bg-primary/10 dark:bg-primary/5 border-2 border-primary rounded-lg p-6 text-center">
+<p class="text-sm text-zinc-600 dark:text-zinc-400 font-medium mb-2">PAYMENT AMOUNT</p>
+<p class="text-5xl font-black text-primary" id="billAmount">S$0.00</p>
+</div>
 
-          <div class="top-right-controls">
+</div>
 
-            <select class="lang-select">
-              <option>English</option>
-            </select>
+<!-- Balance Check -->
+<div class="bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
+<div class="flex items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-zinc-700">
+<span class="text-lg font-bold text-[#1b0e0e] dark:text-white">Current Balance:</span>
+<span class="text-2xl font-bold text-[#1b0e0e] dark:text-white" id="currentBalance">S$0.00</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-lg font-bold text-[#1b0e0e] dark:text-white">After Payment:</span>
+<span class="text-2xl font-bold" id="balanceAfter" style="color: #ea2a33;">S$0.00</span>
+</div>
+</div>
 
-            <div class="divider"></div>
+<!-- Warning if insufficient funds -->
+<div class="bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 px-4 py-3 rounded hidden" id="insufficientFundsBox">
+<p class="text-sm text-red-700 dark:text-red-300">
+<strong>Insufficient Funds:</strong> Your account balance is not enough for this payment. Please go back and select a different option.
+</p>
+</div>
 
-            <!-- Compact Safe Mode -->
-            <div class="safe safe-compact" role="group" aria-label="Safe Mode">
-              <input id="safemode" type="checkbox" checked />
-              <label for="safemode">Safe Mode</label>
-            </div>
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button onclick="window.location.href='bills.html'" class="px-8 py-4 bg-white dark:bg-zinc-900 border-2 border-zinc-300 dark:border-zinc-600 text-[#1b0e0e] dark:text-white font-bold rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">arrow_back</span>
+Back
+</button>
 
-            <div class="divider"></div>
+<button id="confirm-payment" onclick="confirmPayment()" class="px-8 py-4 bg-primary text-white font-bold rounded-lg hover:bg-red-700 transition-colors text-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+Confirm & Pay
+</button>
+</div>
 
-            <button onclick="location.href='home.html'" class="exit-btn hover-tts">
-              <i data-lucide="log-out" class="icon"></i>
-              <span>Exit</span>
-            </button>
+</div>
 
-          </div>
-        </div>
-
-        <!-- Chat module -->
-        <div class="chat-shell">
-          <div id="chatlog" class="chat-log"></div>
-
-          <div class="chat-input-row">
-            <input id="userInput" class="chat-input" placeholder="How can I assist?" />
-            <button id="sendBtn" class="chat-send">
-              <i data-lucide="send" class="icon-xs"></i>
-            </button>
-          </div>
-
-          <div class="chat-footer">
-            <div class="chat-tip">Tip: "What payment methods are available?"</div>
-          </div>
-        </div>
-
-      </aside>
-
-    </div>
-  </section>
 </main>
 
-<!-- Icons -->
-<script> lucide.createIcons(); </script>
+<!-- Footer -->
+<footer class="w-full py-6 mt-auto bg-zinc-100 dark:bg-zinc-950/50 px-6">
+<div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-zinc-500 dark:text-zinc-500 text-xs font-medium">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined !text-sm">security</span>
+<span>Your session is secure and encrypted. Please do not share your PIN.</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Use</a>
+</div>
+</div>
+</footer>
 
-<!-- Safe mode, TTS, chatbot -->
+<!-- Flag to prevent balance API calls -->
+<script>
+  window.skipBalanceAPI = true;
+</script>
+
 <script src="scripts/home.js"></script>
 
-<!-- Your original logic -->
-<script src="app.js"></script>
-<script src="fraud-detection-system.js"></script>
-<script src="impersonation-guard.js"></script>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Load bill payment data from session storage
-    let bill = null;
-    try {
-      const billData = sessionStorage.getItem('billPaymentData');
-      if (billData) {
-        bill = JSON.parse(billData);
-      }
-    } catch (e) {
-      bill = null;
-    }
-    if (!bill || typeof bill !== 'object') {
-      alert('No bill payment data found. Please start from the bill payment page.');
-      window.location.href = 'bills.html';
-      return;
-    }
+/**
+ * Load and display bill data for confirmation
+ * Data comes from sessionStorage (from bills.html)
+ */
+let currentBillData = null;
+let currentBalance = 0;
 
-    // Format bill type display
-    const billTypeMap = {
-      'electricity': 'Electricity',
-      'water': 'Water',
-      'gas': 'Gas',
-      'internet': 'Internet',
-      'town-council': 'Town Council',
-      'insurance': 'Insurance'
+// Load data early (before DOMContentLoaded)
+try {
+  const billData = sessionStorage.getItem('billPaymentData');
+  if (billData) {
+    currentBillData = JSON.parse(billData);
+  }
+} catch (e) {
+  console.error('Error loading bill data:', e);
+  currentBillData = null;
+}
+
+/**
+ * Initialize the confirmation page
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  // Get current balance from localStorage
+  const balanceStr = localStorage.getItem('balance') || '1000.00';
+  currentBalance = parseFloat(balanceStr);
+
+  // If no bill data, show default message
+  if (!currentBillData) {
+    document.getElementById('billDocType').textContent = 'No Bill Selected';
+    document.getElementById('confirm-payment').disabled = true;
+    document.getElementById('confirm-payment').textContent = 'No Bill to Pay';
+    return;
+  }
+
+  // Populate bill details
+  const docType = currentBillData.documentType || currentBillData.docType || 'Bill';
+  const provider = currentBillData.provider || currentBillData.providerName || 'Unknown';
+  const account = currentBillData.accountNumber || currentBillData.account || '—';
+  const refNumber = currentBillData.reference || currentBillData.referenceNumber || '—';
+  
+  // Parse amount
+  let amountValue = 0;
+  if (currentBillData.amount) {
+    const amountStr = currentBillData.amount.toString().replace(/[^\d.]/g, '');
+    amountValue = parseFloat(amountStr) || 0;
+  }
+
+  // Populate fields
+  document.getElementById('billDocType').textContent = docType;
+  document.getElementById('billProvider').textContent = provider;
+  document.getElementById('billAccount').textContent = account;
+  document.getElementById('billRef').textContent = refNumber;
+  
+  const displayAmount = `S$${amountValue.toFixed(2)}`;
+  document.getElementById('billAmount').textContent = displayAmount;
+
+  // Update balance display
+  document.getElementById('currentBalance').textContent = `S$${currentBalance.toFixed(2)}`;
+  
+  const balanceAfter = currentBalance - amountValue;
+  document.getElementById('balanceAfter').textContent = `S$${balanceAfter.toFixed(2)}`;
+
+  // Check if sufficient funds
+  const confirmBtn = document.getElementById('confirm-payment');
+  if (currentBalance < amountValue) {
+    document.getElementById('insufficientFundsBox').classList.remove('hidden');
+    confirmBtn.disabled = true;
+    confirmBtn.classList.add('opacity-50');
+    confirmBtn.style.cursor = 'not-allowed';
+  }
+});
+
+/**
+ * Process the payment confirmation
+ */
+function confirmPayment() {
+  if (!currentBillData) {
+    alert('No bill selected. Please go back and select a bill to pay.');
+    return;
+  }
+
+  // Parse amount
+  let amountValue = 0;
+  if (currentBillData.amount) {
+    const amountStr = currentBillData.amount.toString().replace(/[^\d.]/g, '');
+    amountValue = parseFloat(amountStr) || 0;
+  }
+
+  // Check balance one more time
+  const liveBalance = parseFloat(localStorage.getItem('balance') || '0');
+  if (liveBalance < amountValue) {
+    alert('Insufficient balance. This payment cannot be processed.');
+    return;
+  }
+
+  // Disable button and show processing
+  const confirmBtn = document.getElementById('confirm-payment');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Processing...';
+  confirmBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_bottom</span> Processing...';
+
+  // Simulate payment processing delay
+  setTimeout(function() {
+    // Calculate new balance
+    const previousBalance = liveBalance;
+    const newBalance = liveBalance - amountValue;
+    
+    // Update localStorage
+    localStorage.setItem('balance', newBalance.toFixed(2));
+
+    // Record transaction
+    const transaction = {
+      id: 'BILL-' + Date.now(),
+      type: 'Bill Payment',
+      provider: currentBillData.provider || 'Bill Payment',
+      accountNumber: currentBillData.accountNumber || '—',
+      reference: currentBillData.reference || '—',
+      amount: amountValue,
+      date: new Date().toLocaleString(),
+      status: 'Completed',
+      balanceAfter: newBalance
     };
 
-    // Populate confirmation details safely
-    document.getElementById('confirm-billType').textContent = billTypeMap[bill.billType] || (bill.billType ? bill.billType : '—');
-    document.getElementById('confirm-provider').textContent = bill.provider || '—';
-    document.getElementById('confirm-accountNumber').textContent = bill.accountNumber || '—';
-    document.getElementById('confirm-dueDate').textContent = bill.dueDate || '—';
-    document.getElementById('confirm-amount').textContent = (typeof bill.amount === 'number' && !isNaN(bill.amount)) ? bill.amount.toFixed(2) : '0.00';
+    let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+    transactions.unshift(transaction);
+    localStorage.setItem('transactions', JSON.stringify(transactions.slice(0, 50)));
 
-    // Balance logic and payment button
-    let rawBalance = localStorage.getItem('balance');
-    if (rawBalance === null || rawBalance === undefined || isNaN(parseFloat(rawBalance))) {
-      localStorage.setItem('balance', '0');
-      rawBalance = '0';
+    // Dispatch event for balance update
+    if (window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('balanceUpdated', { 
+        detail: { newBalance: newBalance } 
+      }));
     }
-    const currentBalance = parseFloat(rawBalance);
-    let warningDiv = document.querySelector('.warning-badge');
-    let confirmBtn = document.getElementById('confirm-payment');
-    let balanceAfter = currentBalance - (typeof bill.amount === 'number' ? bill.amount : 0);
-    // Update balance-after display
-    document.getElementById('balance-after').textContent = '$' + (balanceAfter >= 0 ? balanceAfter.toFixed(2) : '0.00');
 
-    function setButtonState() {
-      if (currentBalance < (typeof bill.amount === 'number' ? bill.amount : 0)) {
-        if (confirmBtn) {
-          confirmBtn.disabled = true;
-          confirmBtn.textContent = 'Insufficient Funds';
-        }
-        if (warningDiv) warningDiv.style.display = 'block';
-      } else {
-        if (confirmBtn) {
-          confirmBtn.disabled = false;
-          confirmBtn.textContent = 'Confirm Payment';
-        }
-        if (warningDiv) warningDiv.style.display = 'none';
-      }
-    }
-    setButtonState();
+    // Store receipt data for receipt page
+    const receiptData = {
+      amount: amountValue,
+      docType: currentBillData.documentType || currentBillData.docType || 'Bill',
+      refNumber: currentBillData.reference || currentBillData.referenceNumber || '—',
+      provider: currentBillData.provider || currentBillData.providerName || 'Bill Payment',
+      account: currentBillData.accountNumber || currentBillData.account || '—',
+      previousBalance: previousBalance,
+      currentBalance: newBalance
+    };
+    sessionStorage.setItem('billPaymentData', JSON.stringify(receiptData));
 
-    // Payment logic
-    if (confirmBtn) {
-      confirmBtn.onclick = function() {
-        // Double check balance before payment
-        let liveBalance = parseFloat(localStorage.getItem('balance') || '0');
-        if (liveBalance < (typeof bill.amount === 'number' ? bill.amount : 0)) {
-          alert('❌ Insufficient balance to complete this payment.');
-          setButtonState();
-          return;
-        }
-        // Disable button during processing
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = 'Processing...';
-        setTimeout(function() {
-          let newBalance = liveBalance - bill.amount;
-          localStorage.setItem('balance', newBalance.toFixed(2));
-          // Record transaction
-          const transaction = {
-            id: 'BILL-' + Date.now(),
-            type: 'Bill Payment',
-            provider: bill.provider,
-            accountNumber: bill.accountNumber,
-            amount: parseFloat(bill.amount),
-            date: new Date().toLocaleString(),
-            status: 'Completed',
-            balanceAfter: newBalance
-          };
-          let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-          transactions.unshift(transaction);
-          localStorage.setItem('transactions', JSON.stringify(transactions.slice(0, 50)));
-          if (window.dispatchEvent) {
-            window.dispatchEvent(new CustomEvent('balanceUpdated', { detail: { newBalance: newBalance } }));
-          }
-          sessionStorage.removeItem('billPaymentData');
-          window.location.href = 'success.html?type=billpayment&provider=' + encodeURIComponent(bill.provider) + '&amount=' + bill.amount;
-        }, 1200);
-      };
-    }
-});
+    // Clear old bill data
+    sessionStorage.removeItem('billAmount');
+    sessionStorage.removeItem('billReference');
+    sessionStorage.removeItem('billDocType');
+
+    // Redirect to receipt page
+    window.location.href = 'receipt.html';
+  }, 1200);
+}
+
+// Prevent back button for security
+history.pushState(null, null, location.href);
+window.onpopstate = function() {
+  window.location.href = 'bills.html';
+};
 </script>
 
 </body>

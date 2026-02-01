@@ -1,4 +1,4 @@
-# 🏗️ Bank Appointment System - Architecture & Flow Diagrams
+  # 🏗️ Bank Appointment System - Architecture & Flow Diagrams
 
 ## System Architecture
 

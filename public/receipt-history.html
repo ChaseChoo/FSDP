@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OCBC ATM - Receipt History</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#ea2a33",
+          "background-light": "#f8f6f6",
+          "background-dark": "#211111",
+        },
+        fontFamily: { display: ["Public Sans", "sans-serif"] },
+        borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      }
+    }
+  }
+  </script>
+
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 32px;
+    }
+
+    .receipt-card {
+      transition: all 0.2s ease;
+    }
+
+    .receipt-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(234, 42, 51, 0.15);
+    }
+
+    .elderly-button {
+      font-size: 1.25rem;
+      padding: 1.25rem 2rem;
+      font-weight: 700;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      border-radius: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .elderly-button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-primary {
+      background-color: #ea2a33;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #c91f28;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-[#1b0e0e] dark:text-zinc-100 font-display min-h-screen">
+
+<div class="container max-w-7xl mx-auto px-4 py-8">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <button onclick="window.location.href='home.html'" class="flex items-center gap-2 text-primary hover:text-red-700 font-bold text-lg">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>Back to Home</span>
+      </button>
+
+      <button onclick="clearHistory()" class="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 font-semibold">
+        <span class="material-symbols-outlined" style="font-size: 24px;">delete</span>
+        <span>Clear All</span>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-4 mb-2">
+      <span class="material-symbols-outlined text-primary" style="font-size: 48px;">history</span>
+      <h1 class="text-4xl md:text-5xl font-extrabold">Receipt History</h1>
+    </div>
+    <p class="text-lg text-zinc-600 dark:text-zinc-400 font-medium">
+      Your last 20 payment receipts
+    </p>
+  </div>
+
+  <!-- Spending Summary -->
+  <div id="spendingSummary" class="hidden mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Total Spent -->
+    <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-xl p-6 border-2 border-red-200 dark:border-red-800">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="material-symbols-outlined text-red-600 dark:text-red-400">payments</span>
+        <span class="text-sm font-semibold text-red-900 dark:text-red-100 uppercase">Total Spent</span>
+      </div>
+      <div class="text-3xl font-extrabold text-red-600 dark:text-red-400" id="totalSpent">S$0.00</div>
+      <div class="text-sm text-red-700 dark:text-red-300 mt-1" id="totalCount">0 payments</div>
+    </div>
+
+    <!-- Most Frequent -->
+    <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-6 border-2 border-blue-200 dark:border-blue-800">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">trending_up</span>
+        <span class="text-sm font-semibold text-blue-900 dark:text-blue-100 uppercase">Most Frequent</span>
+      </div>
+      <div class="text-lg font-bold text-blue-600 dark:text-blue-400" id="mostFrequent">—</div>
+      <div class="text-sm text-blue-700 dark:text-blue-300 mt-1" id="frequentCount">—</div>
+    </div>
+
+    <!-- Average Payment -->
+    <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl p-6 border-2 border-green-200 dark:border-green-800">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="material-symbols-outlined text-green-600 dark:text-green-400">calculate</span>
+        <span class="text-sm font-semibold text-green-900 dark:text-green-100 uppercase">Average</span>
+      </div>
+      <div class="text-3xl font-extrabold text-green-600 dark:text-green-400" id="avgPayment">S$0.00</div>
+      <div class="text-sm text-green-700 dark:text-green-300 mt-1">per transaction</div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyState" class="hidden text-center py-16">
+    <span class="material-symbols-outlined text-zinc-400 dark:text-zinc-600" style="font-size: 120px;">receipt_long</span>
+    <h2 class="text-2xl font-bold text-zinc-600 dark:text-zinc-400 mt-4">No Receipt History</h2>
+    <p class="text-lg text-zinc-500 dark:text-zinc-500 mt-2">Your payment receipts will appear here</p>
+    <button onclick="window.location.href='home.html'" class="elderly-button btn-primary mx-auto mt-8" style="max-width: 300px;">
+      <span class="material-symbols-outlined">home</span>
+      Return to Home
+    </button>
+  </div>
+
+  <!-- Receipt List -->
+  <div id="receiptList" class="space-y-4">
+    <!-- Receipts will be dynamically inserted here -->
+  </div>
+
+</div>
+
+<script>
+/**
+ * Load and display receipt history
+ */
+function loadHistory() {
+  try {
+    const history = JSON.parse(localStorage.getItem('receiptHistory') || '[]');
+    
+    if (history.length === 0) {
+      document.getElementById('emptyState').classList.remove('hidden');
+      document.getElementById('receiptList').classList.add('hidden');
+      document.getElementById('spendingSummary').classList.add('hidden');
+      return;
+    }
+
+    const listContainer = document.getElementById('receiptList');
+    listContainer.innerHTML = '';
+
+    history.forEach((receipt, index) => {
+      const card = createReceiptCard(receipt, index);
+      listContainer.appendChild(card);
+    });
+
+    // Calculate and display spending summary
+    calculateSpendingSummary(history);
+
+  } catch (e) {
+    console.error('Error loading history:', e);
+    document.getElementById('emptyState').classList.remove('hidden');
+    document.getElementById('receiptList').classList.add('hidden');
+    document.getElementById('spendingSummary').classList.add('hidden');
+  }
+}
+
+/**
+ * Calculate spending summary statistics
+ * @param {Array} history - Array of receipt data
+ */
+function calculateSpendingSummary(history) {
+  // Parse amounts and calculate total
+  let total = 0;
+  const providerCounts = {};
+  
+  history.forEach(receipt => {
+    // Extract numeric value from amount string (e.g., "S$66.20" -> 66.20)
+    const amountStr = receipt.amount || 'S$0';
+    // Convert to string first if it's a number
+    const amountString = typeof amountStr === 'string' ? amountStr : String(amountStr);
+    const numericAmount = parseFloat(amountString.replace(/[S$,]/g, ''));
+    if (!isNaN(numericAmount)) {
+      total += numericAmount;
+    }
+    
+    // Count providers
+    const provider = receipt.provider || 'Bill Payment';
+    providerCounts[provider] = (providerCounts[provider] || 0) + 1;
+  });
+
+  // Find most frequent provider
+  let mostFrequent = '—';
+  let maxCount = 0;
+  for (const [provider, count] of Object.entries(providerCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      mostFrequent = provider;
+    }
+  }
+
+  // Calculate average
+  const average = history.length > 0 ? total / history.length : 0;
+
+  // Update UI
+  document.getElementById('totalSpent').textContent = `S$${total.toFixed(2)}`;
+  document.getElementById('totalCount').textContent = `${history.length} payment${history.length !== 1 ? 's' : ''}`;
+  document.getElementById('mostFrequent').textContent = mostFrequent;
+  document.getElementById('frequentCount').textContent = maxCount > 1 ? `${maxCount} times` : '1 time';
+  document.getElementById('avgPayment').textContent = `S$${average.toFixed(2)}`;
+
+  // Show summary
+  document.getElementById('spendingSummary').classList.remove('hidden');
+}
+
+/**
+ * Create a receipt card element
+ * @param {Object} receipt - Receipt data
+ * @param {number} index - Receipt index
+ * @returns {HTMLElement} Receipt card element
+ */
+function createReceiptCard(receipt, index) {
+  const card = document.createElement('div');
+  card.className = 'receipt-card bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 border-2 border-zinc-200 dark:border-zinc-700';
+
+  // Format date
+  const date = new Date(receipt.savedAt || receipt.timestamp);
+  const dateStr = date.toLocaleString('en-SG', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  // Get relative time
+  const now = new Date();
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  let relativeTime = '';
+  if (diffDays === 0) {
+    relativeTime = 'Today';
+  } else if (diffDays === 1) {
+    relativeTime = 'Yesterday';
+  } else if (diffDays < 7) {
+    relativeTime = `${diffDays} days ago`;
+  } else if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    relativeTime = `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+  } else {
+    const months = Math.floor(diffDays / 30);
+    relativeTime = `${months} month${months > 1 ? 's' : ''} ago`;
+  }
+
+  // Provider icon
+  const provider = receipt.provider || 'Bill Payment';
+  let iconName = 'receipt';
+  if (provider.includes('Electricity')) iconName = 'bolt';
+  else if (provider.includes('Water')) iconName = 'water_drop';
+  else if (provider.includes('Shopping')) iconName = 'shopping_cart';
+  else if (provider.includes('Restaurant')) iconName = 'restaurant';
+  else if (provider.includes('Travel')) iconName = 'flight';
+  else if (provider.includes('Parking')) iconName = 'local_parking';
+
+  card.innerHTML = `
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      
+      <!-- Left: Icon + Info -->
+      <div class="flex items-start gap-4 flex-1">
+        <div class="bg-primary/10 rounded-xl p-3">
+          <span class="material-symbols-outlined text-primary" style="font-size: 36px;">${iconName}</span>
+        </div>
+        
+        <div class="flex-1">
+          <h3 class="text-xl md:text-2xl font-bold mb-1">${provider}</h3>
+          <div class="text-sm text-zinc-600 dark:text-zinc-400 space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined" style="font-size: 18px;">schedule</span>
+              <span>${relativeTime} • ${dateStr}</span>
+            </div>
+            ${receipt.refNumber && receipt.refNumber !== '—' && receipt.refNumber !== 'Not detected' ? `
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined" style="font-size: 18px;">tag</span>
+                <span class="font-mono">${receipt.refNumber}</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Amount + Actions -->
+      <div class="flex md:flex-col items-center md:items-end gap-3">
+        <div class="text-3xl font-extrabold text-primary">${receipt.amount || 'S$0.00'}</div>
+        <button onclick="viewReceipt(${index})" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-red-700 transition-all font-semibold">
+          <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+          <span>View</span>
+        </button>
+      </div>
+
+    </div>
+  `;
+
+  return card;
+}
+
+/**
+ * View a specific receipt
+ * @param {number} index - Receipt index in history
+ */
+function viewReceipt(index) {
+  try {
+    const history = JSON.parse(localStorage.getItem('receiptHistory') || '[]');
+    const receipt = history[index];
+    
+    if (receipt) {
+      // Store in sessionStorage and redirect to receipt page
+      sessionStorage.setItem('billPaymentData', JSON.stringify(receipt));
+      window.location.href = 'receipt.html';
+    }
+  } catch (e) {
+    console.error('Error viewing receipt:', e);
+    alert('Failed to load receipt. Please try again.');
+  }
+}
+
+/**
+ * Clear all receipt history
+ */
+function clearHistory() {
+  if (confirm('Are you sure you want to delete all receipt history? This cannot be undone.')) {
+    try {
+      localStorage.removeItem('receiptHistory');
+      loadHistory(); // Reload to show empty state
+    } catch (e) {
+      console.error('Error clearing history:', e);
+      alert('Failed to clear history. Please try again.');
+    }
+  }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', loadHistory);
+</script>
+
+</body>
+</html>

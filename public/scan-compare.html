@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OCBC ATM - Duplicate Scan Detected</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#ea2a33",
+          "background-light": "#f8f6f6",
+          "background-dark": "#211111",
+        },
+        fontFamily: { display: ["Public Sans", "sans-serif"] },
+        borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      }
+    }
+  }
+  </script>
+
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 32px;
+    }
+
+    .comparison-card {
+      border: 3px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: white;
+    }
+
+    .comparison-card.current {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+
+    .comparison-card.previous {
+      border-color: #d1d5db;
+      background: #f9fafb;
+    }
+
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 0;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 1.125rem;
+    }
+
+    .field-row:last-child {
+      border-bottom: none;
+    }
+
+    .field-label {
+      font-weight: 600;
+      color: #6b7280;
+    }
+
+    .field-value {
+      font-weight: 800;
+      color: #1b0e0e;
+      text-align: right;
+    }
+
+    .field-value.mismatch {
+      color: #ea2a33;
+      background: #fef2f2;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+    }
+
+    .elderly-button {
+      font-size: 1.25rem;
+      padding: 1.25rem 2rem;
+      font-weight: 700;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      border-radius: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .elderly-button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-[#1b0e0e] dark:text-zinc-100 font-display min-h-screen">
+
+<!-- Header -->
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
+<h1 class="text-xl font-bold hidden sm:block">Duplicate Scan Detected</h1>
+</div>
+</div>
+</header>
+
+<!-- Main Content -->
+<main class="flex-1 px-4 py-8 max-w-7xl mx-auto">
+
+  <!-- Warning Banner -->
+  <div class="mb-8 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 rounded-xl p-6">
+    <div class="flex items-start gap-4">
+      <span class="material-symbols-outlined text-amber-600 dark:text-amber-400" style="font-size: 48px;">warning</span>
+      <div>
+        <h2 class="text-2xl font-extrabold text-amber-900 dark:text-amber-100 mb-2">Possible Duplicate Scan</h2>
+        <p class="text-lg text-amber-800 dark:text-amber-200 leading-relaxed">
+          This scan looks similar to one you scanned <strong id="scanTimeAgo">recently</strong>. 
+          Please review both scans carefully before proceeding.
+        </p>
+        <p class="text-base text-amber-700 dark:text-amber-300 mt-2">
+          Similarity Score: <strong id="similarityScore">85%</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Title -->
+  <div class="mb-6">
+    <h3 class="text-2xl font-extrabold text-center mb-2">Side-by-Side Comparison</h3>
+    <p class="text-lg text-zinc-600 dark:text-zinc-400 text-center">
+      Left = Current Scan | Right = Previous Scan
+    </p>
+  </div>
+
+  <!-- Side-by-Side Comparison Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    
+    <!-- Current Scan (Left) -->
+    <div class="comparison-card current">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-symbols-outlined text-blue-600" style="font-size: 36px;">new_releases</span>
+        <h4 class="text-xl font-extrabold text-blue-900">Current Scan (NEW)</h4>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Document Type:</span>
+        <span class="field-value" id="currentDocType">—</span>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Merchant/Biller:</span>
+        <span class="field-value" id="currentMerchant">—</span>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Amount:</span>
+        <span class="field-value" id="currentAmount">—</span>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Reference Number:</span>
+        <span class="field-value" id="currentReference">—</span>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Scanned:</span>
+        <span class="field-value" id="currentScanned">Just now</span>
+      </div>
+    </div>
+
+    <!-- Previous Scan (Right) -->
+    <div class="comparison-card previous">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="material-symbols-outlined text-zinc-600" style="font-size: 36px;">history</span>
+        <h4 class="text-xl font-extrabold text-zinc-700">Previous Scan</h4>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Document Type:</span>
+        <span class="field-value" id="previousDocType">—</span>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Merchant/Biller:</span>
+        <span class="field-value" id="previousMerchant">—</span>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Amount:</span>
+        <span class="field-value" id="previousAmount">—</span>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Reference Number:</span>
+        <span class="field-value" id="previousReference">—</span>
+      </div>
+      
+      <div class="field-row">
+        <span class="field-label">Scanned:</span>
+        <span class="field-value" id="previousScanned">—</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Differences Highlight -->
+  <div id="differencesSection" class="mb-8 hidden">
+    <div class="bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700 rounded-xl p-5">
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-red-600 dark:text-red-400" style="font-size: 32px;">difference</span>
+        <div>
+          <h4 class="text-lg font-bold text-red-900 dark:text-red-100 mb-2">Differences Found</h4>
+          <ul id="differencesList" class="text-base text-red-800 dark:text-red-200 space-y-1">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    
+    <button onclick="proceedAnyway()" class="elderly-button bg-primary text-white hover:bg-red-700">
+      <span class="material-symbols-outlined">check_circle</span>
+      <span>Proceed Anyway</span>
+    </button>
+
+    <button onclick="rescan()" class="elderly-button bg-blue-600 text-white hover:bg-blue-700">
+      <span class="material-symbols-outlined">camera</span>
+      <span>Rescan Document</span>
+    </button>
+
+    <button onclick="goBack()" class="elderly-button bg-zinc-600 text-white hover:bg-zinc-700">
+      <span class="material-symbols-outlined">arrow_back</span>
+      <span>Go Back</span>
+    </button>
+
+  </div>
+
+</main>
+
+<script>
+/**
+ * Initialize comparison page
+ * Loads current and previous scan data from sessionStorage
+ */
+function initComparison() {
+  try {
+    // Get comparison data
+    const comparisonData = JSON.parse(sessionStorage.getItem('scanComparisonData') || '{}');
+    
+    if (!comparisonData.current || !comparisonData.previous) {
+      alert('No comparison data found. Redirecting to scanner.');
+      window.location.href = 'bill-scanner.html';
+      return;
+    }
+
+    const current = comparisonData.current;
+    const previous = comparisonData.previous;
+    const similarity = comparisonData.similarity || 0;
+
+    // Populate current scan
+    document.getElementById('currentDocType').textContent = current.docType || '—';
+    document.getElementById('currentMerchant').textContent = current.merchantOrBiller || '—';
+    document.getElementById('currentAmount').textContent = current.amount || '—';
+    document.getElementById('currentReference').textContent = current.referenceNumber || '—';
+    document.getElementById('currentScanned').textContent = 'Just now';
+
+    // Populate previous scan
+    document.getElementById('previousDocType').textContent = previous.docType || '—';
+    document.getElementById('previousMerchant').textContent = previous.merchantOrBiller || '—';
+    document.getElementById('previousAmount').textContent = previous.amount || '—';
+    document.getElementById('previousReference').textContent = previous.referenceNumber || '—';
+    
+    // Calculate time ago
+    const timeAgo = getTimeAgo(previous.scannedAt);
+    document.getElementById('previousScanned').textContent = timeAgo;
+    document.getElementById('scanTimeAgo').textContent = timeAgo;
+
+    // Show similarity score
+    document.getElementById('similarityScore').textContent = Math.round(similarity) + '%';
+
+    // Highlight differences
+    highlightDifferences(current, previous);
+
+  } catch (e) {
+    console.error('Error initializing comparison:', e);
+    alert('Error loading comparison data.');
+    window.location.href = 'bill-scanner.html';
+  }
+}
+
+/**
+ * Highlight differences between current and previous scans
+ */
+function highlightDifferences(current, previous) {
+  const differences = [];
+
+  // Check amount
+  if (current.amount !== previous.amount) {
+    differences.push(`Amount changed from ${previous.amount} to ${current.amount}`);
+    document.getElementById('currentAmount').classList.add('mismatch');
+    document.getElementById('previousAmount').classList.add('mismatch');
+  }
+
+  // Check reference
+  if (current.referenceNumber !== previous.referenceNumber && 
+      current.referenceNumber !== 'Not detected' && 
+      previous.referenceNumber !== 'Not detected') {
+    differences.push(`Reference number changed from ${previous.referenceNumber} to ${current.referenceNumber}`);
+    document.getElementById('currentReference').classList.add('mismatch');
+    document.getElementById('previousReference').classList.add('mismatch');
+  }
+
+  // Check merchant
+  if (current.merchantOrBiller !== previous.merchantOrBiller) {
+    differences.push(`Merchant/Biller changed from ${previous.merchantOrBiller} to ${current.merchantOrBiller}`);
+    document.getElementById('currentMerchant').classList.add('mismatch');
+    document.getElementById('previousMerchant').classList.add('mismatch');
+  }
+
+  // Show differences section if any
+  if (differences.length > 0) {
+    const diffSection = document.getElementById('differencesSection');
+    const diffList = document.getElementById('differencesList');
+    
+    diffList.innerHTML = differences.map(diff => `<li>• ${diff}</li>`).join('');
+    diffSection.classList.remove('hidden');
+  }
+}
+
+/**
+ * Get human-readable time ago string
+ */
+function getTimeAgo(timestamp) {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diffMs = now - past;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+
+  if (diffDays > 0) {
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  } else if (diffHours > 0) {
+    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  } else if (diffMins > 0) {
+    return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  } else {
+    return 'Just now';
+  }
+}
+
+/**
+ * Proceed with payment despite duplicate
+ */
+function proceedAnyway() {
+  // Continue to payment flow
+  window.location.href = 'bills.html';
+}
+
+/**
+ * Go back to scanner
+ */
+function rescan() {
+  // Clear comparison data and return to scanner
+  sessionStorage.removeItem('scanComparisonData');
+  window.location.href = 'bill-scanner.html';
+}
+
+/**
+ * Go back to previous page
+ */
+function goBack() {
+  window.history.back();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initComparison);
+</script>
+
+</body>
+</html>

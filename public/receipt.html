@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OCBC ATM - Your Receipt</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#ea2a33",
+          "background-light": "#f8f6f6",
+          "background-dark": "#211111",
+        },
+        fontFamily: { display: ["Public Sans", "sans-serif"] },
+        borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      }
+    }
+  }
+  </script>
+
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 32px;
+    }
+
+    /* Receipt-style printing */
+    .receipt-paper {
+      background: white;
+      color: #1b0e0e;
+      font-family: "Courier New", monospace;
+      padding: 2rem;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      page-break-inside: avoid;
+    }
+
+    .receipt-section {
+      border-bottom: 2px solid #ddd;
+      padding: 1.5rem 0;
+    }
+
+    .receipt-section:last-child {
+      border-bottom: none;
+    }
+
+    .receipt-line {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.75rem 0;
+      font-size: 1.125rem;
+    }
+
+    .receipt-label {
+      font-weight: 700;
+      color: #666;
+    }
+
+    .receipt-value {
+      font-weight: 700;
+      color: #1b0e0e;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .receipt-centered {
+      text-align: center;
+      margin: 1rem 0;
+    }
+
+    @media print {
+      body {
+        background: white !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .receipt-paper {
+        box-shadow: none;
+        max-width: 100%;
+      }
+    }
+
+    /* Elderly-friendly sizes */
+    .receipt-status {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin: 1.5rem 0;
+      line-height: 1.2;
+    }
+
+    .receipt-subtitle {
+      font-size: 1.25rem;
+      color: #666;
+      margin: 0.75rem 0;
+    }
+
+    .receipt-amount {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #ea2a33;
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .elderly-button {
+      padding: 1.25rem 2rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      min-height: 80px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: #ea2a33;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #c42029;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(234, 42, 51, 0.3);
+    }
+
+    .btn-secondary {
+      background-color: #f3f3f3;
+      color: #1b0e0e;
+      border: 3px solid #ea2a33;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e8e8e8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .divider-line {
+      border-top: 3px dashed #ddd;
+      margin: 1.5rem 0;
+    }
+
+    .status-icon {
+      font-size: 4rem;
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#1b0e0e] dark:text-white min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="w-full bg-white dark:bg-zinc-900 border-b border-[#f3e7e8] dark:border-zinc-800 px-6 lg:px-12 py-4 sticky top-0 z-50 no-print">
+<div class="max-w-4xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img src="sources/logo_ocbc.png" alt="OCBC Logo" class="h-8">
+<h1 class="text-xl font-bold hidden sm:block">Your Transaction Receipt</h1>
+</div>
+</div>
+</header>
+
+<!-- Main Content -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-8">
+
+<!-- Receipt Paper (Printable) -->
+<div class="receipt-paper">
+
+<!-- Header with Logo & Bank Name -->
+<div class="receipt-centered">
+<div style="font-size: 1.5rem; font-weight: 800; margin: 1rem 0;">OCBC BANK</div>
+<div style="font-size: 0.875rem; color: #999;">ATM Transaction Receipt</div>
+</div>
+
+<div class="divider-line"></div>
+
+<!-- === ELDERLY-FRIENDLY SUMMARY SECTION === -->
+<!-- Purpose: Provide plain-language explanation BEFORE technical details -->
+<!-- Why: Elderly users benefit from clear, reassuring summary of what happened -->
+<!-- Structure: What happened → How much → What now → No further action needed -->
+<div class="receipt-centered" style="background-color: #f0f9ff; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+<div style="font-size: 1.25rem; font-weight: 800; color: #1b0e0e; margin-bottom: 1rem;">WHAT JUST HAPPENED</div>
+<div style="font-size: 1.125rem; line-height: 1.8; color: #333; text-align: left;">
+<div style="margin-bottom: 0.75rem;">
+<strong id="summaryAction">You have successfully completed your transaction.</strong>
+</div>
+<div style="margin-bottom: 0.75rem;" id="summaryDetails">
+The transaction of <strong id="summaryAmount">S$0.00</strong> has been completed and processed.
+</div>
+<div style="margin-bottom: 0.75rem;">
+<strong>No further action is required.</strong> Your transaction is confirmed.
+</div>
+<div style="color: #666; margin-top: 1rem;">
+(See details below for reference)
+</div>
+</div>
+</div>
+
+<!-- === BALANCE CHANGE EXPLANATION === -->
+<!-- Purpose: Help elderly users understand why balance changed -->
+<!-- Why: Transparent, reassuring explanation prevents confusion -->
+<div class="receipt-centered" id="balanceChangeSection" style="background-color: #fef3e2; padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border-left: 4px solid #f59e0b;">
+<div style="font-size: 1rem; font-weight: 600; color: #1b0e0e; margin-bottom: 0.5rem;">YOUR ACCOUNT BALANCE CHANGED</div>
+<div style="font-size: 1rem; line-height: 1.6; color: #333;">
+Your balance <strong id="balanceChangeDirection">changed by</strong> <span id="balanceChangeAmount" style="color: #ea2a33; font-weight: 700;">S$0.00</span> <br>
+<span id="balanceChangeReason">because of this transaction.</span>
+</div>
+</div>
+
+<!-- Transaction Status with Icon -->
+<div class="receipt-centered">
+<span class="status-icon" id="statusIcon">✓</span>
+<div class="receipt-status" id="statusText">Transaction Successful</div>
+<div class="receipt-subtitle" id="statusSubtitle">Your payment has been processed</div>
+</div>
+
+<!-- Amount - Large & Clear -->
+<div class="receipt-centered">
+<div style="font-size: 0.875rem; color: #999; margin-bottom: 0.5rem;" id="amountLabel">TRANSACTION AMOUNT</div>
+<div class="receipt-amount" id="receiptAmount">S$0.00</div>
+</div>
+
+<div class="divider-line"></div>
+
+<!-- === REFERENCE INFORMATION SECTION === -->
+<!-- Purpose: Technical details grouped as "reference information" -->
+<!-- Why: Keeps details available but clearly secondary to summary -->
+<div style="font-size: 0.875rem; color: #999; margin-bottom: 0.5rem; text-align: center;">
+REFERENCE INFORMATION BELOW
+</div>
+
+<!-- Transaction Details Section -->
+<div class="receipt-section">
+<div style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: #1b0e0e;">TRANSACTION DETAILS</div>
+
+<div class="receipt-line">
+<span class="receipt-label">Transaction ID:</span>
+<span class="receipt-value" id="receiptTxnId">TXN-0000000000</span>
+</div>
+
+<div class="receipt-line">
+<span class="receipt-label">Date & Time:</span>
+<span class="receipt-value" id="receiptDateTime">01 Jan 2026, 10:00 AM</span>
+</div>
+
+<div class="receipt-line">
+<span class="receipt-label">Document Type:</span>
+<span class="receipt-value" id="receiptDocType">Bill</span>
+</div>
+
+</div>
+
+<!-- Transaction Details Section -->
+<div class="receipt-section" id="transactionInfoSection">
+<div style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: #1b0e0e;">TRANSACTION INFORMATION</div>
+
+<div class="receipt-line" id="refNumberLine">
+<span class="receipt-label">Reference Number:</span>
+<span class="receipt-value" id="receiptRefNum">—</span>
+</div>
+
+<div class="receipt-line" id="providerLine">
+<span class="receipt-label" id="providerLabel">Biller / Provider:</span>
+<span class="receipt-value" id="receiptProvider">—</span>
+</div>
+
+<div class="receipt-line" id="accountLine">
+<span class="receipt-label">Account Number:</span>
+<span class="receipt-value" id="receiptAccount">—</span>
+</div>
+
+</div>
+
+<!-- Balance Section -->
+<div class="receipt-section">
+<div style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: #1b0e0e;">ACCOUNT BALANCE</div>
+
+<div class="receipt-line">
+<span class="receipt-label">Previous Balance:</span>
+<span class="receipt-value" id="receiptPrevBalance">S$0.00</span>
+</div>
+
+<div class="receipt-line">
+<span class="receipt-label">Current Balance:</span>
+<span class="receipt-value" style="color: #ea2a33;" id="receiptCurrBalance">S$0.00</span>
+</div>
+
+</div>
+
+<!-- Important Message -->
+<div class="receipt-centered" style="margin-top: 2rem;">
+<div style="background-color: #f0f0f0; padding: 1.5rem; border-radius: 0.5rem; font-size: 1.125rem; line-height: 1.6;">
+<strong>Thank you for using OCBC ATM.</strong><br>
+Please retain this receipt for your records.
+</div>
+</div>
+
+<!-- === ELDERLY-FRIENDLY CLOSING MESSAGE === -->
+<!-- Purpose: Clear, reassuring final instruction for elderly users -->
+<!-- Why: Explicitly tells elderly users what to do next (take card + leave) -->
+<!-- This reduces confusion and provides sense of completion -->
+<div class="receipt-centered" style="margin-top: 2rem; background-color: #e0f2fe; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #0ea5e9;">
+<div style="font-size: 1.25rem; font-weight: 800; color: #1b0e0e; margin-bottom: 0.75rem;">YOU ARE ALL DONE</div>
+<div style="font-size: 1.125rem; line-height: 1.8; color: #333;">
+You may safely <strong>take your card and leave the ATM.</strong>
+<div style="font-size: 1rem; margin-top: 0.75rem; color: #666;">
+Your transaction is complete and fully processed.
+</div>
+</div>
+</div>
+
+<!-- Footer -->
+<div class="receipt-centered" style="margin-top: 2rem; font-size: 0.875rem; color: #999;">
+<div>OCBC Bank Limited</div>
+<div>For help: 1800-223-8888</div>
+<div style="margin-top: 1rem;">Keep this receipt safe</div>
+</div>
+
+</div>
+
+<!-- Action Buttons (Not Printed) -->
+<div class="max-w-[600px] w-full button-group no-print" style="margin-top: 3rem;">
+
+<button onclick="speakReceipt()" class="elderly-button btn-primary" id="speakBtn">
+<span class="material-symbols-outlined">volume_up</span>
+<span id="speakBtnText">Read Aloud</span>
+</button>
+
+<button onclick="printReceipt()" class="elderly-button btn-primary">
+<span class="material-symbols-outlined">print</span>
+Print Receipt
+</button>
+
+<button onclick="viewHistory()" class="elderly-button" style="background-color: #0ea5e9; color: white; font-weight: 700;">
+<span class="material-symbols-outlined">history</span>
+View Past Receipts
+</button>
+
+<button onclick="returnHome()" class="elderly-button btn-secondary">
+<span class="material-symbols-outlined">home</span>
+Done
+</button>
+
+</div>
+
+</main>
+
+<!-- Footer -->
+<footer class="w-full py-6 mt-auto bg-zinc-100 dark:bg-zinc-950/50 px-6 no-print">
+<div class="max-w-4xl mx-auto text-center text-zinc-600 dark:text-zinc-400 text-sm">
+<span class="material-symbols-outlined !text-base" style="vertical-align: middle;">security</span>
+Your session is secure. Do not share this receipt with others.
+</div>
+</footer>
+
+<!-- Flag to prevent balance API calls -->
+<script>
+  window.skipBalanceAPI = true;
+</script>
+
+<!-- Home.js for general functions -->
+<script src="scripts/home.js"></script>
+
+<!-- Receipt-specific logic -->
+<script>
+/**
+ * Parse transaction data from URL parameters or sessionStorage
+ * Populates all receipt fields dynamically
+ * Supports: Bill Payment, Withdrawal, Deposit, Transfer
+ */
+function initializeReceipt() {
+  // Try to get data from sessionStorage first (from payment flow)
+  let receiptData = {};
+  
+  try {
+    const billPaymentData = sessionStorage.getItem('billPaymentData');
+    if (billPaymentData) {
+      receiptData = JSON.parse(billPaymentData);
+    }
+  } catch (e) {
+    console.error('Error parsing sessionStorage data:', e);
+  }
+
+  // If no data in sessionStorage, try URL parameters
+  if (!receiptData || Object.keys(receiptData).length === 0) {
+    const params = new URLSearchParams(window.location.search);
+    receiptData = {
+      transactionType: params.get('type') || 'transaction',
+      amount: params.get('amount'),
+      refNumber: params.get('ref'),
+      provider: params.get('provider'),
+      docType: params.get('docType'),
+      account: params.get('account'),
+      timestamp: params.get('timestamp'),
+      previousBalance: params.get('prevBalance'),
+      currentBalance: params.get('currBalance'),
+      toAccount: params.get('toAccount'),
+      toBank: params.get('toBank'),
+      payeeName: params.get('payeeName')
+    };
+  }
+
+  // Determine transaction type (default to bill payment for backward compatibility)
+  const transactionType = receiptData.transactionType || 
+                          (receiptData.provider ? 'bill_payment' : 'transaction');
+  
+  // Generate transaction ID
+  const txnId = receiptData.transactionId || 'TXN-' + Date.now();
+  const now = receiptData.timestamp ? new Date(receiptData.timestamp) : new Date();
+
+  // Get balances
+  const previousBalance = receiptData.previousBalance 
+    ? parseFloat(receiptData.previousBalance) 
+    : parseFloat(localStorage.getItem('previousBalance') || '0');
+  const currentBalance = receiptData.currentBalance 
+    ? parseFloat(receiptData.currentBalance) 
+    : parseFloat(localStorage.getItem('balance') || '0');
+
+  // Parse amount (ensure it's a string first)
+  const amountStr = receiptData.amount || 'S$0.00';
+  const amountString = typeof amountStr === 'string' ? amountStr : String(amountStr);
+  const amount = parseFloat(amountString.replace(/[S$,]/g, ''));
+  
+  // Format amount with currency and 2 decimals
+  const formattedAmount = `S$${amount.toFixed(2)}`;
+
+  // === POPULATE SUMMARY SECTION BASED ON TRANSACTION TYPE ===
+  const summaryAction = document.getElementById('summaryAction');
+  const summaryDetails = document.getElementById('summaryDetails');
+  const summaryAmountElem = document.getElementById('summaryAmount');
+  const amountLabel = document.getElementById('amountLabel');
+  const balanceChangeDirection = document.getElementById('balanceChangeDirection');
+  const balanceChangeReason = document.getElementById('balanceChangeReason');
+  const balanceChangeSection = document.getElementById('balanceChangeSection');
+
+  summaryAmountElem.textContent = formattedAmount;
+
+  switch(transactionType) {
+    case 'withdrawal':
+    case 'withdraw':
+      summaryAction.textContent = 'You have successfully withdrawn cash.';
+      summaryDetails.innerHTML = `Your withdrawal of <strong>${formattedAmount}</strong> has been completed and dispensed.`;
+      amountLabel.textContent = 'AMOUNT WITHDRAWN';
+      balanceChangeDirection.textContent = 'decreased by';
+      balanceChangeReason.textContent = 'because of this withdrawal.';
+      balanceChangeSection.style.backgroundColor = '#fef3e2';
+      balanceChangeSection.style.borderLeftColor = '#f59e0b';
+      // Hide provider/reference for withdrawals
+      hideTransactionInfoFields(['providerLine', 'refNumberLine', 'accountLine']);
+      break;
+
+    case 'deposit':
+      summaryAction.textContent = 'You have successfully deposited cash.';
+      summaryDetails.innerHTML = `Your deposit of <strong>${formattedAmount}</strong> has been received and credited.`;
+      amountLabel.textContent = 'AMOUNT DEPOSITED';
+      balanceChangeDirection.textContent = 'increased by';
+      balanceChangeReason.textContent = 'because of this deposit.';
+      balanceChangeSection.style.backgroundColor = '#e7f9ed';
+      balanceChangeSection.style.borderLeftColor = '#10b981';
+      // Hide provider/reference for deposits
+      hideTransactionInfoFields(['providerLine', 'refNumberLine', 'accountLine']);
+      break;
+
+    case 'transfer':
+      const payeeName = receiptData.payeeName || 'recipient';
+      const toAccount = receiptData.toAccount || '—';
+      summaryAction.textContent = `You have successfully transferred funds to ${payeeName}.`;
+      summaryDetails.innerHTML = `Your transfer of <strong>${formattedAmount}</strong> has been sent to account ${toAccount}.`;
+      amountLabel.textContent = 'AMOUNT TRANSFERRED';
+      balanceChangeDirection.textContent = 'decreased by';
+      balanceChangeReason.textContent = 'because of this transfer.';
+      balanceChangeSection.style.backgroundColor = '#fef3e2';
+      balanceChangeSection.style.borderLeftColor = '#f59e0b';
+      // Show transfer-specific info
+      showTransferInfo(receiptData);
+      break;
+
+    case 'bill_payment':
+    default:
+      const provider = receiptData.provider || 'Bill Payment';
+      summaryAction.textContent = `You have successfully paid your ${provider} bill.`;
+      summaryDetails.innerHTML = `The payment of <strong>${formattedAmount}</strong> has been completed and processed.`;
+      amountLabel.textContent = 'AMOUNT PAID';
+      balanceChangeDirection.textContent = 'decreased by';
+      balanceChangeReason.textContent = 'because of this payment.';
+      balanceChangeSection.style.backgroundColor = '#fef3e2';
+      balanceChangeSection.style.borderLeftColor = '#f59e0b';
+      break;
+  }
+
+  // Balance change amount (always show absolute value)
+  document.getElementById('balanceChangeAmount').textContent = formattedAmount;
+
+  // Transaction icon
+  document.getElementById('statusIcon').textContent = '✓';
+  document.getElementById('statusText').textContent = 'Transaction Successful';
+  
+  // Amount
+  document.getElementById('receiptAmount').textContent = formattedAmount;
+
+  // Transaction ID
+  document.getElementById('receiptTxnId').textContent = txnId;
+
+  // Date & Time (elderly-friendly format)
+  const dateTimeStr = now.toLocaleString('en-SG', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
+  document.getElementById('receiptDateTime').textContent = dateTimeStr;
+
+  // Document Type
+  const docType = receiptData.docType || getDocTypeFromTransactionType(transactionType);
+  document.getElementById('receiptDocType').textContent = docType;
+
+  // Reference Number
+  const refNum = receiptData.refNumber || receiptData.reference || '—';
+  document.getElementById('receiptRefNum').textContent = refNum;
+
+  // Provider / Biller
+  const provider = receiptData.provider || 
+                   (transactionType === 'withdrawal' ? 'ATM Withdrawal' : 
+                    transactionType === 'deposit' ? 'Cash Deposit' : 
+                    transactionType === 'transfer' ? 'Fund Transfer' : '—');
+  document.getElementById('receiptProvider').textContent = provider;
+
+  // Account Number (if available)
+  const account = receiptData.account || '—';
+  document.getElementById('receiptAccount').textContent = account;
+
+  // Previous Balance
+  document.getElementById('receiptPrevBalance').textContent = `S$${previousBalance.toFixed(2)}`;
+
+  // Current Balance
+  document.getElementById('receiptCurrBalance').textContent = `S$${currentBalance.toFixed(2)}`;
+
+  // Set status text based on transaction type
+  const statusElement = document.getElementById('statusSubtitle');
+  switch(transactionType) {
+    case 'withdrawal':
+    case 'withdraw':
+      statusElement.textContent = 'Your cash has been dispensed';
+      break;
+    case 'deposit':
+      statusElement.textContent = 'Your deposit has been credited to your account';
+      break;
+    case 'transfer':
+      statusElement.textContent = 'Your transfer has been sent successfully';
+      break;
+    default:
+      statusElement.textContent = 'Your transaction has been completed';
+  }
+
+  // Save to receipt history
+  saveToHistory({
+    ...receiptData,
+    transactionType,
+    amount: amountStr,
+    timestamp: now.toISOString(),
+    previousBalance,
+    currentBalance
+  });
+
+  // Clear sensitive data from sessionStorage after use
+  try {
+    sessionStorage.removeItem('billPaymentData');
+  } catch (e) {
+    console.error('Error clearing session data:', e);
+  }
+}
+
+/**
+ * Get document type from transaction type
+ */
+function getDocTypeFromTransactionType(type) {
+  switch(type) {
+    case 'withdrawal':
+    case 'withdraw':
+      return 'Withdrawal Receipt';
+    case 'deposit':
+      return 'Deposit Receipt';
+    case 'transfer':
+      return 'Transfer Receipt';
+    case 'bill_payment':
+      return 'Bill Payment';
+    default:
+      return 'Transaction Receipt';
+  }
+}
+
+/**
+ * Hide specific transaction info fields
+ */
+function hideTransactionInfoFields(fieldIds) {
+  fieldIds.forEach(id => {
+    const elem = document.getElementById(id);
+    if (elem) elem.style.display = 'none';
+  });
+}
+
+/**
+ * Show transfer-specific information
+ */
+function showTransferInfo(data) {
+  // Update labels for transfer
+  const providerLabel = document.getElementById('providerLabel');
+  if (providerLabel) providerLabel.textContent = 'To Account:';
+  
+  const refNumLine = document.getElementById('refNumberLine');
+  if (refNumLine) {
+    refNumLine.querySelector('.receipt-label').textContent = 'Beneficiary:';
+    document.getElementById('receiptRefNum').textContent = data.payeeName || '—';
+  }
+
+  const accountLine = document.getElementById('accountLine');
+  if (accountLine) {
+    accountLine.querySelector('.receipt-label').textContent = 'Bank:';
+    document.getElementById('receiptAccount').textContent = data.toBank || '—';
+  }
+
+  document.getElementById('receiptProvider').textContent = data.toAccount || '—';
+  document.getElementById('receiptProvider').textContent = data.toAccount || '—';
+}
+
+/**
+ * Save receipt to local history
+ * @param {Object} data - Receipt data to save
+ */
+function saveToHistory(data) {
+  try {
+    const history = JSON.parse(localStorage.getItem('receiptHistory') || '[]');
+    
+    // Add current receipt with timestamp
+    history.unshift({
+      ...data,
+      savedAt: new Date().toISOString(),
+      id: 'RH-' + Date.now()
+    });
+    
+    // Keep only last 20 receipts
+    const trimmedHistory = history.slice(0, 20);
+    localStorage.setItem('receiptHistory', JSON.stringify(trimmedHistory));
+  } catch (e) {
+    console.error('Error saving to history:', e);
+  }
+}
+
+/**
+ * Voice readout of receipt summary
+ * Uses Web Speech API to read the receipt aloud
+ */
+function speakReceipt() {
+  if (!('speechSynthesis' in window)) {
+    alert('Voice readout is not supported in your browser.');
+    return;
+  }
+
+  const speakBtn = document.getElementById('speakBtn');
+  const speakBtnText = document.getElementById('speakBtnText');
+
+  // Stop if already speaking
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    speakBtnText.textContent = 'Read Aloud';
+    return;
+  }
+
+  // Get receipt data for readout
+  const summaryAction = document.getElementById('summaryAction').textContent;
+  const amount = document.getElementById('summaryAmount').textContent;
+  const balanceChangeAmount = document.getElementById('balanceChangeAmount').textContent;
+  const balanceChangeDirection = document.getElementById('balanceChangeDirection').textContent;
+  const currentBalance = document.getElementById('receiptCurrBalance').textContent;
+
+  // Compose speech text (elderly-friendly, clear)
+  const speechText = `
+    Receipt summary. 
+    ${summaryAction}. 
+    Transaction amount: ${amount}. 
+    Your balance ${balanceChangeDirection} ${balanceChangeAmount} because of this transaction. 
+    Your current account balance is ${currentBalance}. 
+    You are all done. You may safely take your card and leave the A T M.
+  `;
+
+  const utterance = new SpeechSynthesisUtterance(speechText);
+  utterance.rate = 0.85; // Slightly slower for elderly users
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+
+  utterance.onstart = () => {
+    speakBtnText.textContent = 'Stop Reading';
+  };
+
+  utterance.onend = () => {
+    speakBtnText.textContent = 'Read Aloud';
+  };
+
+  utterance.onerror = () => {
+    speakBtnText.textContent = 'Read Aloud';
+    alert('Voice readout failed. Please try again.');
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+/**
+ * Print the receipt
+ * Triggers browser print dialog
+ */
+function printReceipt() {
+  // Add a subtle delay for better UX
+  setTimeout(() => {
+    window.print();
+  }, 100);
+}
+
+/**
+ * View receipt history
+ * Opens a modal or new page showing past receipts
+ */
+function viewHistory() {
+  window.location.href = 'receipt-history.html';
+}
+
+/**
+ * Return to home screen
+ * Clears all session data for safety
+ */
+function returnHome() {
+  // Clear sensitive session data
+  try {
+    sessionStorage.clear();
+  } catch (e) {
+    console.error('Error clearing session:', e);
+  }
+  
+  // Navigate to home
+  window.location.href = 'home.html';
+}
+
+/**
+ * Initialize receipt when page loads
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  initializeReceipt();
+
+  // Prevent back button for security
+  history.pushState(null, null, location.href);
+  window.onpopstate = function() {
+    window.location.href = 'home.html';
+  };
+});
+</script>
+
+</body>
+</html>
