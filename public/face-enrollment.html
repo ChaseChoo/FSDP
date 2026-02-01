@@ -195,14 +195,24 @@
 
       async loadModels() {
         this.updateStatus('info', '⏳ Loading AI models...');
+        console.log('Starting to load models...');
 
-        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+        try {
+          const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights/';
 
-        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+          console.log('Loading tiny face detector...');
+          await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+          console.log('Loading face landmarks...');
+          await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+          console.log('Loading face recognition...');
+          await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
 
-        console.log('✅ Models loaded');
+          console.log('✅ All models loaded successfully');
+          this.updateStatus('info', '✅ AI models loaded');
+        } catch (error) {
+          console.error('Model loading error:', error);
+          throw new Error('Failed to load AI models. Please check your internet connection.');
+        }
       }
 
       async startVideo() {
@@ -359,7 +369,24 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    // Wait for face-api library to load
+    function waitForFaceApi() {
+      return new Promise((resolve) => {
+        if (typeof faceapi !== 'undefined') {
+          resolve();
+        } else {
+          const checkInterval = setInterval(() => {
+            if (typeof faceapi !== 'undefined') {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await waitForFaceApi();
       new FaceEnrollment();
     });
   </script>
