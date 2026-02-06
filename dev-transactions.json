@@ -1501,6 +1501,123 @@
   ],
   "user-1": [
     {
+      "Id": "dev-1770346807636-0.8794608555980687",
+      "AccountId": "dev-user-1",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 29631,
+      "Description": "Transfer to touchngo wallet touchngo-12345",
+      "CreatedAt": "2026-02-06T03:00:07.636Z"
+    },
+    {
+      "Id": "dev-1770346779067-0.42455971721438224",
+      "AccountId": "dev-user-1",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 29641,
+      "Description": "Transfer to wechat wallet wechat-12345",
+      "CreatedAt": "2026-02-06T02:59:39.067Z"
+    },
+    {
+      "Id": "dev-1770346736764-0.8280029957925721",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 10,
+      "BalanceAfter": 29651,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-06T02:58:56.764Z"
+    },
+    {
+      "Id": "dev-1770346549486-0.4577558565511126",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 10,
+      "BalanceAfter": 29661,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-06T02:55:49.486Z"
+    },
+    {
+      "Id": "dev-1770346326321-0.007384907857985956",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 100,
+      "BalanceAfter": 29671,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-02-06T02:52:06.321Z"
+    },
+    {
+      "Id": "dev-1770346188295-0.43061833573661557",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 100,
+      "BalanceAfter": 29571,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-02-06T02:49:48.295Z"
+    },
+    {
+      "Id": "dev-1770346030983-0.8493336924692392",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 100,
+      "BalanceAfter": 29471,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-02-06T02:47:10.983Z"
+    },
+    {
+      "Id": "dev-1770345870428-0.8665327296543319",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 100,
+      "BalanceAfter": 29371,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-02-06T02:44:30.428Z"
+    },
+    {
+      "Id": "dev-1770345763217-0.425740121788047",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 10,
+      "BalanceAfter": 29271,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-06T02:42:43.217Z"
+    },
+    {
+      "Id": "dev-1770345669319-0.8214674802411095",
+      "AccountId": "dev-user-1",
+      "Type": "WITHDRAWAL",
+      "Amount": 10,
+      "BalanceAfter": 29281,
+      "Description": "Pre-configured withdraw",
+      "CreatedAt": "2026-02-06T02:41:09.319Z"
+    },
+    {
+      "Id": "dev-1770345499610-0.2631974942430697",
+      "AccountId": "dev-user-1",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 29291,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-02-06T02:38:19.610Z"
+    },
+    {
+      "Id": "dev-1770345486932-0.2344530837406298",
+      "AccountId": "dev-user-1",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 29301,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-02-06T02:38:06.932Z"
+    },
+    {
+      "Id": "dev-1769960128783-0.9178141100184156",
+      "AccountId": "dev-user-1",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -10,
+      "BalanceAfter": 29311,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-02-01T15:35:28.783Z"
+    },
+    {
       "Id": "dev-1769954478277-0.1930451804528297",
       "AccountId": "dev-user-1",
       "Type": "WITHDRAWAL",

@@ -252,6 +252,8 @@ export async function executePreConfiguredAction(req, res) {
       { expiresIn: '1h' } // Short-lived token for assisted transactions
     );
     
+    console.log('[Guardian QR] JWT token generated:', token.substring(0, 30) + '...');
+    
     // Execute the pre-configured action
     let transactionResult;
     const actionType = preConfigAction.action.type;
@@ -333,6 +335,7 @@ export async function executePreConfiguredAction(req, res) {
     markActionAsUsed(actionId);
     
     console.log(`[Guardian QR] Executed ${actionType} for ${user.fullName}:`, transactionResult);
+    console.log('[Guardian QR] About to send response with token:', token ? '✅ Present' : '❌ Missing');
     
     return res.json({
       success: true,
@@ -362,8 +365,12 @@ export async function executePreConfiguredAction(req, res) {
     });
     
   } catch (error) {
-    console.error('Error executing pre-configured action:', error);
-    return res.status(500).json({ error: 'Server error executing action' });
+    console.error('[Guardian QR] ❌ Error executing pre-configured action:', error.message);
+    console.error('[Guardian QR] Stack trace:', error.stack);
+    return res.status(500).json({ 
+      success: false,
+      error: error.message || 'Server error executing action' 
+    });
   }
 }
 

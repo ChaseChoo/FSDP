@@ -98,6 +98,10 @@
         localStorage.setItem('balance', balance.toString());
         console.log('Balance loaded from API:', balance);
         updateBalanceUI();
+      } else if (response.status === 401) {
+        console.warn('Token invalid or expired (401). Clearing token and redirecting to login.');
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
       } else {
         console.warn('Failed to fetch balance from API:', response.status);
         // Fallback to localStorage

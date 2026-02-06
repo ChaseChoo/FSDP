@@ -328,6 +328,25 @@
         const result = await response.json();
 
         if (response.ok) {
+          // ✅ Save token to localStorage for authenticated requests
+          if (result.token) {
+            localStorage.setItem('token', result.token);
+            console.log('[ATM QR Scanner] ✅ Token saved to localStorage');
+            console.log('[ATM QR Scanner] Token preview:', result.token.substring(0, 30) + '...');
+          } else {
+            console.warn('[ATM QR Scanner] ⚠️ No token in response');
+          }
+          
+          // Save user and balance info
+          if (result.user) {
+            localStorage.setItem('user', JSON.stringify(result.user));
+            console.log('[ATM QR Scanner] ✅ User saved');
+          }
+          if (result.account && result.account.balance !== undefined) {
+            localStorage.setItem('balance', result.account.balance.toString());
+            console.log('[ATM QR Scanner] ✅ Balance saved:', result.account.balance);
+          }
+          
           const newBalance = result.account?.balance ?? result.transaction?.newBalance ?? 'N/A';
           showStatus(`Transaction successful! New balance: $${typeof newBalance === 'number' ? newBalance.toFixed(2) : newBalance}`, 'success');
           

@@ -444,12 +444,16 @@
                     <div class="balance-amount" id="balance-amount">$0.00</div>
                 </div>
                 
-                <button class="btn scan-btn" onclick="resetATM()">Start New Transaction</button>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button class="btn btn-cancel" onclick="resetATM()" style="flex: 1;">Start New Transaction</button>
+                    <button class="btn btn-confirm" onclick="window.location.href='home.html'" style="flex: 1;">Continue to Home</button>
+                </div>
             </div>
         </div>
     </div>
     
     <script>
+        console.log('[Guardian QR] ========== Page Loaded ==========');
         lucide.createIcons();
         
         let html5QrCode;
@@ -459,15 +463,24 @@
         
         // Check if action ID is in URL parameters (from QR code scan)
         window.addEventListener('DOMContentLoaded', () => {
+            console.log('[Guardian QR] DOMContentLoaded event fired');
             const urlParams = new URLSearchParams(window.location.search);
             const actionId = urlParams.get('action');
             
+            console.log('[Guardian QR] URL params:', {
+                action: actionId,
+                fullUrl: window.location.href
+            });
+            
             if (actionId) {
+                console.log('[Guardian QR] ✅ Action ID found in URL:', actionId);
                 // Hide scanner section, show loading, then validate
                 document.getElementById('scanner-section').style.display = 'none';
                 setTimeout(() => {
                     validateAndShowAction(actionId);
                 }, 500);
+            } else {
+                console.log('[Guardian QR] ℹ️ No action in URL, user must scan QR code');
             }
         });
         
@@ -615,7 +628,14 @@
         }
         
         async function confirmAction() {
-            if (!scannedActionId) return;
+            console.log('[Guardian QR] ========== CONFIRM ACTION STARTED ==========');
+            
+            if (!scannedActionId) {
+                console.error('[Guardian QR] ❌ No scanned action ID!');
+                return;
+            }
+            
+            console.log('[Guardian QR] Scanned action ID:', scannedActionId);
             
             // Hide preview, show loading
             document.getElementById('action-preview').classList.remove('show');
@@ -623,6 +643,8 @@
             clearAlert();
             
             try {
+                console.log('[Guardian QR] 🔄 Sending POST to /api/guardian/execute-action');
+                
                 const response = await fetch('/api/guardian/execute-action', {
                     method: 'POST',
                     headers: {
@@ -634,10 +656,73 @@
                     })
                 });
                 
-                const data = await response.json();
+                console.log('[Guardian QR] 📬 Response received');
+                console.log('[Guardian QR] Status:', response.status, response.statusText);
                 
-                if (!response.ok || !data.success) {
-                    throw new Error(data.error || 'Transaction failed');
+                let data;
+                try {
+                    data = await response.json();
+                    console.log('[Guardian QR] Parsed JSON:', JSON.stringify(data, null, 2));
+                } catch (jsonErr) {
+                    console.error('[Guardian QR] ❌ Failed to parse JSON response:', jsonErr);
+                    throw new Error('Server response was not valid JSON');
+                }
+                
+                if (!response.ok) {
+                    console.error('[Guardian QR] ❌ HTTP error:', response.status, data?.error || data);
+                    showAlert(`Server error: ${data?.error || response.statusText}`, 'error');
+                    document.getElementById('loading').classList.remove('show');
+                    document.getElementById('action-preview').classList.add('show');
+                    return;
+                }
+                
+                if (!data.success) {
+                    console.error('[Guardian QR] ❌ Success flag false:', data);
+                    showAlert(data?.error || 'Transaction failed', 'error');
+                    document.getElementById('loading').classList.remove('show');
+                    document.getElementById('action-preview').classList.add('show');
+                    return;
+                }
+                
+                console.log('[Guardian QR] ✅ Response successful, processing token...');
+                
+                // Save token to localStorage for authenticated requests
+                if (data.token) {
+                    try {
+                        localStorage.setItem('token', data.token);
+                        const verify = localStorage.getItem('token');
+                        if (verify === data.token) {
+                            console.log('[Guardian QR] ✅ Token saved successfully');
+                            console.log('[Guardian QR] Token preview:', data.token.substring(0, 30) + '...');
+                        } else {
+                            console.error('[Guardian QR] ❌ Token verification failed after save');
+                        }
+                    } catch (storageErr) {
+                        console.error('[Guardian QR] ❌ Failed to save token to localStorage:', storageErr);
+                    }
+                } else {
+                    console.warn('[Guardian QR] ⚠️ No token in response! Available keys:', Object.keys(data));
+                }
+                
+                // Save user and balance info
+                if (data.user) {
+                    try {
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        console.log('[Guardian QR] ✅ User saved:', data.user.fullName);
+                    } catch (err) {
+                        console.error('[Guardian QR] Error saving user:', err);
+                    }
+                }
+                
+                if (data.account && data.account.balance !== undefined) {
+                    try {
+                        localStorage.setItem('balance', data.account.balance.toString());
+                        console.log('[Guardian QR] ✅ Balance saved:', data.account.balance);
+                    } catch (err) {
+                        console.error('[Guardian QR] Error saving balance:', err);
+                    }
+                }
+                    console.log('[Guardian QR] ✅ Balance saved:', data.account.balance);
                 }
                 
                 // Show success

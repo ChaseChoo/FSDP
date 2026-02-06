@@ -1,8 +1,16 @@
 // middleware/fakeLogin.js
 export default function fakeLogin(req, res, next) {
   // Debug — remove in production
-  console.log("fakeLogin: authorization =", req.headers.authorization);
-  console.log("fakeLogin: cookie =", req.headers.cookie);
+  console.log(`[fakeLogin] ${req.method} ${req.path}`);
+  
+  // Allow public endpoints that don't require authentication
+  // These are ATM public endpoints for guardian QR transactions
+  if (req.path.startsWith('/api/guardian/execute-action') || 
+      req.path.startsWith('/api/guardian/validate-action')) {
+    console.log(`[fakeLogin] ✅ PUBLIC GUARDIAN ENDPOINT detected: ${req.method} ${req.path}`);
+    req.user = { externalId: "PUBLIC_ATM", id: "public-atm", username: "atm" };
+    return next();
+  }
 
   // If a real user/session already exists, continue
   if (req.user) return next();
