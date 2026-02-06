@@ -1501,6 +1501,24 @@
   ],
   "user-1": [
     {
+      "Id": "dev-1770357799146-0.15235910229696747",
+      "AccountId": "dev-user-1",
+      "Type": "WALLET_TRANSFER",
+      "Amount": -20,
+      "BalanceAfter": 29621,
+      "Description": "Transfer to alipay wallet wallet-12345",
+      "CreatedAt": "2026-02-06T06:03:19.146Z"
+    },
+    {
+      "Id": "dev-1770357740884-0.8523740025624962",
+      "AccountId": "dev-user-1",
+      "Type": "DEPOSIT",
+      "Amount": 10,
+      "BalanceAfter": 29641,
+      "Description": "Pre-configured deposit",
+      "CreatedAt": "2026-02-06T06:02:20.884Z"
+    },
+    {
       "Id": "dev-1770346807636-0.8794608555980687",
       "AccountId": "dev-user-1",
       "Type": "WALLET_TRANSFER",

@@ -376,7 +376,9 @@ Your session is secure. Do not share this receipt with others.
 </div>
 </footer>
 
-<!-- Flag to prevent balance API calls -->
+<!-- Flag to skip balance API for receipt page -->
+<!-- Receipt shows the balance AFTER transaction was processed client-side -->
+<!-- So we use the localStorage balance that was just updated, not the API -->
 <script>
   window.skipBalanceAPI = true;
 </script>

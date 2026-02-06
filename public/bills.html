@@ -388,8 +388,8 @@
     renderBills();
   });
 
-  // Flag to prevent balance API calls on this page
-  window.skipBalanceAPI = true;
+  // Allow balance API calls on this page - users need live balance to pay bills
+  window.skipBalanceAPI = false;
 </script>
 
 <script src="scripts/home.js"></script>

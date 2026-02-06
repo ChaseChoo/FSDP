@@ -214,5 +214,23 @@
     "expiresAt": 1770433122972,
     "usedAt": 1770346736766,
     "lastUsedAt": 1770346736766
+  },
+  "58cdbdc0a8f1a006d2a7d7950f3d9e44d16bce63a45bbe815e30b9b17a95c943": {
+    "id": "58cdbdc0a8f1a006d2a7d7950f3d9e44d16bce63a45bbe815e30b9b17a95c943",
+    "guardianExternalId": "user-1",
+    "guardianCardNumber": "N/A",
+    "guardianName": "user-1",
+    "action": {
+      "type": "DEPOSIT",
+      "amount": 10,
+      "recipientAccountNumber": null,
+      "description": "Pre-configured deposit"
+    },
+    "maxUses": 1,
+    "currentUses": 1,
+    "createdAt": 1770357707856,
+    "expiresAt": 1770444107856,
+    "usedAt": 1770357740887,
+    "lastUsedAt": 1770357740887
   }
 }
